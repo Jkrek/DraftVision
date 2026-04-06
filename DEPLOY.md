@@ -34,7 +34,9 @@ In Railway → your service → **Variables**, add:
 |----------|-------|
 | `SECRET_KEY` | a long random string (e.g., `openssl rand -hex 32`) |
 | `FLASK_ENV` | `production` |
-| `FRONTEND_ORIGIN` | `https://yourdomain.com` |
+| `FRONTEND_ORIGIN` | `https://jkrek.com,https://www.jkrek.com` |
+| `CANONICAL_HOST` | `jkrek.com` |
+| `FORCE_HTTPS` | `true` |
 | `AUTO_SYNC_COLLEGE_PROSPECTS` | `false` (set to `true` on first deploy to seed data) |
 
 `DATABASE_URL` and `PORT` are set automatically by Railway.
@@ -42,13 +44,20 @@ In Railway → your service → **Variables**, add:
 ## Step 5 — Connect your domain
 
 1. Railway project → **Settings** → **Domains** → **Add Custom Domain**
-2. Enter your domain (e.g., `draftvision.app`)
-3. Railway gives you a CNAME record to add at your registrar:
-   - Go to your registrar's DNS settings
-   - Add a `CNAME` record: `www` → `your-app.railway.app`
-   - For the root domain (`@`), use an `ALIAS` or `ANAME` record if your registrar supports it, otherwise forward `@` → `www`
-4. Wait up to 30 minutes for DNS propagation
-5. Railway auto-provisions an SSL certificate via Let's Encrypt
+2. Add both domains:
+   - `jkrek.com`
+   - `www.jkrek.com`
+3. Railway gives you DNS targets to add at your registrar:
+   - Add the apex/root record for `@` exactly as Railway shows
+   - Add the `www` record exactly as Railway shows (usually a `CNAME` to your Railway hostname)
+4. In Railway variables, set:
+   - `FRONTEND_ORIGIN=https://jkrek.com,https://www.jkrek.com`
+   - `CANONICAL_HOST=jkrek.com`
+   - `FORCE_HTTPS=true`
+5. Wait for DNS propagation and SSL issuance
+6. Verify both URLs redirect correctly:
+   - `http://jkrek.com` → `https://jkrek.com`
+   - `https://www.jkrek.com` → `https://jkrek.com`
 
 ## Step 6 — First deploy
 
@@ -56,7 +65,7 @@ In Railway → your service → **Variables**, add:
 2. Watch build logs in Railway dashboard
 3. Hit `/health` on your domain to confirm the app is running:
    ```
-   https://yourdomain.com/health
+   https://jkrek.com/health
    ```
 
 ## Subsequent deploys

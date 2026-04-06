@@ -20,7 +20,7 @@ import joblib
 import pandas as pd
 import requests
 import xgboost as xgb
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, redirect, request, send_from_directory
 from flask_cors import CORS
 
 POSITION_MODEL_PATH = "nfl_xgboost_model.json"
@@ -194,8 +194,50 @@ def _row_as_dict(cursor, row) -> Optional[dict]:
 
 
 app = Flask(__name__, static_folder=None)  # catch-all serves build/
-allowed_origins = os.getenv("FRONTEND_ORIGIN", "*").split(",")
+
+
+def _parse_allowed_origins(raw_value: str) -> list[str] | str:
+    cleaned = [origin.strip() for origin in raw_value.split(",") if origin.strip()]
+    if not cleaned:
+        return "*"
+    if len(cleaned) == 1 and cleaned[0] == "*":
+        return "*"
+    return cleaned
+
+
+allowed_origins = _parse_allowed_origins(os.getenv("FRONTEND_ORIGIN", "*"))
+CANONICAL_HOST = os.getenv("CANONICAL_HOST", "").strip().lower()
+FORCE_HTTPS = os.getenv("FORCE_HTTPS", "false").strip().lower() in {"1", "true", "yes", "on"}
+LOCAL_HOSTS = {"localhost", "127.0.0.1"}
+
 CORS(app, resources={r"/*": {"origins": allowed_origins}})
+
+
+@app.before_request
+def enforce_canonical_origin():
+    """Redirect production traffic to the configured canonical host and HTTPS."""
+    if request.method == "OPTIONS":
+        return None
+
+    forwarded_host = request.headers.get("X-Forwarded-Host", request.host or "")
+    host = forwarded_host.split(",")[0].strip().split(":")[0].lower()
+    if not host or host in LOCAL_HOSTS:
+        return None
+
+    forwarded_proto = request.headers.get("X-Forwarded-Proto", request.scheme or "http")
+    scheme = forwarded_proto.split(",")[0].strip().lower()
+
+    target_host = CANONICAL_HOST or host
+    target_scheme = "https" if FORCE_HTTPS else scheme
+
+    if host == target_host and scheme == target_scheme:
+        return None
+
+    query = request.query_string.decode("utf-8") if request.query_string else ""
+    destination = f"{target_scheme}://{target_host}{request.path}"
+    if query:
+        destination = f"{destination}?{query}"
+    return redirect(destination, code=308)
 
 
 position_model = None
