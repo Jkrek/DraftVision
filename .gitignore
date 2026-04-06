@@ -1,0 +1,36 @@
+# ── Python ───────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+.pytest_cache/
+
+# ── Environment / Secrets ─────────────────────────────────────────
+.env
+*.env.local
+
+# ── Database (SQLite — Postgres used in production) ───────────────
+players.db
+
+# ── Node / React ──────────────────────────────────────────────────
+node_modules/
+build/
+
+# ── OS ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Large media files ─────────────────────────────────────────────
+public/images/*.mov
+public/images/*.mp4
+
+# ── Poster / local docs ───────────────────────────────────────────
+*.pptx
+/tmp/
+
+# ── Logs ─────────────────────────────────────────────────────────
+*.log

@@ -1,0 +1,11 @@
+Instructions to Run CFB Website:
+1.Open my-react-app
+2. Enter npm start into terminal 
+3. Open XGBOost.py
+4. Uncomment the Data Fetch/Model Train code
+5. Open Terminal
+6. Run export FETCH_DATA=true
+ export TRAIN_MODEL=true
+ python XGBOost.py
+9. Comment out step 4
+10. Rerun the python XGBOost.py

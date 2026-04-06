@@ -1,0 +1,66 @@
+.how-it-works {
+  padding: 4rem 1.5rem;
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.08) 0%, rgba(15, 23, 42, 0.95) 80%);
+}
+
+.how-it-works__inner {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.how-it-works__eyebrow {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.how-it-works h2 {
+  color: var(--text-light);
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
+}
+
+.how-it-works__intro {
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  max-width: 720px;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.how-it-works__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.how-it-works__card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 14px;
+  padding: 1.2rem;
+}
+
+.how-it-works__card h3 {
+  font-size: 1.05rem;
+  color: var(--text-light);
+  margin-bottom: 0.6rem;
+}
+
+.how-it-works__card p {
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .how-it-works__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .how-it-works h2 {
+    font-size: 1.8rem;
+  }
+}
