@@ -245,30 +245,47 @@ label_encoders = None
 success_model = None
 
 SEED_PLAYERS = [
-    {"name": "Patrick Mahomes", "position": "QB", "team": "Kansas City Chiefs", "jersey": 15},
-    {"name": "Josh Allen", "position": "QB", "team": "Buffalo Bills", "jersey": 17},
-    {"name": "Joe Burrow", "position": "QB", "team": "Cincinnati Bengals", "jersey": 9},
-    {"name": "Lamar Jackson", "position": "QB", "team": "Baltimore Ravens", "jersey": 8},
-    {"name": "C.J. Stroud", "position": "QB", "team": "Houston Texans", "jersey": 7},
-    {"name": "Jalen Hurts", "position": "QB", "team": "Philadelphia Eagles", "jersey": 1},
-    {"name": "Brock Purdy", "position": "QB", "team": "San Francisco 49ers", "jersey": 13},
-    {"name": "Saquon Barkley", "position": "RB", "team": "Philadelphia Eagles", "jersey": 26},
-    {"name": "Christian McCaffrey", "position": "RB", "team": "San Francisco 49ers", "jersey": 23},
-    {"name": "Bijan Robinson", "position": "RB", "team": "Atlanta Falcons", "jersey": 7},
-    {"name": "Jahmyr Gibbs", "position": "RB", "team": "Detroit Lions", "jersey": 26},
-    {"name": "Derrick Henry", "position": "RB", "team": "Baltimore Ravens", "jersey": 22},
-    {"name": "Justin Jefferson", "position": "WR", "team": "Minnesota Vikings", "jersey": 18},
-    {"name": "Tyreek Hill", "position": "WR", "team": "Miami Dolphins", "jersey": 10},
-    {"name": "CeeDee Lamb", "position": "WR", "team": "Dallas Cowboys", "jersey": 88},
-    {"name": "Amon-Ra St. Brown", "position": "WR", "team": "Detroit Lions", "jersey": 14},
-    {"name": "Puka Nacua", "position": "WR", "team": "Los Angeles Rams", "jersey": 17},
-    {"name": "Ja'Marr Chase", "position": "WR", "team": "Cincinnati Bengals", "jersey": 1},
-    {"name": "A.J. Brown", "position": "WR", "team": "Philadelphia Eagles", "jersey": 11},
-    {"name": "Davante Adams", "position": "WR", "team": "Las Vegas Raiders", "jersey": 17},
-    {"name": "Travis Kelce", "position": "TE", "team": "Kansas City Chiefs", "jersey": 87},
-    {"name": "Sam LaPorta", "position": "TE", "team": "Detroit Lions", "jersey": 87},
-    {"name": "George Kittle", "position": "TE", "team": "San Francisco 49ers", "jersey": 85},
-    {"name": "Mark Andrews", "position": "TE", "team": "Baltimore Ravens", "jersey": 89},
+    # ── Active NFL stars (for demo / search) ────────────────────────────────
+    {"name": "Patrick Mahomes",    "position": "QB", "team": "Kansas City Chiefs",       "jersey": 15},
+    {"name": "Josh Allen",         "position": "QB", "team": "Buffalo Bills",             "jersey": 17},
+    {"name": "Joe Burrow",         "position": "QB", "team": "Cincinnati Bengals",        "jersey": 9},
+    {"name": "Lamar Jackson",      "position": "QB", "team": "Baltimore Ravens",          "jersey": 8},
+    {"name": "C.J. Stroud",        "position": "QB", "team": "Houston Texans",            "jersey": 7},
+    {"name": "Jalen Hurts",        "position": "QB", "team": "Philadelphia Eagles",       "jersey": 1},
+    {"name": "Brock Purdy",        "position": "QB", "team": "San Francisco 49ers",       "jersey": 13},
+    {"name": "Saquon Barkley",     "position": "RB", "team": "Philadelphia Eagles",       "jersey": 26},
+    {"name": "Christian McCaffrey","position": "RB", "team": "San Francisco 49ers",       "jersey": 23},
+    {"name": "Bijan Robinson",     "position": "RB", "team": "Atlanta Falcons",           "jersey": 7},
+    {"name": "Jahmyr Gibbs",       "position": "RB", "team": "Detroit Lions",             "jersey": 26},
+    {"name": "Derrick Henry",      "position": "RB", "team": "Baltimore Ravens",          "jersey": 22},
+    {"name": "Justin Jefferson",   "position": "WR", "team": "Minnesota Vikings",         "jersey": 18},
+    {"name": "Tyreek Hill",        "position": "WR", "team": "Miami Dolphins",            "jersey": 10},
+    {"name": "CeeDee Lamb",        "position": "WR", "team": "Dallas Cowboys",            "jersey": 88},
+    {"name": "Amon-Ra St. Brown",  "position": "WR", "team": "Detroit Lions",             "jersey": 14},
+    {"name": "Puka Nacua",         "position": "WR", "team": "Los Angeles Rams",          "jersey": 17},
+    {"name": "Ja'Marr Chase",      "position": "WR", "team": "Cincinnati Bengals",        "jersey": 1},
+    {"name": "A.J. Brown",         "position": "WR", "team": "Philadelphia Eagles",       "jersey": 11},
+    {"name": "Davante Adams",      "position": "WR", "team": "Las Vegas Raiders",         "jersey": 17},
+    {"name": "Travis Kelce",       "position": "TE", "team": "Kansas City Chiefs",        "jersey": 87},
+    {"name": "Sam LaPorta",        "position": "TE", "team": "Detroit Lions",             "jersey": 87},
+    {"name": "George Kittle",      "position": "TE", "team": "San Francisco 49ers",       "jersey": 85},
+    {"name": "Mark Andrews",       "position": "TE", "team": "Baltimore Ravens",          "jersey": 89},
+    # ── 2025 NFL Draft top prospects ────────────────────────────────────────
+    {"name": "Cam Ward",           "position": "QB", "team": "Miami Hurricanes",          "jersey": 1,  "espn_id": "4432865"},
+    {"name": "Shedeur Sanders",    "position": "QB", "team": "Colorado Buffaloes",        "jersey": 2},
+    {"name": "Dillon Gabriel",     "position": "QB", "team": "Oregon Ducks",              "jersey": 8,  "espn_id": "4360939"},
+    {"name": "Travis Hunter",      "position": "WR", "team": "Colorado Buffaloes",        "jersey": 12},
+    {"name": "Tetairoa McMillan",  "position": "WR", "team": "Arizona Wildcats",          "jersey": 4,  "espn_id": "4685751"},
+    {"name": "Emeka Egbuka",       "position": "WR", "team": "Ohio State Buckeyes",       "jersey": 2,  "espn_id": "4567048"},
+    {"name": "Luther Burden",      "position": "WR", "team": "Missouri Tigers",           "jersey": 3,  "espn_id": "4685299"},
+    {"name": "Ashton Jeanty",      "position": "RB", "team": "Boise State Broncos",       "jersey": 2,  "espn_id": "4685865"},
+    {"name": "Omarion Hampton",    "position": "RB", "team": "North Carolina Tar Heels",  "jersey": 8,  "espn_id": "4432751"},
+    {"name": "RJ Harvey",          "position": "RB", "team": "UCF Knights",               "jersey": 20, "espn_id": "4685928"},
+    {"name": "Kaleb Johnson",      "position": "RB", "team": "Iowa Hawkeyes",             "jersey": 2,  "espn_id": "4685898"},
+    {"name": "Tyler Warren",       "position": "TE", "team": "Penn State Nittany Lions",  "jersey": 44, "espn_id": "4686066"},
+    {"name": "Grey Zinter",        "position": "TE", "team": "Michigan Wolverines",       "jersey": 86, "espn_id": "4686100"},
+    {"name": "Arch Manning",       "position": "QB", "team": "Texas Longhorns",           "jersey": 16, "espn_id": "4870906"},
+    {"name": "Dante Moore",        "position": "QB", "team": "Oregon Ducks",              "jersey": 2,  "espn_id": "4870921"},
 ]
 
 
@@ -386,19 +403,25 @@ def initialize_player_database() -> None:
                     jersey = int(jersey_str or 0)
                 except ValueError:
                     jersey = 0
-                staged.append((name, item.get("position", "Unknown"), item.get("team", "Unknown"), jersey, "csv_seed"))
+                staged.append((name, item.get("position", "Unknown"), item.get("team", "Unknown"), jersey, "csv_seed", None))
         else:
-            staged = [(p["name"], p["position"], p["team"], p["jersey"], "nfl_seed") for p in SEED_PLAYERS]
+            staged = [
+                (p["name"], p["position"], p["team"], p["jersey"],
+                 "nfl_draft_2025" if p.get("espn_id") else "nfl_seed",
+                 p.get("espn_id"))
+                for p in SEED_PLAYERS
+            ]
 
         if USE_POSTGRES:
             cursor.executemany(
-                "INSERT INTO players (name, position, team, jersey, source) "
-                "VALUES (%s, %s, %s, %s, %s) ON CONFLICT (name) DO NOTHING",
+                "INSERT INTO players (name, position, team, jersey, source, espn_id) "
+                "VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT (name) DO NOTHING",
                 staged,
             )
         else:
             cursor.executemany(
-                "INSERT OR IGNORE INTO players (name, position, team, jersey, source) VALUES (?, ?, ?, ?, ?)",
+                "INSERT OR IGNORE INTO players (name, position, team, jersey, source, espn_id) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
                 staged,
             )
         print(f"Initialized player database with {len(staged)} records.")
@@ -1509,7 +1532,12 @@ def predict():
     if not player_data:
         return jsonify({"error": "Unable to resolve player data."}), 404
 
-    predicted_position = predict_position_with_model(player_data) or str(player_data.get("position", "Unknown") or "Unknown")
+    # Use the position already resolved from ESPN/DB; the legacy position model
+    # was trained on old NFL data and reliably returns None for current players.
+    _raw_pos = str(player_data.get("position") or "").strip().upper()
+    predicted_position = _raw_pos if _raw_pos and _raw_pos not in {"UNKNOWN", "UNK", ""} else (
+        predict_position_with_model(player_data) or "Unknown"
+    )
 
     success_label, confidence, success_probability, model_used = predict_success_with_model(player_data)
 
