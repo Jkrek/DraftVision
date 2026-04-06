@@ -31,6 +31,8 @@ public/images/*.mp4
 # ── Poster / local docs ───────────────────────────────────────────
 *.pptx
 *.key
+make_poster*.py
+DraftVision_Poster*.py
 CS5002 -2025 Expo Posters/
 /tmp/
 
