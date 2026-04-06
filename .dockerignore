@@ -1,0 +1,25 @@
+node_modules/
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.git/
+.gitignore
+build/
+*.pptx
+*.key
+*.mov
+*.mp4
+players.db
+.env
+*.env.local
+.DS_Store
+Thumbs.db
+*.log
+CS5002 -2025 Expo Posters/
+DEPLOY.md
+README.md
+Procfile
+railway.toml
+nixpacks.toml
