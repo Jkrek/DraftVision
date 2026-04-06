@@ -286,6 +286,26 @@ SEED_PLAYERS = [
     {"name": "Grey Zinter",        "position": "TE", "team": "Michigan Wolverines",       "jersey": 86, "espn_id": "4686100"},
     {"name": "Arch Manning",       "position": "QB", "team": "Texas Longhorns",           "jersey": 16, "espn_id": "4870906"},
     {"name": "Dante Moore",        "position": "QB", "team": "Oregon Ducks",              "jersey": 2,  "espn_id": "4870921"},
+    # ── 2026 Freshmen (2025 recruiting class) ────────────────────────────────
+    {"name": "Bryce Underwood",    "position": "QB", "team": "Michigan Wolverines",       "jersey": 10},
+    {"name": "Jared Curtis",       "position": "QB", "team": "Ohio State Buckeyes",       "jersey": 10},
+    {"name": "Husan Longstreet",   "position": "QB", "team": "Georgia Bulldogs",          "jersey": 10},
+    {"name": "Jake Merklinger",    "position": "QB", "team": "Alabama Crimson Tide",      "jersey": 10},
+    {"name": "Julian Lewis",       "position": "QB", "team": "USC Trojans",               "jersey": 10},
+    {"name": "Ty Haywood",         "position": "RB", "team": "Alabama Crimson Tide",      "jersey": 2},
+    {"name": "Jordon Davison",     "position": "RB", "team": "Georgia Bulldogs",          "jersey": 4},
+    {"name": "Harlem Berry",       "position": "RB", "team": "Tennessee Volunteers",      "jersey": 3},
+    {"name": "Elijah Rushing",     "position": "RB", "team": "Oregon Ducks",              "jersey": 5},
+    {"name": "Savion Hiter",       "position": "RB", "team": "Texas Longhorns",           "jersey": 3},
+    {"name": "Dakorien Moore",     "position": "WR", "team": "Oregon Ducks",              "jersey": 1},
+    {"name": "Nate Marshall",      "position": "WR", "team": "Georgia Bulldogs",          "jersey": 5},
+    {"name": "Vernell Brown",      "position": "WR", "team": "Florida State Seminoles",   "jersey": 1},
+    {"name": "KD Traylor",         "position": "WR", "team": "LSU Tigers",                "jersey": 5},
+    {"name": "Jordan Smith",       "position": "WR", "team": "Alabama Crimson Tide",      "jersey": 4},
+    {"name": "Micah Tease",        "position": "WR", "team": "Oklahoma Sooners",          "jersey": 2},
+    {"name": "Eli Raridon",        "position": "TE", "team": "Notre Dame Fighting Irish", "jersey": 82},
+    {"name": "George MacIntyre",   "position": "TE", "team": "Vanderbilt Commodores",     "jersey": 80},
+    {"name": "Landen Thomas",      "position": "TE", "team": "Georgia Bulldogs",          "jersey": 88},
 ]
 
 
