@@ -1,0 +1,34 @@
+app = "draftvision"
+primary_region = "iad"   # US East — closest to Cincinnati
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 200
+    soft_limit = 150
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[env]
+  FLASK_ENV = "production"
+  AUTO_SYNC_COLLEGE_PROSPECTS = "false"
+
+[[services.ports]]
+  handlers = ["http"]
+  port = 80
+
+[[services.ports]]
+  handlers = ["tls", "http"]
+  port = 443
