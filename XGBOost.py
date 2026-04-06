@@ -1347,6 +1347,11 @@ def serve_react(path=""):
 
 
 # ── Combined init endpoint (replaces 3 separate fetches on page load) ─────────
+SKILL_POSITIONS = {"QB", "RB", "WR", "TE"}
+
+# Sources that appear in the browseable prospect list
+PROSPECT_SOURCES = ("college_prospect", "nfl_draft_2025", "freshman_2026")
+
 @app.get("/init")
 def init_data():
     cached = cache_get("init")
@@ -1355,24 +1360,40 @@ def init_data():
 
     conn = _get_conn()
     cursor = conn.cursor()
+    ph = _placeholder()
 
+    # All prospect sources, skill positions first, then alphabetical
+    source_placeholders = ", ".join([ph] * len(PROSPECT_SOURCES))
     cursor.execute(
-        "SELECT name, position, team, jersey, source FROM players "
-        "WHERE source = 'college_prospect' ORDER BY name ASC LIMIT 1000"
+        f"""
+        SELECT name, position, team, jersey, source FROM players
+        WHERE source IN ({source_placeholders})
+          AND upper(position) != 'UNK'
+        ORDER BY
+          CASE WHEN upper(position) IN ('QB','RB','WR','TE') THEN 0 ELSE 1 END ASC,
+          source ASC,
+          name ASC
+        LIMIT 2000
+        """,
+        PROSPECT_SOURCES,
     )
     players = _rows_as_dicts(cursor)
 
+    # Teams from all prospect sources
     cursor.execute(
-        "SELECT DISTINCT team FROM players WHERE source = 'college_prospect' "
-        "AND team != 'Unknown' ORDER BY team ASC"
+        f"""
+        SELECT DISTINCT team FROM players
+        WHERE source IN ({source_placeholders})
+          AND team != 'Unknown'
+        ORDER BY team ASC
+        """,
+        PROSPECT_SOURCES,
     )
     teams = [r[0] for r in cursor.fetchall()]
 
-    cursor.execute(
-        "SELECT DISTINCT upper(position) FROM players WHERE source = 'college_prospect' "
-        "AND position != 'UNK' ORDER BY position ASC"
-    )
-    positions = [r[0] for r in cursor.fetchall()]
+    # Only skill positions for filter (cleaner UI)
+    positions = ["QB", "RB", "WR", "TE"]
+
     conn.close()
 
     payload = {"players": players, "teams": teams, "positions": positions}

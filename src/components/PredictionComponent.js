@@ -27,9 +27,17 @@ const inputStyle = {
   fontSize: '14px', outline: 'none', width: '100%', boxSizing: 'border-box',
 };
 
+// ── Source badge label ─────────────────────────────────────────────────────
+function sourceBadge(source) {
+  if (source === 'nfl_draft_2025') return { label: '2025 Draft', color: '#f59e0b' };
+  if (source === 'freshman_2026')  return { label: 'Fr. 2026',   color: '#a78bfa' };
+  return null;
+}
+
 // ── Memoized prospect card ─────────────────────────────────────────────────
 const ProspectCard = memo(function ProspectCard({ player, isActive, isPredicting, onSelect }) {
   const pc = posColor(player.position);
+  const badge = sourceBadge(player.source);
   return (
     <div
       onClick={onSelect}
@@ -50,10 +58,19 @@ const ProspectCard = memo(function ProspectCard({ player, isActive, isPredicting
         {player.position || '?'}
       </div>
       <div style={{ overflow: 'hidden', flex: 1 }}>
-        <p style={{ color: '#e2e8f0', fontWeight: 600, fontSize: '0.85rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {player.name}
-          {isPredicting && isActive && <span style={{ color: '#3b82f6', marginLeft: 6 }}>…</span>}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <p style={{ color: '#e2e8f0', fontWeight: 600, fontSize: '0.85rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {player.name}
+            {isPredicting && isActive && <span style={{ color: '#3b82f6', marginLeft: 6 }}>…</span>}
+          </p>
+          {badge && (
+            <span style={{
+              fontSize: '9px', fontWeight: 700, color: badge.color,
+              border: `1px solid ${badge.color}`, borderRadius: '4px',
+              padding: '1px 4px', whiteSpace: 'nowrap', flexShrink: 0,
+            }}>{badge.label}</span>
+          )}
+        </div>
         <p style={{ color: '#64748b', fontSize: '0.72rem', margin: '2px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {player.team || 'Unknown'}
         </p>
@@ -83,7 +100,6 @@ export default function PredictionComponent() {
   // data
   const [allPlayers, setAllPlayers]   = useState([]);
   const [teams, setTeams]             = useState([]);
-  const [positions, setPositions]     = useState([]);
   const [loadingPlayers, setLoadingPlayers] = useState(true);
 
   // prediction
@@ -106,7 +122,6 @@ export default function PredictionComponent() {
       const data = await res.json();
       setAllPlayers(Array.isArray(data.players) ? data.players : []);
       setTeams(Array.isArray(data.teams) ? data.teams : []);
-      setPositions(Array.isArray(data.positions) ? data.positions : []);
     } catch { setAllPlayers([]); }
     finally { setLoadingPlayers(false); }
   }, []);
@@ -225,7 +240,9 @@ export default function PredictionComponent() {
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ color: '#f1f5f9', fontSize: '2rem', fontWeight: 800, margin: 0 }}>Prospect Predictor</h1>
           <p style={{ color: '#64748b', marginTop: '0.4rem', fontSize: '0.95rem' }}>
-            {allPlayers.length > 0 ? `${allPlayers.length} college prospects loaded` : 'Loading…'}
+            {allPlayers.length > 0
+              ? `${allPlayers.length.toLocaleString()} prospects — college, 2025 draft class & 2026 freshmen`
+              : 'Loading…'}
           </p>
         </div>
 
@@ -235,7 +252,7 @@ export default function PredictionComponent() {
             type="text"
             value={acQuery}
             onChange={handleAcChange}
-            placeholder="🔍  Search any player — Mahomes, Arch Manning, Shedeur Sanders…"
+            placeholder="🔍  Search — Arch Manning, Cam Ward, Bryce Underwood…"
             style={{
               ...inputStyle,
               padding: '13px 18px', fontSize: '15px', borderRadius: '10px',
@@ -320,9 +337,9 @@ export default function PredictionComponent() {
                 {teams.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
 
-              {/* Position tabs */}
+              {/* Position tabs — skill positions only */}
               <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                {['ALL', ...SKILL_POSITIONS, ...positions.filter(p => !SKILL_POSITIONS.includes(p))].map(pos => (
+                {['ALL', ...SKILL_POSITIONS].map(pos => (
                   <button key={pos} onClick={() => handlePosFilter(pos)} style={tabStyle(posFilter === pos, pos)}>
                     {pos}
                   </button>
