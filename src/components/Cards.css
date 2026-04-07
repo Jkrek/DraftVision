@@ -1,5 +1,5 @@
 .cards {
-  padding: 4rem;
+  padding: 4rem 2rem 5rem;
   background: var(--background-dark);
 }
 
@@ -29,8 +29,8 @@ h1 {
   color: var(--text-light);
   margin-bottom: 2rem;
   font-size: 2.5rem;
-  font-weight: 700;
-  text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .cards__container {
@@ -99,15 +99,17 @@ h1 {
   content: attr(data-category);
   position: absolute;
   bottom: 0;
-  margin-left: 10px;
-  padding: 6px 8px;
+  margin-left: 12px;
+  padding: 5px 12px;
   max-width: calc((100%) - 60px);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: #fff;
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, #6366f1, #a855f7);
   box-sizing: border-box;
-  border-radius: 4px 4px 0 0;
+  border-radius: 6px 6px 0 0;
 }
 
 .cards__item__img {
@@ -134,9 +136,10 @@ h1 {
 }
 
 .cards__item__text {
-  color: var(--text-dim);
-  font-size: 18px;
-  line-height: 24px;
+  color: var(--text-mid);
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 400;
 }
 
 @media only screen and (min-width: 1200px) {

@@ -5,124 +5,113 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.2);
   object-fit: contain;
   position: relative;
   z-index: 1;
+  overflow: hidden;
 }
 
 .hero-background-image {
   width: 100%;
   height: 100%;
   position: fixed;
-  z-index: -1;
+  z-index: -2;
   top: 0;
   left: 0;
   background-size: cover;
   background-position: center;
+  filter: brightness(0.45);
 }
 
+/* Dark gradient overlay for readability */
 .hero-container::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+  inset: 0;
+  background: linear-gradient(
+    170deg,
+    rgba(8, 15, 30, 0.55) 0%,
+    rgba(8, 15, 30, 0.72) 60%,
+    rgba(8, 15, 30, 0.92) 100%
+  );
   z-index: -1;
 }
 
-.hero-container>h1 {
-  color: var(--text-light);
-  font-size: 100px;
-  margin-top: -100px;
-  font-weight: 800;
+/* Subtle animated glow blob behind title */
+.hero-container::after {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 300px;
+  background: radial-gradient(ellipse at center, rgba(99,102,241,0.18) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.hero-container > h1 {
+  font-size: 108px;
+  font-weight: 900;
+  letter-spacing: -2px;
   text-align: center;
-  text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
-  animation: fadeInDown 1s ease-out;
-  background: linear-gradient(to right, var(--primary-color), var(--secondary-color), var(--accent-color));
+  margin-bottom: 0;
+  line-height: 1;
+  background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  animation: fadeInDown 0.9s ease-out;
+  filter: drop-shadow(0 0 40px rgba(139, 92, 246, 0.35));
 }
 
-.hero-container>p {
-  margin-top: 8px;
+.hero-container > p {
+  margin-top: 16px;
   color: var(--text-light);
-  font-size: 32px;
+  font-size: 1.35rem;
   font-family: 'Outfit', sans-serif;
-  font-weight: 300;
+  font-weight: 400;
   text-align: center;
-  animation: fadeInUp 1s ease-out 0.5s backwards;
+  letter-spacing: 0.01em;
+  animation: fadeInUp 0.9s ease-out 0.4s backwards;
 }
 
-.hero-container>p.subtitle {
-  font-size: 24px;
-  color: var(--text-dim);
-  margin-top: 4px;
+.hero-container > p.subtitle {
+  font-size: 1rem;
+  color: var(--text-mid);
+  margin-top: 6px;
+  letter-spacing: 0.03em;
 }
 
 .hero-btns {
-  margin-top: 32px;
-  animation: fadeInUp 1s ease-out 1s backwards;
-}
-
-.hero-btns .btn {
-  margin: 6px;
+  margin-top: 36px;
+  display: flex;
+  gap: 12px;
+  animation: fadeInUp 0.9s ease-out 0.8s backwards;
 }
 
 .fa-play-circle {
-  margin-left: 4px;
+  margin-left: 6px;
 }
 
 @keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-50px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-40px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(50px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @media screen and (max-width: 960px) {
-  .hero-container>h1 {
-    font-size: 70px;
-    margin-top: -150px;
-  }
+  .hero-container > h1 { font-size: 72px; letter-spacing: -1px; }
 }
 
 @media screen and (max-width: 768px) {
-  .hero-container>h1 {
-    font-size: 50px;
-    margin-top: -100px;
-  }
-
-  .hero-container>p {
-    font-size: 24px;
-  }
-
-  .btn-mobile {
-    display: block;
-    text-decoration: none;
-  }
-
-  .btn {
-    width: 100%;
-  }
+  .hero-container > h1 { font-size: 52px; }
+  .hero-container > p  { font-size: 1.1rem; }
+  .hero-container > p.subtitle { font-size: 0.88rem; }
+  .hero-btns { flex-direction: column; align-items: center; }
 }

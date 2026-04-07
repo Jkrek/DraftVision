@@ -2,19 +2,22 @@
   --primary-color: #6366f1;
   --secondary-color: #a855f7;
   --accent-color: #ec4899;
-  --background-dark: #0f172a;
-  --text-light: #f8fafc;
+  --background-dark: #080f1e;
+  --text-light: #f1f5f9;
+  --text-mid: #cbd5e1;
   --text-dim: #94a3b8;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-bg-hover: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  --gradient-brand: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Outfit', 'Inter', sans-serif;
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
 }
 
 body {
