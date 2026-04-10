@@ -1368,12 +1368,12 @@ def init_data():
         f"""
         SELECT name, position, team, jersey, source FROM players
         WHERE source IN ({source_placeholders})
-          AND upper(position) != 'UNK'
+          AND upper(position) NOT IN ('UNK', 'UNKNOWN', '')
         ORDER BY
           CASE WHEN upper(position) IN ('QB','RB','WR','TE') THEN 0 ELSE 1 END ASC,
           source ASC,
           name ASC
-        LIMIT 2000
+        LIMIT 6000
         """,
         PROSPECT_SOURCES,
     )
@@ -1391,8 +1391,17 @@ def init_data():
     )
     teams = [r[0] for r in cursor.fetchall()]
 
-    # Only skill positions for filter (cleaner UI)
-    positions = ["QB", "RB", "WR", "TE"]
+    # All positions present in DB
+    cursor.execute(
+        f"""
+        SELECT DISTINCT upper(position) FROM players
+        WHERE source IN ({source_placeholders})
+          AND upper(position) NOT IN ('UNK', 'UNKNOWN', '')
+        ORDER BY upper(position)
+        """,
+        PROSPECT_SOURCES,
+    )
+    positions = [r[0] for r in cursor.fetchall()]
 
     conn.close()
 

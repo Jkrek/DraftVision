@@ -5,10 +5,12 @@ import '../App.css';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const PAGE_SIZE = 60;
-const SKILL_POSITIONS = ['QB', 'RB', 'WR', 'TE'];
+const ALL_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'S', 'CB', 'LB', 'DL', 'OL', 'K', 'P'];
 const POSITION_COLORS = {
   QB: '#3b82f6', RB: '#22c55e', WR: '#f59e0b',
-  TE: '#a78bfa', default: '#94a3b8',
+  TE: '#a78bfa', S: '#f43f5e', CB: '#f43f5e',
+  LB: '#fb923c', DL: '#ef4444', OL: '#64748b',
+  K: '#94a3b8', P: '#94a3b8', default: '#94a3b8',
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -337,9 +339,9 @@ export default function PredictionComponent() {
                 {teams.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
 
-              {/* Position tabs — skill positions only */}
+              {/* Position tabs */}
               <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                {['ALL', ...SKILL_POSITIONS].map(pos => (
+                {['ALL', ...ALL_POSITIONS].map(pos => (
                   <button key={pos} onClick={() => handlePosFilter(pos)} style={tabStyle(posFilter === pos, pos)}>
                     {pos}
                   </button>
