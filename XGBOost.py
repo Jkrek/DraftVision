@@ -36,18 +36,30 @@ STATS_CACHE_TTL = 3600  # cache real stats for 1 hour
 
 SUCCESS_FEATURES = [
     "games_played",
+    # Offensive stats
     "passing_touchdowns",
     "passing_yards",
     "rushing_touchdowns",
     "rushing_yards",
+    # Defensive stats
+    "tackles",
+    "sacks",
+    "interceptions",
+    "pass_deflections",
+    # Meta features
     "draft_round",          # 1–7 = draft rounds; 8 = undrafted (biggest real-world predictor)
     "combine_speed_score",  # 0–100 position-normalized athleticism proxy
     "college_tier",         # 1 = Power 5, 2 = Group of 5, 3 = FCS/other
     "production_score",     # composite normalized production (0–100)
+    # Position flags
     "position_qb",
     "position_rb",
     "position_wr",
     "position_te",
+    "position_db",    # CB, S, FS, SS
+    "position_lb",    # LB, ILB, OLB, MLB
+    "position_dl",    # DL, DE, DT, EDGE
+    "position_ol",    # OL, OT, OG, C
     "position_other",
 ]
 
@@ -128,13 +140,16 @@ def compute_production_score(position: str, stats: dict) -> float:
     """Compute a 0–100 composite production score normalized per position."""
     p = (position or "").upper()
     games = max(float(stats.get("games_played", 1) or 1), 1)
-    pass_td = float(stats.get("passing_touchdowns", 0) or 0)
+    pass_td  = float(stats.get("passing_touchdowns", 0) or 0)
     pass_yds = float(stats.get("passing_yards", 0) or 0)
-    rush_td = float(stats.get("rushing_touchdowns", 0) or 0)
+    rush_td  = float(stats.get("rushing_touchdowns", 0) or 0)
     rush_yds = float(stats.get("rushing_yards", 0) or 0)
+    tackles  = float(stats.get("tackles", 0) or 0)
+    sacks    = float(stats.get("sacks", 0) or 0)
+    ints     = float(stats.get("interceptions", 0) or 0)
+    pds      = float(stats.get("pass_deflections", 0) or 0)
 
     if p == "QB":
-        # Normalize to ~35 TD / 4500 yd season pace
         td_rate = (pass_td / games) / (35 / 15)
         yd_rate = (pass_yds / games) / (4500 / 15)
         score = (td_rate * 0.5 + yd_rate * 0.5) * 100
@@ -142,8 +157,32 @@ def compute_production_score(position: str, stats: dict) -> float:
         td_rate = (rush_td / games) / (14 / 15)
         yd_rate = (rush_yds / games) / (1500 / 15)
         score = (td_rate * 0.45 + yd_rate * 0.55) * 100
+    elif p in {"WR", "TE"}:
+        combined_td  = (pass_td + rush_td) / games / (12 / 15)
+        combined_yds = (pass_yds + rush_yds) / games / (1200 / 15)
+        score = (combined_td * 0.4 + combined_yds * 0.6) * 100
+    elif p in {"LB", "ILB", "OLB", "MLB"}:
+        # ~100 tackles, ~8 sacks, ~3 INTs per elite LB season
+        t_rate = (tackles / games) / (100 / 13)
+        s_rate = (sacks / games) / (8 / 13)
+        i_rate = (ints / games) / (3 / 13)
+        score = (t_rate * 0.55 + s_rate * 0.30 + i_rate * 0.15) * 100
+    elif p in {"CB", "S", "DB", "FS", "SS"}:
+        # ~55 tackles, ~4 INTs, ~12 PDs per elite DB season
+        t_rate = (tackles / games) / (55 / 13)
+        i_rate = (ints / games) / (4 / 13)
+        p_rate = (pds / games) / (12 / 13)
+        score = (t_rate * 0.25 + i_rate * 0.40 + p_rate * 0.35) * 100
+    elif p in {"DL", "DE", "DT", "NT", "EDGE"}:
+        # ~45 tackles, ~10 sacks per elite DL season
+        t_rate = (tackles / games) / (45 / 13)
+        s_rate = (sacks / games) / (10 / 13)
+        score = (t_rate * 0.35 + s_rate * 0.65) * 100
+    elif p in {"OL", "OT", "OG", "C"}:
+        # OL: no counting stats — use games played as proxy for durability
+        score = min(games / 13.0, 1.0) * 60.0
     else:
-        combined_td = (pass_td + rush_td) / games / (12 / 15)
+        combined_td  = (pass_td + rush_td) / games / (12 / 15)
         combined_yds = (pass_yds + rush_yds) / games / (1200 / 15)
         score = (combined_td * 0.4 + combined_yds * 0.6) * 100
 
@@ -668,30 +707,28 @@ def sync_college_prospects(max_teams: int = 250, max_players: int = 4000) -> Dic
 
 
 def baseline_stats(name: str, position: str, team: str, jersey: int = 0) -> Dict[str, object]:
+    p = (position or "").upper()
     defaults = {
         "games_played": 12,
-        "passing_touchdowns": 0,
-        "passing_yards": 0,
-        "rushing_touchdowns": 0,
-        "rushing_yards": 0,
+        "passing_touchdowns": 0, "passing_yards": 0,
+        "rushing_touchdowns": 0, "rushing_yards": 0,
+        "tackles": 0, "sacks": 0.0, "interceptions": 0, "pass_deflections": 0,
     }
 
-    position_upper = position.upper()
-
-    if position_upper == "QB":
+    if p == "QB":
         defaults.update({"passing_touchdowns": 24, "passing_yards": 3400})
-    elif position_upper == "RB":
+    elif p == "RB":
         defaults.update({"rushing_touchdowns": 9, "rushing_yards": 980})
-    elif position_upper in {"WR", "TE"}:
+    elif p in {"WR", "TE"}:
         defaults.update({"rushing_touchdowns": 2, "rushing_yards": 240})
+    elif p in {"LB", "ILB", "OLB", "MLB"}:
+        defaults.update({"tackles": 80, "sacks": 4.0, "interceptions": 1, "pass_deflections": 4})
+    elif p in {"CB", "S", "DB", "FS", "SS"}:
+        defaults.update({"tackles": 55, "sacks": 0.5, "interceptions": 3, "pass_deflections": 9})
+    elif p in {"DL", "DE", "DT", "NT", "EDGE"}:
+        defaults.update({"tackles": 45, "sacks": 6.5, "pass_deflections": 2})
 
-    return {
-        "name": name,
-        "position": position,
-        "team": team,
-        "jersey": jersey,
-        **defaults,
-    }
+    return {"name": name, "position": position, "team": team, "jersey": jersey, **defaults}
 
 
 def stable_int(value: str) -> int:
@@ -724,11 +761,35 @@ def generate_estimated_profile(name: str, position: str, team: str, jersey: int 
         passing_yards = scaled(0, 240, 13)
         rushing_touchdowns = scaled(2, 14, 17)
         rushing_yards = scaled(350, 1650, 31)
-    elif p in {"LB", "CB", "S", "DL", "DE", "DT", "EDGE"}:
-        passing_touchdowns = 0
-        passing_yards = 0
-        rushing_touchdowns = scaled(0, 2, 3)
-        rushing_yards = scaled(0, 180, 9)
+    # Defensive stat defaults
+    tackles = 0
+    sacks = 0.0
+    interceptions = 0
+    pass_deflections = 0
+
+    if p in {"LB", "ILB", "OLB", "MLB"}:
+        passing_touchdowns = 0; passing_yards = 0
+        rushing_touchdowns = 0; rushing_yards = 0
+        tackles = scaled(30, 130, 3)
+        sacks = round(scaled(0, 12, 7) * 0.5, 1)
+        interceptions = scaled(0, 5, 11)
+        pass_deflections = scaled(0, 12, 17)
+    elif p in {"CB", "S", "DB", "FS", "SS"}:
+        passing_touchdowns = 0; passing_yards = 0
+        rushing_touchdowns = 0; rushing_yards = 0
+        tackles = scaled(25, 90, 5)
+        sacks = round(scaled(0, 2, 9) * 0.5, 1)
+        interceptions = scaled(0, 7, 13)
+        pass_deflections = scaled(1, 20, 19)
+    elif p in {"DL", "DE", "DT", "NT", "EDGE"}:
+        passing_touchdowns = 0; passing_yards = 0
+        rushing_touchdowns = 0; rushing_yards = 0
+        tackles = scaled(20, 80, 5)
+        sacks = round(scaled(0, 16, 11) * 0.5, 1)
+        pass_deflections = scaled(0, 6, 17)
+    elif p in {"OL", "OT", "OG", "C"}:
+        passing_touchdowns = 0; passing_yards = 0
+        rushing_touchdowns = 0; rushing_yards = 0
     else:
         passing_touchdowns = scaled(0, 4, 3)
         passing_yards = scaled(0, 260, 13)
@@ -738,15 +799,14 @@ def generate_estimated_profile(name: str, position: str, team: str, jersey: int 
     # Derive the new features deterministically from the same seed
     college_tier = classify_college_tier(team)
     combine_speed = combine_speed_for_position(p, seed)
-    # Draft round: better stats + athleticism → earlier round
     production_raw = compute_production_score(p, {
         "games_played": games, "passing_touchdowns": passing_touchdowns,
         "passing_yards": passing_yards, "rushing_touchdowns": rushing_touchdowns,
-        "rushing_yards": rushing_yards,
+        "rushing_yards": rushing_yards, "tackles": tackles, "sacks": sacks,
+        "interceptions": interceptions, "pass_deflections": pass_deflections,
     })
-    # Map production + speed to a draft round (1–8 where 8 = undrafted)
     composite = (production_raw * 0.6 + combine_speed * 0.4) / 100.0
-    raw_round = 8 - int(composite * 7)  # 100% composite → round 1; 0% → round 8
+    raw_round = 8 - int(composite * 7)
     draft_round = max(1, min(8, raw_round))
 
     return {
@@ -759,6 +819,10 @@ def generate_estimated_profile(name: str, position: str, team: str, jersey: int 
         "passing_yards": passing_yards,
         "rushing_touchdowns": rushing_touchdowns,
         "rushing_yards": rushing_yards,
+        "tackles": tackles,
+        "sacks": sacks,
+        "interceptions": interceptions,
+        "pass_deflections": pass_deflections,
         "draft_round": draft_round,
         "combine_speed_score": round(combine_speed, 1),
         "college_tier": college_tier,
@@ -875,8 +939,20 @@ def fetch_real_espn_stats(espn_id: str, position: str, player_name: str) -> Opti
                 rushing_yards = rec_yards
                 rushing_tds   = rec_tds
 
+        # Defensive stats
+        tackles        = _parse_int(sv.get("totalTackles", 0)) or _parse_int(sv.get("tackles", 0))
+        sacks          = float(sv.get("sacks", 0) or 0)
+        interceptions  = _parse_int(sv.get("interceptions", 0))
+        pass_deflections = _parse_int(sv.get("passesDefended", 0)) or _parse_int(sv.get("passDeflections", 0))
+
+        # Estimate games from available counting stats
         attempts = _parse_int(sv.get("passingAttempts", 0)) or _parse_int(sv.get("rushingAttempts", 0))
-        games    = max(1, min(17, round(attempts / 28))) if attempts else 13
+        if attempts:
+            games = max(1, min(17, round(attempts / 28)))
+        elif tackles:
+            games = max(1, min(17, round(tackles / 6)))
+        else:
+            games = 13
 
         # Resolve real team + position from ESPN athlete info
         ath_info  = _espn_resolve_athlete_info(espn_id)
@@ -888,10 +964,13 @@ def fetch_real_espn_stats(espn_id: str, position: str, player_name: str) -> Opti
             "passing_yards":      passing_yards,
             "rushing_touchdowns": rushing_tds,
             "rushing_yards":      rushing_yards,
+            "tackles":            tackles,
+            "sacks":              sacks,
+            "interceptions":      interceptions,
+            "pass_deflections":   pass_deflections,
             "_team":              real_team,
             "_season":            best_split.get("displayName", ""),
             "_completion_pct":    sv.get("completionPct", ""),
-            "_interceptions":     _parse_int(sv.get("interceptions", 0)),
             "_qb_rating":         sv.get("QBRating", ""),
         }
         cache_set(cache_key, result, ttl=STATS_CACHE_TTL)
@@ -938,6 +1017,10 @@ def fetch_player_data(player_name: str) -> Tuple[Optional[Dict[str, object]], st
                 "passing_yards":      real_stats["passing_yards"],
                 "rushing_touchdowns": real_stats["rushing_touchdowns"],
                 "rushing_yards":      real_stats["rushing_yards"],
+                "tackles":            real_stats.get("tackles", 0),
+                "sacks":              real_stats.get("sacks", 0.0),
+                "interceptions":      real_stats.get("interceptions", 0),
+                "pass_deflections":   real_stats.get("pass_deflections", 0),
             })
             if real_team:
                 profile["team"] = real_team
@@ -984,14 +1067,24 @@ def fetch_player_data(player_name: str) -> Tuple[Optional[Dict[str, object]], st
     return result, "default_baseline"
 
 
+_DB_POSITIONS = {"CB", "S", "DB", "FS", "SS"}
+_LB_POSITIONS = {"LB", "ILB", "OLB", "MLB"}
+_DL_POSITIONS = {"DL", "DE", "DT", "NT", "EDGE"}
+_OL_POSITIONS = {"OL", "OT", "OG", "C", "LS"}
+_KNOWN_POSITIONS = {"QB", "RB", "WR", "TE"} | _DB_POSITIONS | _LB_POSITIONS | _DL_POSITIONS | _OL_POSITIONS
+
 def position_flags(position: str) -> Dict[str, int]:
-    position_upper = (position or "Unknown").upper()
+    p = (position or "Unknown").upper()
     return {
-        "position_qb": int(position_upper == "QB"),
-        "position_rb": int(position_upper == "RB"),
-        "position_wr": int(position_upper == "WR"),
-        "position_te": int(position_upper == "TE"),
-        "position_other": int(position_upper not in {"QB", "RB", "WR", "TE"}),
+        "position_qb":    int(p == "QB"),
+        "position_rb":    int(p == "RB"),
+        "position_wr":    int(p == "WR"),
+        "position_te":    int(p == "TE"),
+        "position_db":    int(p in _DB_POSITIONS),
+        "position_lb":    int(p in _LB_POSITIONS),
+        "position_dl":    int(p in _DL_POSITIONS),
+        "position_ol":    int(p in _OL_POSITIONS),
+        "position_other": int(p not in _KNOWN_POSITIONS),
     }
 
 
@@ -1000,14 +1093,17 @@ def build_success_features(player_stats: Dict[str, object]) -> pd.DataFrame:
     flags = position_flags(position)
 
     stats_dict = {
-        "games_played": float(player_stats.get("games_played", 0) or 0),
+        "games_played":       float(player_stats.get("games_played", 0) or 0),
         "passing_touchdowns": float(player_stats.get("passing_touchdowns", 0) or 0),
-        "passing_yards": float(player_stats.get("passing_yards", 0) or 0),
+        "passing_yards":      float(player_stats.get("passing_yards", 0) or 0),
         "rushing_touchdowns": float(player_stats.get("rushing_touchdowns", 0) or 0),
-        "rushing_yards": float(player_stats.get("rushing_yards", 0) or 0),
+        "rushing_yards":      float(player_stats.get("rushing_yards", 0) or 0),
+        "tackles":            float(player_stats.get("tackles", 0) or 0),
+        "sacks":              float(player_stats.get("sacks", 0) or 0),
+        "interceptions":      float(player_stats.get("interceptions", 0) or 0),
+        "pass_deflections":   float(player_stats.get("pass_deflections", 0) or 0),
     }
 
-    # Use stored values if available; otherwise derive them on the fly
     draft_round = float(player_stats.get("draft_round") or 8)
     combine_speed = float(player_stats.get("combine_speed_score") or 50.0)
     college_tier = float(player_stats.get("college_tier") or 3)
@@ -1029,57 +1125,92 @@ def build_success_features(player_stats: Dict[str, object]) -> pd.DataFrame:
 
 def proxy_success_score(position: str, stats: Dict[str, float]) -> float:
     p = (position or "Unknown").upper()
-    games = stats["games_played"]
-    pass_td = stats["passing_touchdowns"]
-    pass_yds = stats["passing_yards"]
-    rush_td = stats["rushing_touchdowns"]
-    rush_yds = stats["rushing_yards"]
+    games    = stats.get("games_played", 0)
+    pass_td  = stats.get("passing_touchdowns", 0)
+    pass_yds = stats.get("passing_yards", 0)
+    rush_td  = stats.get("rushing_touchdowns", 0)
+    rush_yds = stats.get("rushing_yards", 0)
+    tackles  = stats.get("tackles", 0)
+    sacks    = stats.get("sacks", 0)
+    ints     = stats.get("interceptions", 0)
+    pds      = stats.get("pass_deflections", 0)
 
     if p == "QB":
         return min(pass_td / 35.0, 1.0) * 0.45 + min(pass_yds / 4200.0, 1.0) * 0.45 + min(games / 17.0, 1.0) * 0.10
     if p == "RB":
         return min(rush_td / 14.0, 1.0) * 0.45 + min(rush_yds / 1300.0, 1.0) * 0.45 + min(games / 17.0, 1.0) * 0.10
-
-    return (
-        min((pass_td + rush_td) / 14.0, 1.0) * 0.35
-        + min((pass_yds + rush_yds) / 2000.0, 1.0) * 0.50
-        + min(games / 17.0, 1.0) * 0.15
-    )
+    if p in {"WR", "TE"}:
+        return (min((pass_td + rush_td) / 14.0, 1.0) * 0.35
+                + min((pass_yds + rush_yds) / 2000.0, 1.0) * 0.50
+                + min(games / 17.0, 1.0) * 0.15)
+    if p in {"LB", "ILB", "OLB", "MLB"}:
+        return (min(tackles / 100.0, 1.0) * 0.55 + min(sacks / 8.0, 1.0) * 0.30
+                + min(ints / 3.0, 1.0) * 0.15)
+    if p in {"CB", "S", "DB", "FS", "SS"}:
+        return (min(ints / 4.0, 1.0) * 0.40 + min(pds / 12.0, 1.0) * 0.35
+                + min(tackles / 55.0, 1.0) * 0.25)
+    if p in {"DL", "DE", "DT", "NT", "EDGE"}:
+        return min(sacks / 10.0, 1.0) * 0.65 + min(tackles / 45.0, 1.0) * 0.35
+    # OL and other: durability proxy
+    return min(games / 17.0, 1.0) * 0.60 + 0.20
 
 
 def synthetic_player_sample(position: str) -> Dict[str, float]:
-    if position == "QB":
-        return {
-            "games_played": random.randint(4, 17),
-            "passing_touchdowns": max(0, int(random.gauss(18, 10))),
-            "passing_yards": max(0, int(random.gauss(2800, 1200))),
-            "rushing_touchdowns": max(0, int(random.gauss(2, 2))),
-            "rushing_yards": max(0, int(random.gauss(180, 150))),
-        }
-    if position == "RB":
-        return {
-            "games_played": random.randint(4, 17),
-            "passing_touchdowns": 0,
-            "passing_yards": 0,
-            "rushing_touchdowns": max(0, int(random.gauss(7, 4))),
-            "rushing_yards": max(0, int(random.gauss(760, 380))),
-        }
-    if position in {"WR", "TE"}:
-        return {
-            "games_played": random.randint(4, 17),
-            "passing_touchdowns": max(0, int(random.gauss(1, 2))),
-            "passing_yards": max(0, int(random.gauss(120, 260))),
-            "rushing_touchdowns": max(0, int(random.gauss(5, 4))),
-            "rushing_yards": max(0, int(random.gauss(820, 420))),
-        }
-
-    return {
+    base = {
         "games_played": random.randint(4, 17),
-        "passing_touchdowns": max(0, int(random.gauss(1, 1))),
-        "passing_yards": max(0, int(random.gauss(90, 120))),
-        "rushing_touchdowns": max(0, int(random.gauss(3, 3))),
-        "rushing_yards": max(0, int(random.gauss(420, 290))),
+        "passing_touchdowns": 0, "passing_yards": 0,
+        "rushing_touchdowns": 0, "rushing_yards": 0,
+        "tackles": 0, "sacks": 0.0, "interceptions": 0, "pass_deflections": 0,
     }
+    if position == "QB":
+        base.update({
+            "passing_touchdowns": max(0, int(random.gauss(18, 10))),
+            "passing_yards":      max(0, int(random.gauss(2800, 1200))),
+            "rushing_touchdowns": max(0, int(random.gauss(2, 2))),
+            "rushing_yards":      max(0, int(random.gauss(180, 150))),
+        })
+    elif position == "RB":
+        base.update({
+            "rushing_touchdowns": max(0, int(random.gauss(7, 4))),
+            "rushing_yards":      max(0, int(random.gauss(760, 380))),
+        })
+    elif position in {"WR", "TE"}:
+        base.update({
+            "passing_touchdowns": max(0, int(random.gauss(1, 2))),
+            "passing_yards":      max(0, int(random.gauss(120, 260))),
+            "rushing_touchdowns": max(0, int(random.gauss(5, 4))),
+            "rushing_yards":      max(0, int(random.gauss(820, 420))),
+        })
+    elif position == "LB":
+        base.update({
+            "tackles":          max(0, int(random.gauss(75, 28))),
+            "sacks":            max(0.0, round(random.gauss(4.0, 3.0), 1)),
+            "interceptions":    max(0, int(random.gauss(1, 1))),
+            "pass_deflections": max(0, int(random.gauss(4, 3))),
+        })
+    elif position in {"CB", "S"}:
+        base.update({
+            "tackles":          max(0, int(random.gauss(55, 20))),
+            "sacks":            max(0.0, round(random.gauss(0.5, 0.8), 1)),
+            "interceptions":    max(0, int(random.gauss(3, 2))),
+            "pass_deflections": max(0, int(random.gauss(9, 5))),
+        })
+    elif position == "DL":
+        base.update({
+            "tackles": max(0, int(random.gauss(45, 18))),
+            "sacks":   max(0.0, round(random.gauss(6.5, 4.0), 1)),
+            "pass_deflections": max(0, int(random.gauss(2, 2))),
+        })
+    elif position == "OL":
+        base.update({"games_played": random.randint(6, 17)})
+    else:  # OTHER / K / P
+        base.update({
+            "passing_touchdowns": max(0, int(random.gauss(1, 1))),
+            "passing_yards":      max(0, int(random.gauss(90, 120))),
+            "rushing_touchdowns": max(0, int(random.gauss(3, 3))),
+            "rushing_yards":      max(0, int(random.gauss(420, 290))),
+        })
+    return base
 
 
 def realistic_nfl_success_probability(
@@ -1124,8 +1255,8 @@ def train_success_model_from_synthetic(samples: int = 4000) -> xgb.XGBClassifier
     """
     random.seed(42)
 
-    positions = ["QB", "RB", "WR", "TE", "OTHER"]
-    weights = [0.22, 0.21, 0.30, 0.12, 0.15]
+    positions = ["QB", "RB", "WR", "TE", "LB", "CB", "S", "DL", "OL", "OTHER"]
+    weights   = [0.15, 0.14, 0.20, 0.08, 0.10, 0.10, 0.08, 0.08, 0.04, 0.03]
 
     # Empirical draft-round distribution (roughly mirrors real NFL drafts)
     draft_rounds = [1, 2, 3, 4, 5, 6, 7, 8]
@@ -1150,22 +1281,25 @@ def train_success_model_from_synthetic(samples: int = 4000) -> xgb.XGBClassifier
         production = compute_production_score(position, stats)
 
         prob = realistic_nfl_success_probability(draft_round, combine_speed, college_tier, production)
-        # Add a small amount of noise so boundary cases aren't deterministic
         noisy_prob = min(max(prob + random.gauss(0, 0.04), 0.01), 0.99)
         success = 1 if random.random() < noisy_prob else 0
 
         flags = position_flags(position)
         rows.append(
             {
-                "games_played": stats["games_played"],
+                "games_played":       stats["games_played"],
                 "passing_touchdowns": stats["passing_touchdowns"],
-                "passing_yards": stats["passing_yards"],
+                "passing_yards":      stats["passing_yards"],
                 "rushing_touchdowns": stats["rushing_touchdowns"],
-                "rushing_yards": stats["rushing_yards"],
-                "draft_round": draft_round,
+                "rushing_yards":      stats["rushing_yards"],
+                "tackles":            stats["tackles"],
+                "sacks":              stats["sacks"],
+                "interceptions":      stats["interceptions"],
+                "pass_deflections":   stats["pass_deflections"],
+                "draft_round":        draft_round,
                 "combine_speed_score": round(combine_speed, 1),
-                "college_tier": college_tier,
-                "production_score": round(production, 1),
+                "college_tier":       college_tier,
+                "production_score":   round(production, 1),
                 **flags,
             }
         )
