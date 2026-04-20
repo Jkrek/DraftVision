@@ -23,45 +23,42 @@ import xgboost as xgb
 from flask import Flask, jsonify, redirect, request, send_from_directory
 from flask_cors import CORS
 
-POSITION_MODEL_PATH = "nfl_xgboost_model.json"
-ENCODER_PATH = "label_encoders.pkl"
-SUCCESS_MODEL_PATH = "success_xgboost_model.json"
-PLAYER_DATA_PATH = "nfl_players.csv"
-PLAYER_DB_PATH = "players.db"
-ESPN_CFB_TEAMS_URL = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams"
-ESPN_CFB_TEAM_ROSTER_URL = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/{team_id}/roster"
+POSITION_MODEL_PATH  = "nfl_xgboost_model.json"
+ENCODER_PATH         = "label_encoders.pkl"
+SUCCESS_MODEL_PATH   = "success_xgboost_model.json"
+DRAFT_GRADE_MODEL_PATH = "draft_grade_model.json"
+TRAINING_DATA_PATH   = "training_data/combine_outcomes.csv"
+PLAYER_DATA_PATH     = "nfl_players.csv"
+PLAYER_DB_PATH       = "players.db"
+ESPN_CFB_TEAMS_URL        = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams"
+ESPN_CFB_TEAM_ROSTER_URL  = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/{team_id}/roster"
 ESPN_CFB_ATHLETE_OVERVIEW_URL = "https://site.web.api.espn.com/apis/common/v3/sports/football/college-football/athletes/{espn_id}/overview"
+ESPN_NFL_CORE_ATHLETE_URL = "https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/athletes/{espn_id}"
 HTTP_TIMEOUT_SECONDS = 12
 STATS_CACHE_TTL = 3600  # cache real stats for 1 hour
 
-SUCCESS_FEATURES = [
+# Features shared by both models — purely college-performance based, NO draft_round
+_BASE_FEATURES = [
+    "production_score",      # 0–100 composite (position-normalized)
     "games_played",
-    # Offensive stats
-    "passing_touchdowns",
-    "passing_yards",
-    "rushing_touchdowns",
-    "rushing_yards",
-    # Defensive stats
-    "tackles",
-    "sacks",
-    "interceptions",
-    "pass_deflections",
-    # Meta features
-    "draft_round",          # 1–7 = draft rounds; 8 = undrafted (biggest real-world predictor)
-    "combine_speed_score",  # 0–100 position-normalized athleticism proxy
-    "college_tier",         # 1 = Power 5, 2 = Group of 5, 3 = FCS/other
-    "production_score",     # composite normalized production (0–100)
+    "combine_speed_score",   # 0–100 (position-normalized 40-yard dash)
+    "conference_tier",       # 1 (SEC elite) → 10 (FCS lower)
+    "is_award_winner",       # 1 if Nagurski/Heisman/Bednarik/etc.
+    "is_all_american",       # 1 if first-team All-American
     # Position flags
-    "position_qb",
-    "position_rb",
-    "position_wr",
-    "position_te",
-    "position_db",    # CB, S, FS, SS
-    "position_lb",    # LB, ILB, OLB, MLB
-    "position_dl",    # DL, DE, DT, EDGE
-    "position_ol",    # OL, OT, OG, C
-    "position_other",
+    "position_qb", "position_rb", "position_wr", "position_te",
+    "position_db", "position_lb", "position_dl", "position_ol", "position_other",
 ]
+
+# Draft-grade model: predict which bracket a player will be drafted in
+# Output classes: 0=Top50(R1-2), 1=Day2(R3-4), 2=LateRound(R5-7), 3=Undrafted
+DRAFT_GRADE_FEATURES = _BASE_FEATURES
+
+# Success model: predict NFL career success from college profile ONLY
+# No draft_round — that's what we're trying to predict
+SUCCESS_FEATURES = _BASE_FEATURES
+
+DRAFT_GRADE_LABELS = ["Top 50 Pick", "Day 2 Pick", "Late Round Pick", "Undrafted Prospect"]
 
 # Power 5 conference schools (partial list for tier classification)
 POWER5_SCHOOLS = {
@@ -91,48 +88,130 @@ NFL_FRANCHISE_KEYWORDS = {
 
 
 def classify_college_tier(team: str) -> int:
-    """Return 1 (P5), 2 (G5), or 3 (FCS) based on school name.
+    """10-tier conference classification. 1=SEC/OSU elite, 10=FCS lower.
 
-    If the team string is an NFL franchise, return 1 (P5) by default —
-    active pros almost certainly played at major-program level.
+    NFL franchise names → tier 1 (they came from somewhere major).
     """
-    normalized = (team or "").lower().strip()
+    t = (team or "").lower().strip()
 
-    # Active NFL player stored with franchise name → treat as P5
-    for franchise in NFL_FRANCHISE_KEYWORDS:
-        if franchise in normalized:
-            return 1
+    for kw in NFL_FRANCHISE_KEYWORDS:
+        if kw in t: return 1
 
-    for school in POWER5_SCHOOLS:
-        if school in normalized:
-            return 1
+    _T1 = {"alabama","ohio state","georgia","clemson","lsu","michigan"}
+    _T2 = {"texas","oklahoma","florida","penn state","notre dame","florida state",
+           "tennessee","texas a&m","usc","oregon","miami","auburn","washington"}
+    _T3 = {"north carolina","virginia tech","pittsburgh","wisconsin","iowa",
+           "michigan state","nebraska","oklahoma state","baylor","tcu","arkansas",
+           "ole miss","mississippi state","south carolina","stanford","utah",
+           "arizona state","colorado","georgia tech"}
+    _T4 = {"west virginia","kansas state","iowa state","texas tech","kentucky",
+           "vanderbilt","missouri","arizona","cal","oregon state","washington state",
+           "indiana","purdue","illinois","minnesota","maryland","rutgers",
+           "louisville","virginia","nc state","duke","wake forest","syracuse",
+           "boston college","cincinnati","ucf"}
+    _T5 = {"ucla","northwestern","navy","army","air force","liberty","byu",
+           "western kentucky","louisiana tech"}
+    _T6 = {"memphis","houston","smu","tulane","east carolina","south florida",
+           "temple","connecticut","tulsa","rice","utep","uab"}
+    _T7 = {"boise state","fresno state","hawaii","san diego state","wyoming",
+           "utah state","nevada","colorado state","new mexico","san jose state"}
+    _T8 = {"appalachian state","coastal carolina","marshall","utsa","troy",
+           "louisiana","james madison","buffalo","kent state","ohio",
+           "western michigan","central michigan","eastern michigan",
+           "northern illinois","ball state","toledo"}
+    _T9 = {"north dakota state","montana","south dakota state","furman",
+           "villanova","richmond","delaware","sacramento state","central arkansas"}
 
-    # G5 conference keywords
-    g5_keywords = ["app state", "boise state", "memphis", "uab", "marshall",
-                   "army", "navy", "air force", "hawaii", "san jose", "fresno",
-                   "utsa", "middle tennessee", "troy", "louisiana", "western",
-                   "central", "eastern", "northern", "southern", "sam houston"]
-    for kw in g5_keywords:
-        if kw in normalized:
-            return 2
-    return 3
+    for kw in _T1:
+        if kw in t: return 1
+    for kw in _T2:
+        if kw in t: return 2
+    for kw in _T3:
+        if kw in t: return 3
+    for kw in _T4:
+        if kw in t: return 4
+    for kw in _T5:
+        if kw in t: return 5
+    for kw in _T6:
+        if kw in t: return 6
+    for kw in _T7:
+        if kw in t: return 7
+    for kw in _T8:
+        if kw in t: return 8
+    for kw in _T9:
+        if kw in t: return 9
+    return 10
+
+
+def forty_to_speed_score(position: str, forty: float) -> float:
+    """Convert raw 40-yard dash time to 0–100 position-normalized score. 100=elite."""
+    if not forty or forty <= 0:
+        return 0.0  # unknown — caller should fall back to estimate
+    p = (position or "").upper()
+    # (elite_time, poor_time) → maps to (100, 0)
+    benchmarks = {
+        "QB":  (4.30, 5.10), "RB":  (4.20, 4.80), "WR":  (4.20, 4.70),
+        "TE":  (4.40, 5.00), "CB":  (4.20, 4.65), "S":   (4.30, 4.75),
+        "DB":  (4.25, 4.70), "LB":  (4.35, 4.85), "DL":  (4.50, 5.30),
+        "DE":  (4.45, 5.10), "DT":  (4.55, 5.35), "EDGE":(4.45, 5.10),
+        "OL":  (4.70, 5.55), "OT":  (4.75, 5.60), "OG":  (4.80, 5.55), "C": (4.85, 5.60),
+    }
+    elite_t, poor_t = benchmarks.get(p, (4.35, 5.00))
+    score = (poor_t - forty) / (poor_t - elite_t) * 100.0
+    return float(max(0.0, min(100.0, score)))
+
+
+# ── Known award winners & All-Americans (drives is_award_winner / is_all_american) ──
+_AWARD_WINNERS = {
+    # Heisman Trophy winners
+    "caleb williams", "bryce young", "joe burrow", "jalen hurts", "devonta smith",
+    "kyler murray", "baker mayfield", "lamar jackson", "marcus mariota",
+    "jameis winston", "johnny manziel", "robert griffin", "cam newton",
+    "mark ingram", "sam bradford", "tim tebow", "troy smith", "matt leinart",
+    "jason white", "eric crouch", "chris weinke", "ron dayne", "ricky williams",
+    "charles woodson", "danny wuerffel", "travis hunter", "ashton jeanty",
+    # Nagurski / Bednarik / defensive awards
+    "chase young", "myles garrett", "khalil mack", "micah parsons",
+    "nick bosa", "joey bosa", "will anderson", "jalen carter",
+    # Outland / Rimington
+    "mason graham", "will campbell",
+}
+
+_ALL_AMERICANS = {
+    "travis hunter", "ashton jeanty", "tetairoa mcmillan", "emeka egbuka",
+    "will campbell", "mason graham", "shedeur sanders", "cam ward",
+    "tyler warren", "kelvin banks", "darius robinson", "laiatu latu",
+    "caleb downs", "malaki starks", "nick herbig",
+    "will anderson", "bralen trice", "jalen carter", "devonta smith",
+    "justyn ross", "rashee rice", "quentin johnston",
+    "patrick surtain", "sauce gardner", "kyle hamilton",
+    "ja'marr chase", "justin jefferson", "ceedee lamb",
+    "saquon barkley", "bijan robinson", "christian mccaffrey",
+    "george kittle", "travis kelce", "kyle pitts",
+    "trevor lawrence", "joe burrow", "kyler murray",
+}
+
+
+def detect_accolades(name: str) -> Dict[str, int]:
+    """Return is_award_winner and is_all_american flags from known lists."""
+    n = (name or "").lower().strip()
+    return {
+        "is_award_winner": int(any(aw in n or n in aw for aw in _AWARD_WINNERS)),
+        "is_all_american": int(any(aa in n or n in aa for aa in _ALL_AMERICANS)),
+    }
 
 
 def combine_speed_for_position(position: str, seed: int) -> float:
-    """Generate a 0–100 combine speed score (100 = elite) seeded deterministically."""
+    """Estimate 0–100 combine speed score deterministically when no real 40 time exists."""
     p = (position or "").upper()
-    # Mean and std of 40-yard dash by position; lower time = faster = higher score
-    # We invert so higher number = better athlete
     ranges = {
-        "QB":  (55, 20),
-        "RB":  (60, 20),
-        "WR":  (62, 18),
-        "TE":  (50, 20),
+        "QB": (55, 20), "RB": (60, 20), "WR": (62, 18), "TE": (50, 20),
+        "CB": (62, 18), "S":  (58, 18), "LB": (52, 18), "DL": (48, 18),
+        "DE": (50, 18), "OL": (45, 15),
     }
-    mean, std_dev = ranges.get(p, (50, 20))
-    # Use seed for determinism; add position-based offset
+    mean, _ = ranges.get(p, (50, 20))
     offset = sum(ord(c) for c in p) if p else 0
-    raw = mean + ((seed + offset) % 41) - 20  # [-20, +20] around mean
+    raw = mean + ((seed + offset) % 41) - 20
     return float(max(0.0, min(100.0, raw)))
 
 
@@ -282,6 +361,7 @@ def enforce_canonical_origin():
 position_model = None
 label_encoders = None
 success_model = None
+draft_grade_model = None
 
 SEED_PLAYERS = [
     # ── Active NFL stars (for demo / search) ────────────────────────────────
@@ -796,8 +876,8 @@ def generate_estimated_profile(name: str, position: str, team: str, jersey: int 
         rushing_touchdowns = scaled(0, 7, 23)
         rushing_yards = scaled(60, 720, 47)
 
-    # Derive the new features deterministically from the same seed
-    college_tier = classify_college_tier(team)
+    # Derive features deterministically from the same seed
+    conference_tier = classify_college_tier(team)
     combine_speed = combine_speed_for_position(p, seed)
     production_raw = compute_production_score(p, {
         "games_played": games, "passing_touchdowns": passing_touchdowns,
@@ -805,6 +885,8 @@ def generate_estimated_profile(name: str, position: str, team: str, jersey: int 
         "rushing_yards": rushing_yards, "tackles": tackles, "sacks": sacks,
         "interceptions": interceptions, "pass_deflections": pass_deflections,
     })
+    accolades = detect_accolades(name)
+    # Draft round kept for display only (NOT a model feature)
     composite = (production_raw * 0.6 + combine_speed * 0.4) / 100.0
     raw_round = 8 - int(composite * 7)
     draft_round = max(1, min(8, raw_round))
@@ -825,8 +907,10 @@ def generate_estimated_profile(name: str, position: str, team: str, jersey: int 
         "pass_deflections": pass_deflections,
         "draft_round": draft_round,
         "combine_speed_score": round(combine_speed, 1),
-        "college_tier": college_tier,
+        "conference_tier": conference_tier,
         "production_score": round(production_raw, 1),
+        "is_award_winner": accolades["is_award_winner"],
+        "is_all_american": accolades["is_all_american"],
     }
 
 
@@ -982,6 +1066,44 @@ def fetch_real_espn_stats(espn_id: str, position: str, player_name: str) -> Opti
         return None
 
 
+def fetch_combine_measurables(espn_id: str, position: str) -> dict:
+    """Fetch real NFL combine 40-yard dash + vertical from ESPN core athlete.
+
+    Returns {"combine_speed_score": float, "combine_forty": float,
+             "combine_vertical": float} or empty dict on failure.
+    """
+    if not espn_id:
+        return {}
+    cache_key = f"combine:{espn_id}"
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return cached if cached else {}
+    try:
+        url  = ESPN_NFL_CORE_ATHLETE_URL.format(espn_id=espn_id)
+        resp = requests.get(url, timeout=6)
+        if not resp.ok:
+            cache_set(cache_key, {}, ttl=STATS_CACHE_TTL)
+            return {}
+        data  = resp.json()
+        draft = data.get("draft") or {}
+        forty    = float(draft.get("combined40yd") or 0)
+        vertical = float(draft.get("combineVert") or 0)
+        if not forty:
+            cache_set(cache_key, {}, ttl=STATS_CACHE_TTL)
+            return {}
+        speed = forty_to_speed_score(position, forty)
+        result = {
+            "combine_speed_score": round(speed, 1),
+            "combine_forty":       forty,
+            "combine_vertical":    vertical,
+        }
+        cache_set(cache_key, result, ttl=STATS_CACHE_TTL * 24)
+        return result
+    except Exception:
+        cache_set(cache_key, {}, ttl=300)
+        return {}
+
+
 def fetch_player_data(player_name: str) -> Tuple[Optional[Dict[str, object]], str]:
     normalized = normalize_name(player_name)
 
@@ -1029,9 +1151,26 @@ def fetch_player_data(player_name: str) -> Tuple[Optional[Dict[str, object]], st
             for k in ("_team", "_season", "_completion_pct", "_interceptions", "_qb_rating"):
                 if real_stats.get(k) is not None:
                     profile[k] = real_stats[k]
+            # Enrich with real combine measurables when available
+            combine_data = fetch_combine_measurables(espn_id, effective_pos or position)
+            if combine_data:
+                profile["combine_speed_score"] = combine_data["combine_speed_score"]
+                profile["combine_forty"]    = combine_data.get("combine_forty", 0)
+                profile["combine_vertical"] = combine_data.get("combine_vertical", 0)
+            # Recompute production_score with the updated real stats
+            profile["production_score"] = round(compute_production_score(
+                profile["position"], profile), 1)
             return profile, "espn_live"
 
-        return generate_estimated_profile(name=name, position=position, team=team, jersey=jersey), source
+        # No real ESPN stats — try combine measurables anyway
+        result = generate_estimated_profile(name=name, position=position, team=team, jersey=jersey)
+        if espn_id:
+            combine_data = fetch_combine_measurables(espn_id, position)
+            if combine_data:
+                result["combine_speed_score"] = combine_data["combine_speed_score"]
+                result["combine_forty"]    = combine_data.get("combine_forty", 0)
+                result["combine_vertical"] = combine_data.get("combine_vertical", 0)
+        return result, source
 
     # 2) Fallback to local CSV metadata.
     player_meta = PLAYER_LOOKUP.get(normalized)
@@ -1089,8 +1228,13 @@ def position_flags(position: str) -> Dict[str, int]:
 
 
 def build_success_features(player_stats: Dict[str, object]) -> pd.DataFrame:
+    """Build feature vector aligned with SUCCESS_FEATURES / _BASE_FEATURES.
+    No draft_round — that is an output, not an input."""
+    name     = str(player_stats.get("name", "") or "")
     position = str(player_stats.get("position", "Unknown"))
-    flags = position_flags(position)
+    team     = str(player_stats.get("team", "") or "")
+    flags    = position_flags(position)
+    accolades = detect_accolades(name)
 
     stats_dict = {
         "games_played":       float(player_stats.get("games_played", 0) or 0),
@@ -1104,20 +1248,25 @@ def build_success_features(player_stats: Dict[str, object]) -> pd.DataFrame:
         "pass_deflections":   float(player_stats.get("pass_deflections", 0) or 0),
     }
 
-    draft_round = float(player_stats.get("draft_round") or 8)
-    combine_speed = float(player_stats.get("combine_speed_score") or 50.0)
-    college_tier = float(player_stats.get("college_tier") or 3)
     production_score = float(
         player_stats.get("production_score")
         or compute_production_score(position, stats_dict)
     )
+    combine_speed = float(player_stats.get("combine_speed_score") or 50.0)
+    conference_tier = float(
+        player_stats.get("conference_tier")
+        or classify_college_tier(team)
+    )
+    is_award_winner = int(player_stats.get("is_award_winner") or accolades["is_award_winner"])
+    is_all_american = int(player_stats.get("is_all_american") or accolades["is_all_american"])
 
     row = {
-        **stats_dict,
-        "draft_round": draft_round,
+        "production_score":    production_score,
+        "games_played":        stats_dict["games_played"],
         "combine_speed_score": combine_speed,
-        "college_tier": college_tier,
-        "production_score": production_score,
+        "conference_tier":     conference_tier,
+        "is_award_winner":     is_award_winner,
+        "is_all_american":     is_all_american,
         **flags,
     }
     return pd.DataFrame([row], columns=SUCCESS_FEATURES)
@@ -1248,68 +1397,179 @@ def realistic_nfl_success_probability(
     return float(min(max(prob, 0.02), 0.97))
 
 
-def train_success_model_from_synthetic(samples: int = 4000) -> xgb.XGBClassifier:
-    """
-    Train using realistic draft-round-based success probabilities rather than
-    the proxy scoring rule, so the model learns features that actually matter.
-    """
+# ── Real historical players — ground truth for both models ────────────────────
+# Fields: position, conference_tier (1-10), production_score (0-100),
+#         combine_speed_score (0-100), games_played, is_award_winner, is_all_american,
+#         draft_grade (0=Top50/R1-2, 1=Day2/R3-4, 2=LateRound/R5-7, 3=UDFA),
+#         nfl_success (1=Pro Bowl or 5+ yr starter, 0=bust/journeyman)
+SEED_TRAINING_PLAYERS = [
+    # ── QBs ──────────────────────────────────────────────────────────────────
+    {"position":"QB","conference_tier":1,"production_score":90,"combine_speed_score":70,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Burrow
+    {"position":"QB","conference_tier":1,"production_score":85,"combine_speed_score":74,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Trevor Lawrence
+    {"position":"QB","conference_tier":2,"production_score":88,"combine_speed_score":85,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Lamar Jackson (Louisville T2)
+    {"position":"QB","conference_tier":3,"production_score":76,"combine_speed_score":74,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":0,"nfl_success":1},  # Josh Allen (Wyoming T3)
+    {"position":"QB","conference_tier":2,"production_score":82,"combine_speed_score":78,"games_played":14,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Kyler Murray
+    {"position":"QB","conference_tier":2,"production_score":80,"combine_speed_score":67,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Jalen Hurts
+    {"position":"QB","conference_tier":1,"production_score":82,"combine_speed_score":65,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Caleb Williams
+    {"position":"QB","conference_tier":4,"production_score":72,"combine_speed_score":62,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":1},  # Brock Purdy (Iowa St, R7!)
+    {"position":"QB","conference_tier":2,"production_score":78,"combine_speed_score":72,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":0,"nfl_success":0},  # R1 QB bust
+    {"position":"QB","conference_tier":3,"production_score":68,"combine_speed_score":60,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":0},  # Day2 bust
+    {"position":"QB","conference_tier":4,"production_score":60,"combine_speed_score":55,"games_played":10,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
+    {"position":"QB","conference_tier":5,"production_score":58,"combine_speed_score":58,"games_played":10,"is_award_winner":0,"is_all_american":0,"draft_grade":3,"nfl_success":0},
+    # ── WRs ──────────────────────────────────────────────────────────────────
+    {"position":"WR","conference_tier":2,"production_score":88,"combine_speed_score":93,"games_played":14,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Justin Jefferson (LSU)
+    {"position":"WR","conference_tier":1,"production_score":85,"combine_speed_score":90,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Ja'Marr Chase
+    {"position":"WR","conference_tier":1,"production_score":86,"combine_speed_score":79,"games_played":14,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Devonta Smith
+    {"position":"WR","conference_tier":1,"production_score":80,"combine_speed_score":83,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # CeeDee Lamb
+    {"position":"WR","conference_tier":2,"production_score":78,"combine_speed_score":80,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":1},  # Amon-Ra St. Brown (USC T2)
+    {"position":"WR","conference_tier":8,"production_score":82,"combine_speed_score":96,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":1},  # Tyreek Hill (West Alabama T8)
+    {"position":"WR","conference_tier":1,"production_score":82,"combine_speed_score":87,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # A.J. Brown
+    {"position":"WR","conference_tier":2,"production_score":65,"combine_speed_score":72,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
+    {"position":"WR","conference_tier":3,"production_score":70,"combine_speed_score":68,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
+    {"position":"WR","conference_tier":4,"production_score":62,"combine_speed_score":75,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":3,"nfl_success":0},
+    # ── RBs ──────────────────────────────────────────────────────────────────
+    {"position":"RB","conference_tier":3,"production_score":90,"combine_speed_score":82,"games_played":14,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Saquon Barkley (Penn St T3)
+    {"position":"RB","conference_tier":3,"production_score":88,"combine_speed_score":88,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # McCaffrey (Stanford T3)
+    {"position":"RB","conference_tier":2,"production_score":85,"combine_speed_score":80,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Bijan Robinson
+    {"position":"RB","conference_tier":1,"production_score":80,"combine_speed_score":78,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":1},  # Jahmyr Gibbs
+    {"position":"RB","conference_tier":7,"production_score":88,"combine_speed_score":85,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Ashton Jeanty (Boise St T7)
+    {"position":"RB","conference_tier":1,"production_score":75,"combine_speed_score":75,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":0},
+    {"position":"RB","conference_tier":4,"production_score":78,"combine_speed_score":77,"games_played":13,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
+    {"position":"RB","conference_tier":5,"production_score":72,"combine_speed_score":80,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
+    # ── TEs ──────────────────────────────────────────────────────────────────
+    {"position":"TE","conference_tier":4,"production_score":80,"combine_speed_score":68,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":1,"nfl_success":1},  # Travis Kelce (Cincy T4)
+    {"position":"TE","conference_tier":2,"production_score":82,"combine_speed_score":72,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Kyle Pitts (Florida T2)
+    {"position":"TE","conference_tier":3,"production_score":78,"combine_speed_score":65,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # George Kittle (Iowa T3)
+    {"position":"TE","conference_tier":3,"production_score":75,"combine_speed_score":62,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Tyler Warren (Penn St)
+    {"position":"TE","conference_tier":2,"production_score":70,"combine_speed_score":60,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":0},
+    {"position":"TE","conference_tier":4,"production_score":60,"combine_speed_score":55,"games_played":10,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
+    # ── CBs ──────────────────────────────────────────────────────────────────
+    {"position":"CB","conference_tier":1,"production_score":78,"combine_speed_score":91,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Patrick Surtain II
+    {"position":"CB","conference_tier":4,"production_score":75,"combine_speed_score":89,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Sauce Gardner (Cincinnati T4)
+    {"position":"CB","conference_tier":1,"production_score":72,"combine_speed_score":87,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Devon Witherspoon
+    {"position":"CB","conference_tier":1,"production_score":68,"combine_speed_score":85,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":1},  # Day2 CB success
+    {"position":"CB","conference_tier":3,"production_score":65,"combine_speed_score":80,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":0},
+    {"position":"CB","conference_tier":5,"production_score":58,"combine_speed_score":78,"games_played":10,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
+    # ── Safeties ─────────────────────────────────────────────────────────────
+    {"position":"S","conference_tier":2,"production_score":80,"combine_speed_score":82,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Kyle Hamilton (ND T2)
+    {"position":"S","conference_tier":1,"production_score":75,"combine_speed_score":80,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Caleb Downs profile (Bama T1)
+    {"position":"S","conference_tier":1,"production_score":72,"combine_speed_score":78,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},
+    {"position":"S","conference_tier":2,"production_score":65,"combine_speed_score":75,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":0},
+    {"position":"S","conference_tier":4,"production_score":60,"combine_speed_score":72,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
+    # ── LBs ──────────────────────────────────────────────────────────────────
+    {"position":"LB","conference_tier":3,"production_score":82,"combine_speed_score":78,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Micah Parsons (PSU T3)
+    {"position":"LB","conference_tier":1,"production_score":85,"combine_speed_score":80,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Will Anderson (Bama T1)
+    {"position":"LB","conference_tier":1,"production_score":78,"combine_speed_score":74,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Roquan Smith (Georgia)
+    {"position":"LB","conference_tier":3,"production_score":75,"combine_speed_score":70,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":1},
+    {"position":"LB","conference_tier":4,"production_score":65,"combine_speed_score":62,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
+    {"position":"LB","conference_tier":6,"production_score":60,"combine_speed_score":58,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":3,"nfl_success":0},
+    # ── DLs ──────────────────────────────────────────────────────────────────
+    {"position":"DL","conference_tier":1,"production_score":88,"combine_speed_score":82,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Chase Young (OSU T1)
+    {"position":"DL","conference_tier":2,"production_score":85,"combine_speed_score":78,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Myles Garrett (TAMU T2)
+    {"position":"DL","conference_tier":1,"production_score":82,"combine_speed_score":80,"games_played":12,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Jalen Carter (Georgia T1)
+    {"position":"DL","conference_tier":1,"production_score":80,"combine_speed_score":77,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},
+    {"position":"DL","conference_tier":3,"production_score":65,"combine_speed_score":65,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
+    {"position":"DL","conference_tier":5,"production_score":58,"combine_speed_score":60,"games_played":10,"is_award_winner":0,"is_all_american":0,"draft_grade":3,"nfl_success":0},
+    # ── OLs ──────────────────────────────────────────────────────────────────
+    {"position":"OL","conference_tier":1,"production_score":55,"combine_speed_score":52,"games_played":14,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # elite T1 OT
+    {"position":"OL","conference_tier":2,"production_score":52,"combine_speed_score":50,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},
+    {"position":"OL","conference_tier":3,"production_score":45,"combine_speed_score":44,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
+    {"position":"OL","conference_tier":5,"production_score":38,"combine_speed_score":40,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":3,"nfl_success":0},
+]
+
+
+def _success_prob_from_college_profile(
+    production_score: float,
+    conference_tier: int,
+    combine_speed: float,
+    is_award_winner: int,
+    is_all_american: int,
+) -> float:
+    """Estimate P(NFL success) purely from college profile — NO draft round."""
+    prod_factor  = production_score / 100.0
+    tier_factor  = max(0.0, (11.0 - conference_tier) / 10.0)  # 1.0=T1 elite, 0.1=T10 FCS
+    speed_factor = combine_speed / 100.0
+    award_boost  = 0.08 if is_award_winner else 0.0
+    aa_boost     = 0.05 if is_all_american else 0.0
+    base = prod_factor * 0.45 + tier_factor * 0.30 + speed_factor * 0.25
+    return float(min(0.92, max(0.03, base + award_boost + aa_boost)))
+
+
+def _draft_grade_from_profile(
+    production_score: float,
+    conference_tier: int,
+    combine_speed: float,
+    is_award_winner: int,
+    is_all_american: int,
+) -> int:
+    """Deterministic draft grade class from college profile (used for synthetic labels)."""
+    score = (
+        production_score * 0.40
+        + max(0.0, (11.0 - conference_tier) / 10.0) * 100 * 0.30
+        + combine_speed * 0.20
+        + (is_award_winner * 8 + is_all_american * 5)
+    )
+    if score >= 78: return 0  # Top 50 (R1-2)
+    if score >= 60: return 1  # Day 2 (R3-4)
+    if score >= 42: return 2  # Late Round (R5-7)
+    return 3                   # UDFA
+
+
+def train_success_model_from_synthetic(samples: int = 5000) -> xgb.XGBClassifier:
+    """Train success model purely from college profile features — NO draft_round."""
     random.seed(42)
 
     positions = ["QB", "RB", "WR", "TE", "LB", "CB", "S", "DL", "OL", "OTHER"]
     weights   = [0.15, 0.14, 0.20, 0.08, 0.10, 0.10, 0.08, 0.08, 0.04, 0.03]
 
-    # Empirical draft-round distribution (roughly mirrors real NFL drafts)
-    draft_rounds = [1, 2, 3, 4, 5, 6, 7, 8]
-    draft_weights = [0.04, 0.06, 0.09, 0.11, 0.12, 0.14, 0.16, 0.28]  # more undrafted
+    rows, labels = [], []
 
-    rows = []
-    labels = []
+    # Seed players first (real historical ground truth, weighted 5x)
+    for sp in SEED_TRAINING_PLAYERS * 5:
+        flags = position_flags(sp["position"])
+        rows.append({
+            "production_score":    float(sp["production_score"]),
+            "games_played":        float(sp["games_played"]),
+            "combine_speed_score": float(sp["combine_speed_score"]),
+            "conference_tier":     float(sp["conference_tier"]),
+            "is_award_winner":     int(sp["is_award_winner"]),
+            "is_all_american":     int(sp["is_all_american"]),
+            **flags,
+        })
+        labels.append(sp["nfl_success"])
 
+    # Synthetic samples calibrated to college-profile → NFL success relationship
     for _ in range(samples):
         position = random.choices(positions, weights=weights, k=1)[0]
-        stats = synthetic_player_sample(position)
-        draft_round = random.choices(draft_rounds, weights=draft_weights, k=1)[0]
+        conference_tier = random.choices(range(1, 11), weights=[14,12,11,10,9,9,8,8,7,12], k=1)[0]
+        combine_speed = float(max(0, min(100, random.gauss(62, 18))))
+        production = float(max(0, min(100, random.gauss(65, 22))))
+        is_award = int(random.random() < 0.04)
+        is_aa    = int(random.random() < 0.08)
+        games    = random.randint(8, 16)
 
-        # College tier: better prospects more likely to come from P5 schools
-        tier_weights = [0.55, 0.28, 0.17] if draft_round <= 3 else [0.35, 0.38, 0.27]
-        college_tier = random.choices([1, 2, 3], weights=tier_weights, k=1)[0]
-
-        # Combine speed correlated with draft round: earlier picks tend to be faster
-        speed_mean = 70 - (draft_round - 1) * 5
-        combine_speed = float(max(0, min(100, random.gauss(speed_mean, 15))))
-
-        production = compute_production_score(position, stats)
-
-        prob = realistic_nfl_success_probability(draft_round, combine_speed, college_tier, production)
-        noisy_prob = min(max(prob + random.gauss(0, 0.04), 0.01), 0.99)
+        prob = _success_prob_from_college_profile(
+            production, conference_tier, combine_speed, is_award, is_aa)
+        noisy_prob = min(max(prob + random.gauss(0, 0.05), 0.01), 0.99)
         success = 1 if random.random() < noisy_prob else 0
 
         flags = position_flags(position)
-        rows.append(
-            {
-                "games_played":       stats["games_played"],
-                "passing_touchdowns": stats["passing_touchdowns"],
-                "passing_yards":      stats["passing_yards"],
-                "rushing_touchdowns": stats["rushing_touchdowns"],
-                "rushing_yards":      stats["rushing_yards"],
-                "tackles":            stats["tackles"],
-                "sacks":              stats["sacks"],
-                "interceptions":      stats["interceptions"],
-                "pass_deflections":   stats["pass_deflections"],
-                "draft_round":        draft_round,
-                "combine_speed_score": round(combine_speed, 1),
-                "college_tier":       college_tier,
-                "production_score":   round(production, 1),
-                **flags,
-            }
-        )
+        rows.append({
+            "production_score":    round(production, 1),
+            "games_played":        float(games),
+            "combine_speed_score": round(combine_speed, 1),
+            "conference_tier":     float(conference_tier),
+            "is_award_winner":     is_award,
+            "is_all_american":     is_aa,
+            **flags,
+        })
         labels.append(success)
 
     X = pd.DataFrame(rows, columns=SUCCESS_FEATURES)
     y = pd.Series(labels)
 
     model = xgb.XGBClassifier(
-        n_estimators=300,
+        n_estimators=400,
         max_depth=5,
         learning_rate=0.04,
         subsample=0.85,
@@ -1321,8 +1581,105 @@ def train_success_model_from_synthetic(samples: int = 4000) -> xgb.XGBClassifier
     )
     model.fit(X, y)
     model.save_model(SUCCESS_MODEL_PATH)
-    print(f"Trained and saved improved success model: {SUCCESS_MODEL_PATH}")
+    print(f"Trained and saved success model (no draft_round): {SUCCESS_MODEL_PATH}")
     return model
+
+
+def train_draft_grade_model() -> xgb.XGBClassifier:
+    """Train multiclass draft grade model (0=Top50, 1=Day2, 2=LateRound, 3=UDFA)."""
+    random.seed(42)
+
+    positions = ["QB", "RB", "WR", "TE", "LB", "CB", "S", "DL", "OL", "OTHER"]
+    weights   = [0.15, 0.14, 0.20, 0.08, 0.10, 0.10, 0.08, 0.08, 0.04, 0.03]
+
+    rows, labels = [], []
+
+    # Seed players (real ground truth, weighted 5x)
+    for sp in SEED_TRAINING_PLAYERS * 5:
+        flags = position_flags(sp["position"])
+        rows.append({
+            "production_score":    float(sp["production_score"]),
+            "games_played":        float(sp["games_played"]),
+            "combine_speed_score": float(sp["combine_speed_score"]),
+            "conference_tier":     float(sp["conference_tier"]),
+            "is_award_winner":     int(sp["is_award_winner"]),
+            "is_all_american":     int(sp["is_all_american"]),
+            **flags,
+        })
+        labels.append(sp["draft_grade"])
+
+    # Synthetic samples
+    for _ in range(5000):
+        position = random.choices(positions, weights=weights, k=1)[0]
+        conference_tier = random.choices(range(1, 11), weights=[14,12,11,10,9,9,8,8,7,12], k=1)[0]
+        combine_speed = float(max(0, min(100, random.gauss(62, 18))))
+        production = float(max(0, min(100, random.gauss(65, 22))))
+        is_award = int(random.random() < 0.04)
+        is_aa    = int(random.random() < 0.08)
+        games    = random.randint(8, 16)
+
+        grade = _draft_grade_from_profile(production, conference_tier, combine_speed, is_award, is_aa)
+        # Add noise — scouts sometimes reach or pass
+        noisy = min(3, max(0, grade + random.choices([-1, 0, 0, 0, 1], k=1)[0]))
+
+        flags = position_flags(position)
+        rows.append({
+            "production_score":    round(production, 1),
+            "games_played":        float(games),
+            "combine_speed_score": round(combine_speed, 1),
+            "conference_tier":     float(conference_tier),
+            "is_award_winner":     is_award,
+            "is_all_american":     is_aa,
+            **flags,
+        })
+        labels.append(noisy)
+
+    X = pd.DataFrame(rows, columns=DRAFT_GRADE_FEATURES)
+    y = pd.Series(labels)
+
+    model = xgb.XGBClassifier(
+        n_estimators=400,
+        max_depth=5,
+        learning_rate=0.04,
+        subsample=0.85,
+        colsample_bytree=0.85,
+        min_child_weight=2,
+        gamma=0.1,
+        objective="multi:softprob",
+        random_state=42,
+        eval_metric="mlogloss",
+    )
+    model.fit(X, y)
+    model.save_model(DRAFT_GRADE_MODEL_PATH)
+    print(f"Trained and saved draft grade model: {DRAFT_GRADE_MODEL_PATH}")
+    return model
+
+
+def load_or_train_draft_grade_model() -> None:
+    global draft_grade_model
+    if os.path.exists(DRAFT_GRADE_MODEL_PATH):
+        m = xgb.XGBClassifier()
+        m.load_model(DRAFT_GRADE_MODEL_PATH)
+        draft_grade_model = m
+        print("Draft grade model loaded.")
+        return
+    print("Draft grade model not found. Training...")
+    draft_grade_model = train_draft_grade_model()
+
+
+def predict_draft_grade(player_stats: Dict[str, object]) -> Tuple[Optional[str], Optional[int], Optional[float]]:
+    """Return (label, grade_class, top_class_probability) for draft grade prediction."""
+    if draft_grade_model is None:
+        return None, None, None
+    try:
+        model_input = build_success_features(player_stats)  # same _BASE_FEATURES
+        proba = draft_grade_model.predict_proba(model_input)[0]
+        grade_class = int(proba.argmax())
+        label = DRAFT_GRADE_LABELS[grade_class]
+        return label, grade_class, round(float(proba[grade_class]) * 100.0, 1)
+    except Exception as exc:
+        print(f"Draft grade inference failed: {exc}")
+        return None, None, None
 
 
 def load_or_train_success_model() -> None:
@@ -1376,19 +1733,20 @@ def predict_position_with_model(player_stats: Dict[str, object]) -> Optional[str
 
 
 FEATURE_DISPLAY_NAMES = {
-    "draft_round":          "Draft Round",
     "production_score":     "Production Score",
     "combine_speed_score":  "Combine Athleticism",
-    "college_tier":         "College Competition Level",
+    "conference_tier":      "College Competition Level",
     "games_played":         "Games Played",
-    "passing_touchdowns":   "Passing TDs",
-    "passing_yards":        "Passing Yards",
-    "rushing_touchdowns":   "Rushing TDs",
-    "rushing_yards":        "Rushing Yards",
+    "is_award_winner":      "Award Winner",
+    "is_all_american":      "All-American",
     "position_qb":          "Position: QB",
     "position_rb":          "Position: RB",
     "position_wr":          "Position: WR",
     "position_te":          "Position: TE",
+    "position_db":          "Position: DB",
+    "position_lb":          "Position: LB",
+    "position_dl":          "Position: DL",
+    "position_ol":          "Position: OL",
     "position_other":       "Position: Other",
 }
 
@@ -1728,12 +2086,16 @@ def predict():
     if not success_label:
         success_label, confidence, reasoning = determine_success_fallback(player_data, predicted_position)
     else:
-        reasoning = "Direct ML success classifier prediction from player usage and production features."
+        reasoning = "XGBoost prediction from college production, athleticism, conference tier, and accolades."
+
+    # Draft grade prediction (independent multiclass model)
+    draft_grade_label_str, draft_grade_class, draft_grade_prob = predict_draft_grade(player_data)
 
     position = str(player_data.get("position", "Unknown"))
     draft_round = int(player_data.get("draft_round") or 8)
     combine_speed = float(player_data.get("combine_speed_score") or 50.0)
-    college_tier = int(player_data.get("college_tier") or 3)
+    conference_tier = int(player_data.get("conference_tier") or classify_college_tier(
+        str(player_data.get("team", "") or "")))
     production = float(
         player_data.get("production_score")
         or compute_production_score(position, player_data)
@@ -1742,13 +2104,22 @@ def predict():
     round_labels = {1: "1st", 2: "2nd", 3: "3rd", 4: "4th",
                     5: "5th", 6: "6th", 7: "7th", 8: "Undrafted"}
 
-    # Detect NFL team stored in DB → show clearer label
     stored_team = str(player_data.get("team", "") or "")
     is_nfl_player = any(kw in stored_team.lower() for kw in NFL_FRANCHISE_KEYWORDS)
     if is_nfl_player:
         tier_label = "Power 5 (NFL Pro)"
+    elif conference_tier == 1:
+        tier_label = "Tier 1 (Elite P5)"
+    elif conference_tier <= 2:
+        tier_label = "Tier 2 (Major P5)"
+    elif conference_tier <= 4:
+        tier_label = "Tier 3-4 (P5/G5)"
+    elif conference_tier <= 6:
+        tier_label = "Tier 5-6 (G5)"
+    elif conference_tier <= 8:
+        tier_label = "Tier 7-8 (Mid-Major)"
     else:
-        tier_label = {1: "Power 5", 2: "Group of 5", 3: "FCS / Other"}.get(college_tier, "Unknown")
+        tier_label = "Tier 9-10 (FCS)"
 
     season_label = str(player_data.get("_season") or "")
     completion_pct = str(player_data.get("_completion_pct") or "")
@@ -1756,10 +2127,10 @@ def predict():
     qb_rating = str(player_data.get("_qb_rating") or "")
 
     summary = {
-        "draft_projection": round_labels.get(draft_round, "Undrafted"),
+        "draft_grade":         draft_grade_label_str or round_labels.get(draft_round, "Undrafted"),
         "combine_athleticism": f"{combine_speed:.0f} / 100",
-        "college_tier": tier_label,
-        "production_score": f"{production:.0f} / 100",
+        "college_level":       tier_label,
+        "production_score":    f"{production:.0f} / 100",
     }
     if season_label:
         summary["season"] = season_label
@@ -1772,20 +2143,23 @@ def predict():
 
     return jsonify(
         {
-            "requested_name": player_name,
-            "resolved_name": str(player_data.get("name", player_name)),
-            "success": success_label,
-            "confidence": confidence,
-            "reasoning": reasoning,
-            "predicted_position": predicted_position,
+            "requested_name":      player_name,
+            "resolved_name":       str(player_data.get("name", player_name)),
+            "success":             success_label,
+            "confidence":          confidence,
+            "reasoning":           reasoning,
+            "predicted_position":  predicted_position,
             "success_probability": success_probability,
-            "model_confidence": confidence,
-            "model_used": model_used,
-            "model_type": "success_classifier",
-            "data_source": data_source,
-            "stats": player_data,
-            "summary": summary,
-            "top_factors": top_feature_importances(4),
+            "model_confidence":    confidence,
+            "model_used":          model_used,
+            "model_type":          "success_classifier",
+            "data_source":         data_source,
+            "draft_grade":         draft_grade_label_str,
+            "draft_grade_class":   draft_grade_class,
+            "draft_grade_prob":    draft_grade_prob,
+            "stats":               player_data,
+            "summary":             summary,
+            "top_factors":         top_feature_importances(4),
         }
     )
 
@@ -1793,6 +2167,7 @@ def predict():
 initialize_player_database()
 load_position_model_artifacts()
 load_or_train_success_model()
+load_or_train_draft_grade_model()
 
 AUTO_SYNC_COLLEGE_PROSPECTS = os.getenv("AUTO_SYNC_COLLEGE_PROSPECTS", "true").lower() == "true"
 if AUTO_SYNC_COLLEGE_PROSPECTS and player_database_count_by_source("college_prospect") == 0:

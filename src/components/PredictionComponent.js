@@ -431,14 +431,39 @@ export default function PredictionComponent() {
                       {prediction?.resolved_name || selected?.name}
                     </h2>
                   </div>
-                  <div style={{
-                    padding: '0.65rem 1.25rem', borderRadius: '10px', textAlign: 'center',
-                    background: isSuccess ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
-                    border: `2px solid ${isSuccess ? '#22c55e' : '#ef4444'}`,
-                  }}>
-                    <div style={{ fontSize: '1.6rem' }}>{isSuccess ? '✅' : '❌'}</div>
-                    <div style={{ fontWeight: 800, color: isSuccess ? '#22c55e' : '#ef4444', fontSize: '0.95rem', marginTop: '2px' }}>
-                      {isSuccess ? 'NFL Ready' : 'Unlikely'}
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                    {/* Draft Grade badge */}
+                    {prediction?.draft_grade && (
+                      <div style={{
+                        padding: '0.65rem 1.1rem', borderRadius: '10px', textAlign: 'center',
+                        background: prediction.draft_grade_class === 0 ? 'rgba(245,158,11,0.15)'
+                          : prediction.draft_grade_class === 1 ? 'rgba(99,102,241,0.15)'
+                          : 'rgba(100,116,139,0.15)',
+                        border: `2px solid ${prediction.draft_grade_class === 0 ? '#f59e0b'
+                          : prediction.draft_grade_class === 1 ? '#6366f1'
+                          : '#64748b'}`,
+                        minWidth: '110px',
+                      }}>
+                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Draft Projection</div>
+                        <div style={{
+                          fontWeight: 800, fontSize: '0.85rem', marginTop: '3px',
+                          color: prediction.draft_grade_class === 0 ? '#f59e0b'
+                            : prediction.draft_grade_class === 1 ? '#818cf8'
+                            : '#94a3b8',
+                        }}>{prediction.draft_grade}</div>
+                      </div>
+                    )}
+                    {/* NFL Success badge */}
+                    <div style={{
+                      padding: '0.65rem 1.25rem', borderRadius: '10px', textAlign: 'center',
+                      background: isSuccess ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                      border: `2px solid ${isSuccess ? '#22c55e' : '#ef4444'}`,
+                      minWidth: '100px',
+                    }}>
+                      <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>NFL Success</div>
+                      <div style={{ fontWeight: 800, color: isSuccess ? '#22c55e' : '#ef4444', fontSize: '0.95rem', marginTop: '3px' }}>
+                        {isSuccess ? 'Likely' : 'Unlikely'}
+                      </div>
                     </div>
                   </div>
                 </div>
