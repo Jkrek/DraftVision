@@ -18,18 +18,41 @@ import threading
 from typing import Dict, Optional, Tuple
 
 import joblib
+import numpy as np
 import pandas as pd
 import requests
 import xgboost as xgb
 from flask import Flask, jsonify, redirect, request, send_from_directory
 from flask_cors import CORS
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.model_selection import train_test_split
 
-POSITION_MODEL_PATH  = "nfl_xgboost_model.json"
-ENCODER_PATH         = "label_encoders.pkl"
-SUCCESS_MODEL_PATH   = "success_xgboost_model.json"
-DRAFT_GRADE_MODEL_PATH = "draft_grade_model.json"
-TRAINING_DATA_PATH   = "training_data/combine_outcomes.csv"
-PROSPECT_CACHE_PATH  = "training_data/prospect_cache.json"
+# Optional heavy models — imported at module level so startup clearly shows status
+try:
+    from catboost import CatBoostClassifier
+    CATBOOST_AVAILABLE = True
+except ImportError:
+    CATBOOST_AVAILABLE = False
+    print("CatBoost not installed (pip install catboost) — XGBoost-only mode")
+
+try:
+    from tabpfn import TabPFNClassifier
+    TABPFN_AVAILABLE = True
+except ImportError:
+    TABPFN_AVAILABLE = False
+    print("TabPFN not installed (pip install tabpfn) — skipping TabPFN model")
+
+POSITION_MODEL_PATH        = "nfl_xgboost_model.json"
+ENCODER_PATH               = "label_encoders.pkl"
+SUCCESS_MODEL_PATH         = "success_xgboost_model.json"        # raw XGBoost (legacy load)
+SUCCESS_CALIBRATED_PATH    = "success_calibrated_model.pkl"      # CalibratedClassifierCV (primary)
+CATBOOST_SUCCESS_PATH      = "catboost_success_model.cbm"
+TABPFN_SUCCESS_PATH        = "tabpfn_success_model.pkl"
+DRAFT_GRADE_MODEL_PATH     = "draft_grade_model.json"            # raw XGBoost
+DRAFT_GRADE_CALIBRATED_PATH = "draft_grade_calibrated_model.pkl" # calibrated primary
+CATBOOST_DRAFT_GRADE_PATH  = "catboost_draft_grade_model.cbm"
+TRAINING_DATA_PATH         = "training_data/combine_outcomes.csv"
+PROSPECT_CACHE_PATH        = "training_data/prospect_cache.json"
 PLAYER_DATA_PATH     = "nfl_players.csv"
 PLAYER_DB_PATH       = "players.db"
 ESPN_CFB_TEAMS_URL        = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams"
@@ -362,8 +385,11 @@ def enforce_canonical_origin():
 
 position_model = None
 label_encoders = None
-success_model = None
-draft_grade_model = None
+success_model = None           # primary: CalibratedClassifierCV(XGBoost) or raw XGBoost
+catboost_success_model = None  # secondary ensemble member
+tabpfn_success_model = None    # tertiary ensemble member (optional)
+draft_grade_model = None       # primary: CalibratedClassifierCV(XGBoost) or raw XGBoost
+catboost_draft_grade_model = None
 
 SEED_PLAYERS = [
     # ── Active NFL stars (for demo / search) ────────────────────────────────
@@ -1644,19 +1670,59 @@ def _draft_grade_from_profile(
     return 3                   # UDFA
 
 
-def train_success_model_from_synthetic(samples: int = 5000) -> xgb.XGBClassifier:
-    """Train success model purely from college profile features — NO draft_round."""
+def _build_training_rows(samples: int = 4000) -> Tuple[pd.DataFrame, "pd.Series"]:
+    """
+    Build training data for both models.
+
+    Priority:
+      1. Real ESPN data from collect_training_data.py (combine_outcomes.csv) if available
+      2. SEED_TRAINING_PLAYERS (real ground-truth, weighted 5x)
+      3. Synthetic samples to pad to `samples` total
+
+    Returns (X, y_success, y_draft_grade) but callers pick which y they need.
+    """
     random.seed(42)
-
     positions = ["QB", "RB", "WR", "TE", "LB", "CB", "S", "DL", "OL", "OTHER"]
-    weights   = [0.15, 0.14, 0.20, 0.08, 0.10, 0.10, 0.08, 0.08, 0.04, 0.03]
+    pos_w     = [0.15, 0.14, 0.20, 0.08, 0.10, 0.10, 0.08, 0.08, 0.04, 0.03]
 
-    rows, labels = [], []
+    rows_s, rows_d = [], []   # success rows, draft-grade rows (same features, different labels)
+    labels_s, labels_d = [], []
 
-    # Seed players first (real historical ground truth, weighted 5x)
+    # ── 1. Real ESPN data ───────────────────────────────────────────────────
+    real_count = 0
+    if os.path.exists(TRAINING_DATA_PATH):
+        try:
+            df_real = pd.read_csv(TRAINING_DATA_PATH)
+            for _, r in df_real.iterrows():
+                pos   = str(r.get("position") or "OTH").upper()
+                flags = position_flags(pos)
+                speed = float(r.get("combine_speed_score") or 50)
+                tier  = float(r.get("conference_tier") or 5)
+                # production_score not in ESPN CSV → estimate from draft_grade
+                dg    = int(r.get("draft_grade", 2) or 2)
+                prod  = max(0.0, min(100.0, 80.0 - dg * 12.0 + random.gauss(0, 8)))
+                games = float(r.get("games_played", 13) or 13)
+                ns    = int(r.get("nfl_success", 0) or 0)
+                row = {
+                    "production_score":    round(prod, 1),
+                    "games_played":        games,
+                    "combine_speed_score": round(speed, 1),
+                    "conference_tier":     tier,
+                    "is_award_winner":     0,
+                    "is_all_american":     0,
+                    **flags,
+                }
+                rows_s.append(row); labels_s.append(ns)
+                rows_d.append(row); labels_d.append(min(3, max(0, dg)))
+                real_count += 1
+            print(f"  Loaded {real_count} real ESPN training rows from {TRAINING_DATA_PATH}")
+        except Exception as exc:
+            print(f"  Real data load failed ({exc}) — using synthetic only")
+
+    # ── 2. Seed players (always included, 5× weight) ────────────────────────
     for sp in SEED_TRAINING_PLAYERS * 5:
         flags = position_flags(sp["position"])
-        rows.append({
+        row = {
             "production_score":    float(sp["production_score"]),
             "games_played":        float(sp["games_played"]),
             "combine_speed_score": float(sp["combine_speed_score"]),
@@ -1664,112 +1730,152 @@ def train_success_model_from_synthetic(samples: int = 5000) -> xgb.XGBClassifier
             "is_award_winner":     int(sp["is_award_winner"]),
             "is_all_american":     int(sp["is_all_american"]),
             **flags,
-        })
-        labels.append(sp["nfl_success"])
+        }
+        rows_s.append(row); labels_s.append(sp["nfl_success"])
+        rows_d.append(row); labels_d.append(sp["draft_grade"])
 
-    # Synthetic samples calibrated to college-profile → NFL success relationship
-    for _ in range(samples):
-        position = random.choices(positions, weights=weights, k=1)[0]
-        conference_tier = random.choices(range(1, 11), weights=[14,12,11,10,9,9,8,8,7,12], k=1)[0]
-        combine_speed = float(max(0, min(100, random.gauss(62, 18))))
-        production = float(max(0, min(100, random.gauss(65, 22))))
-        is_award = int(random.random() < 0.04)
-        is_aa    = int(random.random() < 0.08)
-        games    = random.randint(8, 16)
+    # ── 3. Synthetic samples ─────────────────────────────────────────────────
+    # Higher label noise (0.12) so the model learns robust boundaries, not
+    # a thin approximation of our heuristic function.
+    needed = max(0, samples - len(rows_s))
+    for _ in range(needed):
+        position    = random.choices(positions, weights=pos_w, k=1)[0]
+        tier        = random.choices(range(1, 11), weights=[14,12,11,10,9,9,8,8,7,12], k=1)[0]
+        speed       = float(max(0, min(100, random.gauss(62, 18))))
+        production  = float(max(0, min(100, random.gauss(65, 22))))
+        is_award    = int(random.random() < 0.04)
+        is_aa       = int(random.random() < 0.08)
+        games       = random.randint(8, 16)
 
-        prob = _success_prob_from_college_profile(
-            production, conference_tier, combine_speed, is_award, is_aa)
-        noisy_prob = min(max(prob + random.gauss(0, 0.05), 0.01), 0.99)
-        success = 1 if random.random() < noisy_prob else 0
+        prob_s = _success_prob_from_college_profile(production, tier, speed, is_award, is_aa)
+        noisy_s = min(max(prob_s + random.gauss(0, 0.12), 0.01), 0.99)
+        success = 1 if random.random() < noisy_s else 0
+
+        grade_d = _draft_grade_from_profile(production, tier, speed, is_award, is_aa)
+        noisy_d = min(3, max(0, grade_d + random.choices([-1, 0, 0, 0, 1], k=1)[0]))
 
         flags = position_flags(position)
-        rows.append({
+        row = {
             "production_score":    round(production, 1),
             "games_played":        float(games),
-            "combine_speed_score": round(combine_speed, 1),
-            "conference_tier":     float(conference_tier),
+            "combine_speed_score": round(speed, 1),
+            "conference_tier":     float(tier),
             "is_award_winner":     is_award,
             "is_all_american":     is_aa,
             **flags,
-        })
-        labels.append(success)
+        }
+        rows_s.append(row); labels_s.append(success)
+        rows_d.append(row); labels_d.append(noisy_d)
 
-    X = pd.DataFrame(rows, columns=SUCCESS_FEATURES)
-    y = pd.Series(labels)
+    X_s = pd.DataFrame(rows_s, columns=SUCCESS_FEATURES)
+    X_d = pd.DataFrame(rows_d, columns=DRAFT_GRADE_FEATURES)
+    return X_s, pd.Series(labels_s), X_d, pd.Series(labels_d)
 
-    model = xgb.XGBClassifier(
-        n_estimators=400,
-        max_depth=5,
-        learning_rate=0.04,
+
+def train_success_model_from_synthetic(samples: int = 4000):
+    """
+    Train the full success model ensemble:
+      1. XGBoost  — calibrated with Platt scaling (saved as .pkl)
+      2. CatBoost — if available (saved as .cbm)
+      3. TabPFN   — if available (saved as .pkl)
+
+    Returns the primary calibrated XGBoost model.
+    """
+    global catboost_success_model, tabpfn_success_model
+
+    print("Building training data…")
+    X, y, _, _ = _build_training_rows(samples)
+
+    # Class balance ratio for scale_pos_weight
+    n_neg = int((y == 0).sum()); n_pos = int((y == 1).sum())
+    spw = round(n_neg / max(n_pos, 1), 2)
+    print(f"  Success labels: {n_pos} positive / {n_neg} negative  (scale_pos_weight={spw})")
+
+    # Train / calibration split — stratified so calibration set has both classes
+    X_train, X_cal, y_train, y_cal = train_test_split(
+        X, y, test_size=0.20, random_state=42, stratify=y)
+
+    # ── 1. XGBoost + Platt calibration ──────────────────────────────────────
+    xgb_base = xgb.XGBClassifier(
+        n_estimators=300,
+        max_depth=4,              # reduced from 5 to limit overfitting on small data
+        learning_rate=0.05,
         subsample=0.85,
         colsample_bytree=0.85,
         min_child_weight=3,
         gamma=0.1,
+        scale_pos_weight=spw,     # fix class imbalance
         random_state=42,
         eval_metric="logloss",
     )
-    model.fit(X, y)
-    model.save_model(SUCCESS_MODEL_PATH)
-    print(f"Trained and saved success model (no draft_round): {SUCCESS_MODEL_PATH}")
-    return model
+    xgb_base.fit(X_train, y_train)
+    xgb_base.save_model(SUCCESS_MODEL_PATH)  # keep raw for legacy loading
+
+    calibrated = CalibratedClassifierCV(xgb_base, method="sigmoid", cv="prefit")
+    calibrated.fit(X_cal, y_cal)
+    joblib.dump(calibrated, SUCCESS_CALIBRATED_PATH)
+    print(f"  Saved calibrated XGBoost → {SUCCESS_CALIBRATED_PATH}")
+
+    # ── 2. CatBoost ─────────────────────────────────────────────────────────
+    if CATBOOST_AVAILABLE:
+        try:
+            cb = CatBoostClassifier(
+                iterations=300, depth=5, learning_rate=0.05,
+                eval_metric="AUC", random_seed=42, verbose=0,
+                class_weights={0: 1.0, 1: float(spw)},
+                loss_function="Logloss",
+            )
+            cb.fit(X_train, y_train)
+            cb.save_model(CATBOOST_SUCCESS_PATH)
+            catboost_success_model = cb
+            print(f"  Saved CatBoost success model → {CATBOOST_SUCCESS_PATH}")
+        except Exception as exc:
+            print(f"  CatBoost training failed: {exc}")
+
+    # ── 3. TabPFN ────────────────────────────────────────────────────────────
+    if TABPFN_AVAILABLE:
+        try:
+            # TabPFN works best with ≤10k samples; subsample if larger
+            max_tabpfn = 3000
+            if len(X_train) > max_tabpfn:
+                idx = np.random.choice(len(X_train), max_tabpfn, replace=False)
+                X_tf = X_train.iloc[idx]; y_tf = y_train.iloc[idx]
+            else:
+                X_tf = X_train; y_tf = y_train
+            tfpn = TabPFNClassifier(device="cpu", n_estimators=16)
+            tfpn.fit(X_tf.values, y_tf.values)
+            joblib.dump(tfpn, TABPFN_SUCCESS_PATH)
+            tabpfn_success_model = tfpn
+            print(f"  Saved TabPFN success model → {TABPFN_SUCCESS_PATH}")
+        except Exception as exc:
+            print(f"  TabPFN training skipped: {exc}")
+
+    return calibrated
 
 
-def train_draft_grade_model() -> xgb.XGBClassifier:
-    """Train multiclass draft grade model (0=Top50, 1=Day2, 2=LateRound, 3=UDFA)."""
-    random.seed(42)
+def train_draft_grade_model():
+    """
+    Train the draft grade ensemble:
+      1. XGBoost multiclass — calibrated (saved as .pkl)
+      2. CatBoost multiclass — if available (saved as .cbm)
 
-    positions = ["QB", "RB", "WR", "TE", "LB", "CB", "S", "DL", "OL", "OTHER"]
-    weights   = [0.15, 0.14, 0.20, 0.08, 0.10, 0.10, 0.08, 0.08, 0.04, 0.03]
+    Returns the primary calibrated XGBoost model.
+    """
+    global catboost_draft_grade_model
 
-    rows, labels = [], []
+    print("Building draft grade training data…")
+    _, _, X, y = _build_training_rows(4000)
 
-    # Seed players (real ground truth, weighted 5x)
-    for sp in SEED_TRAINING_PLAYERS * 5:
-        flags = position_flags(sp["position"])
-        rows.append({
-            "production_score":    float(sp["production_score"]),
-            "games_played":        float(sp["games_played"]),
-            "combine_speed_score": float(sp["combine_speed_score"]),
-            "conference_tier":     float(sp["conference_tier"]),
-            "is_award_winner":     int(sp["is_award_winner"]),
-            "is_all_american":     int(sp["is_all_american"]),
-            **flags,
-        })
-        labels.append(sp["draft_grade"])
+    print(f"  Draft grade distribution: {dict(y.value_counts().sort_index())}")
 
-    # Synthetic samples
-    for _ in range(5000):
-        position = random.choices(positions, weights=weights, k=1)[0]
-        conference_tier = random.choices(range(1, 11), weights=[14,12,11,10,9,9,8,8,7,12], k=1)[0]
-        combine_speed = float(max(0, min(100, random.gauss(62, 18))))
-        production = float(max(0, min(100, random.gauss(65, 22))))
-        is_award = int(random.random() < 0.04)
-        is_aa    = int(random.random() < 0.08)
-        games    = random.randint(8, 16)
+    X_train, X_cal, y_train, y_cal = train_test_split(
+        X, y, test_size=0.20, random_state=42, stratify=y)
 
-        grade = _draft_grade_from_profile(production, conference_tier, combine_speed, is_award, is_aa)
-        # Add noise — scouts sometimes reach or pass
-        noisy = min(3, max(0, grade + random.choices([-1, 0, 0, 0, 1], k=1)[0]))
-
-        flags = position_flags(position)
-        rows.append({
-            "production_score":    round(production, 1),
-            "games_played":        float(games),
-            "combine_speed_score": round(combine_speed, 1),
-            "conference_tier":     float(conference_tier),
-            "is_award_winner":     is_award,
-            "is_all_american":     is_aa,
-            **flags,
-        })
-        labels.append(noisy)
-
-    X = pd.DataFrame(rows, columns=DRAFT_GRADE_FEATURES)
-    y = pd.Series(labels)
-
-    model = xgb.XGBClassifier(
-        n_estimators=400,
-        max_depth=5,
-        learning_rate=0.04,
+    # ── 1. XGBoost multiclass + calibration ─────────────────────────────────
+    xgb_base = xgb.XGBClassifier(
+        n_estimators=300,
+        max_depth=4,
+        learning_rate=0.05,
         subsample=0.85,
         colsample_bytree=0.85,
         min_child_weight=2,
@@ -1778,51 +1884,123 @@ def train_draft_grade_model() -> xgb.XGBClassifier:
         random_state=42,
         eval_metric="mlogloss",
     )
-    model.fit(X, y)
-    model.save_model(DRAFT_GRADE_MODEL_PATH)
-    print(f"Trained and saved draft grade model: {DRAFT_GRADE_MODEL_PATH}")
-    return model
+    xgb_base.fit(X_train, y_train)
+    xgb_base.save_model(DRAFT_GRADE_MODEL_PATH)
+
+    calibrated = CalibratedClassifierCV(xgb_base, method="sigmoid", cv="prefit")
+    calibrated.fit(X_cal, y_cal)
+    joblib.dump(calibrated, DRAFT_GRADE_CALIBRATED_PATH)
+    print(f"  Saved calibrated XGBoost draft grade → {DRAFT_GRADE_CALIBRATED_PATH}")
+
+    # ── 2. CatBoost multiclass ───────────────────────────────────────────────
+    if CATBOOST_AVAILABLE:
+        try:
+            cb = CatBoostClassifier(
+                iterations=300, depth=5, learning_rate=0.05,
+                random_seed=42, verbose=0,
+                loss_function="MultiClass",
+                classes_count=4,
+            )
+            cb.fit(X_train, y_train)
+            cb.save_model(CATBOOST_DRAFT_GRADE_PATH)
+            catboost_draft_grade_model = cb
+            print(f"  Saved CatBoost draft grade model → {CATBOOST_DRAFT_GRADE_PATH}")
+        except Exception as exc:
+            print(f"  CatBoost draft grade training failed: {exc}")
+
+    return calibrated
 
 
 def load_or_train_draft_grade_model() -> None:
-    global draft_grade_model
-    if os.path.exists(DRAFT_GRADE_MODEL_PATH):
+    global draft_grade_model, catboost_draft_grade_model
+
+    # Load calibrated pkl (preferred) or fall back to raw JSON
+    if os.path.exists(DRAFT_GRADE_CALIBRATED_PATH):
+        draft_grade_model = joblib.load(DRAFT_GRADE_CALIBRATED_PATH)
+        print("Draft grade model loaded (calibrated).")
+    elif os.path.exists(DRAFT_GRADE_MODEL_PATH):
         m = xgb.XGBClassifier()
         m.load_model(DRAFT_GRADE_MODEL_PATH)
         draft_grade_model = m
-        print("Draft grade model loaded.")
+        print("Draft grade model loaded (raw XGBoost).")
+    else:
+        print("Draft grade model not found. Training ensemble…")
+        draft_grade_model = train_draft_grade_model()
         return
-    print("Draft grade model not found. Training...")
-    draft_grade_model = train_draft_grade_model()
+
+    # Load CatBoost companion if available
+    if CATBOOST_AVAILABLE and os.path.exists(CATBOOST_DRAFT_GRADE_PATH):
+        try:
+            cb = CatBoostClassifier()
+            cb.load_model(CATBOOST_DRAFT_GRADE_PATH)
+            catboost_draft_grade_model = cb
+            print("CatBoost draft grade model loaded.")
+        except Exception as exc:
+            print(f"CatBoost draft grade load failed: {exc}")
 
 
 def predict_draft_grade(player_stats: Dict[str, object]) -> Tuple[Optional[str], Optional[int], Optional[float]]:
-    """Return (label, grade_class, top_class_probability) for draft grade prediction."""
-    if draft_grade_model is None:
+    """Ensemble draft grade: average softmax probabilities across all available models."""
+    model_input  = build_success_features(player_stats)
+    X_arr        = model_input.values
+    proba_arrays = []
+
+    if draft_grade_model is not None:
+        try:
+            proba_arrays.append(np.array(draft_grade_model.predict_proba(model_input)[0], dtype=float))
+        except Exception as exc:
+            print(f"XGBoost draft grade inference failed: {exc}")
+
+    if catboost_draft_grade_model is not None:
+        try:
+            proba_arrays.append(np.array(catboost_draft_grade_model.predict_proba(X_arr)[0], dtype=float))
+        except Exception as exc:
+            print(f"CatBoost draft grade inference failed: {exc}")
+
+    if not proba_arrays:
         return None, None, None
-    try:
-        model_input = build_success_features(player_stats)  # same _BASE_FEATURES
-        proba = draft_grade_model.predict_proba(model_input)[0]
-        grade_class = int(proba.argmax())
-        label = DRAFT_GRADE_LABELS[grade_class]
-        return label, grade_class, round(float(proba[grade_class]) * 100.0, 1)
-    except Exception as exc:
-        print(f"Draft grade inference failed: {exc}")
-        return None, None, None
+
+    avg_proba   = np.mean(proba_arrays, axis=0)
+    grade_class = int(avg_proba.argmax())
+    label       = DRAFT_GRADE_LABELS[grade_class]
+    return label, grade_class, round(float(avg_proba[grade_class]) * 100.0, 1)
+
 
 
 def load_or_train_success_model() -> None:
-    global success_model
+    global success_model, catboost_success_model, tabpfn_success_model
 
-    if os.path.exists(SUCCESS_MODEL_PATH):
-        loaded_model = xgb.XGBClassifier()
-        loaded_model.load_model(SUCCESS_MODEL_PATH)
-        success_model = loaded_model
-        print("Success model loaded.")
+    # Load calibrated pkl (preferred) or fall back to raw XGBoost JSON
+    if os.path.exists(SUCCESS_CALIBRATED_PATH):
+        success_model = joblib.load(SUCCESS_CALIBRATED_PATH)
+        print("Success model loaded (calibrated XGBoost).")
+    elif os.path.exists(SUCCESS_MODEL_PATH):
+        m = xgb.XGBClassifier()
+        m.load_model(SUCCESS_MODEL_PATH)
+        success_model = m
+        print("Success model loaded (raw XGBoost — re-train recommended).")
+    else:
+        print("Success model not found. Training ensemble…")
+        success_model = train_success_model_from_synthetic()
         return
 
-    print("Success model not found. Training a new one from synthetic samples...")
-    success_model = train_success_model_from_synthetic()
+    # Load CatBoost companion
+    if CATBOOST_AVAILABLE and os.path.exists(CATBOOST_SUCCESS_PATH):
+        try:
+            cb = CatBoostClassifier()
+            cb.load_model(CATBOOST_SUCCESS_PATH)
+            catboost_success_model = cb
+            print("CatBoost success model loaded.")
+        except Exception as exc:
+            print(f"CatBoost success load failed: {exc}")
+
+    # Load TabPFN companion
+    if TABPFN_AVAILABLE and os.path.exists(TABPFN_SUCCESS_PATH):
+        try:
+            tabpfn_success_model = joblib.load(TABPFN_SUCCESS_PATH)
+            print("TabPFN success model loaded.")
+        except Exception as exc:
+            print(f"TabPFN success load failed: {exc}")
 
 
 def predict_position_with_model(player_stats: Dict[str, object]) -> Optional[str]:
@@ -1900,18 +2078,42 @@ def top_feature_importances(n: int = 4) -> list:
 
 
 def predict_success_with_model(player_stats: Dict[str, object]) -> Tuple[Optional[str], Optional[float], Optional[float], bool]:
-    if success_model is None:
+    """Ensemble prediction: average predict_proba from all available models."""
+    model_input = build_success_features(player_stats)
+    X_arr = model_input.values  # numpy array for CatBoost / TabPFN
+
+    probas = []
+
+    # 1. Primary: calibrated XGBoost (or raw fallback)
+    if success_model is not None:
+        try:
+            probas.append(float(success_model.predict_proba(model_input)[0][1]))
+        except Exception as exc:
+            print(f"XGBoost success inference failed: {exc}")
+
+    # 2. CatBoost
+    if catboost_success_model is not None:
+        try:
+            probas.append(float(catboost_success_model.predict_proba(X_arr)[0][1]))
+        except Exception as exc:
+            print(f"CatBoost success inference failed: {exc}")
+
+    # 3. TabPFN
+    if tabpfn_success_model is not None:
+        try:
+            probas.append(float(tabpfn_success_model.predict_proba(X_arr)[0][1]))
+        except Exception as exc:
+            print(f"TabPFN success inference failed: {exc}")
+
+    if not probas:
         return None, None, None, False
 
-    try:
-        model_input = build_success_features(player_stats)
-        probability = float(success_model.predict_proba(model_input)[0][1])
-        label = "Success" if probability >= 0.5 else "No Success"
-        confidence = round((probability if label == "Success" else 1.0 - probability) * 100.0, 1)
-        return label, confidence, round(probability * 100.0, 1), True
-    except Exception as exc:
-        print(f"Success model inference failed: {exc}")
-        return None, None, None, False
+    probability = sum(probas) / len(probas)
+    label = "Success" if probability >= 0.5 else "No Success"
+    confidence = round((probability if label == "Success" else 1.0 - probability) * 100.0, 1)
+    models_used = len(probas)
+    _ = models_used  # available for logging if needed
+    return label, confidence, round(probability * 100.0, 1), True
 
 
 def determine_success_fallback(player_stats: Dict[str, object], projected_position: str) -> Tuple[str, float, str]:
