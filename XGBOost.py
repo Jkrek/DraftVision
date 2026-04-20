@@ -8,6 +8,7 @@ Future Star Predictor backend.
 - Falls back to rule scoring only if model inference is unavailable.
 """
 
+import json
 import os
 import random
 import sqlite3
@@ -28,6 +29,7 @@ ENCODER_PATH         = "label_encoders.pkl"
 SUCCESS_MODEL_PATH   = "success_xgboost_model.json"
 DRAFT_GRADE_MODEL_PATH = "draft_grade_model.json"
 TRAINING_DATA_PATH   = "training_data/combine_outcomes.csv"
+PROSPECT_CACHE_PATH  = "training_data/prospect_cache.json"
 PLAYER_DATA_PATH     = "nfl_players.csv"
 PLAYER_DB_PATH       = "players.db"
 ESPN_CFB_TEAMS_URL        = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams"
@@ -1950,6 +1952,99 @@ def cache_invalidate(key: str) -> None:
         _cache.pop(key, None)
 
 
+# ── Prospect leaderboard cache ────────────────────────────────────────────────
+_PROSPECT_CACHE: list = []
+_PROSPECT_CACHE_META: dict = {}
+
+_POS_GROUPS = {
+    "DB": {"CB", "S", "DB", "FS", "SS"},
+    "LB": {"LB", "ILB", "OLB", "MLB"},
+    "DL": {"DL", "DE", "DT", "EDGE", "NT"},
+    "OL": {"OL", "OT", "OG", "C", "LS"},
+}
+_GRADE_ORDER = {"A+": 0, "A": 1, "A-": 2, "B+": 3, "B": 4, "B-": 5, "C+": 6, "C": 7, "C-": 8, "D": 9}
+
+
+def load_prospect_cache() -> None:
+    global _PROSPECT_CACHE, _PROSPECT_CACHE_META
+    if not os.path.exists(PROSPECT_CACHE_PATH):
+        print("Prospect cache not found (run build_prospect_cache.py to create it).")
+        return
+    try:
+        with open(PROSPECT_CACHE_PATH) as f:
+            data = json.load(f)
+        _PROSPECT_CACHE = data.get("prospects", [])
+        _PROSPECT_CACHE_META = {
+            "generated_at": data.get("generated_at"),
+            "total":        data.get("total", len(_PROSPECT_CACHE)),
+        }
+        print(f"Loaded {len(_PROSPECT_CACHE)} prospects from cache.")
+    except Exception as exc:
+        print(f"Failed to load prospect cache: {exc}")
+
+
+@app.get("/api/prospects")
+def api_prospects():
+    position     = (request.args.get("position") or "").strip().upper()
+    grade_filter = (request.args.get("grade") or "").strip().upper()
+    query        = (request.args.get("q") or "").strip().lower()
+    team_filter  = (request.args.get("team") or "").strip().lower()
+    sort_by      = (request.args.get("sort") or "grade").strip()
+    try:
+        limit  = min(int(request.args.get("limit") or 500), 2000)
+        offset = int(request.args.get("offset") or 0)
+    except (TypeError, ValueError):
+        limit, offset = 500, 0
+
+    results = _PROSPECT_CACHE
+
+    # Position filter — support group aliases (DB, LB, DL, OL)
+    if position and position not in ("", "ALL"):
+        group_set = _POS_GROUPS.get(position)
+        if group_set:
+            results = [p for p in results if (p.get("position") or "").upper() in group_set]
+        else:
+            results = [p for p in results if (p.get("position") or "").upper() == position]
+
+    # Grade filter — "A" matches A+, A, A-
+    if grade_filter and grade_filter not in ("", "ALL"):
+        results = [p for p in results if (p.get("grade") or "").upper().startswith(grade_filter)]
+
+    # Text search (name or team)
+    if query:
+        results = [p for p in results
+                   if query in (p.get("name") or "").lower()
+                   or query in (p.get("team") or "").lower()]
+
+    # Team filter
+    if team_filter and team_filter not in ("", "all"):
+        results = [p for p in results if team_filter in (p.get("team") or "").lower()]
+
+    # Sort
+    if sort_by == "name":
+        results = sorted(results, key=lambda p: (p.get("name") or "").lower())
+    elif sort_by == "success":
+        results = sorted(results, key=lambda p: -(p.get("success_probability") or 0))
+    elif sort_by == "team":
+        results = sorted(results, key=lambda p: (p.get("team") or "").lower())
+    else:  # grade (default, already sorted in cache)
+        results = sorted(results, key=lambda p: (
+            _GRADE_ORDER.get(p.get("grade"), 9),
+            -(p.get("success_probability") or 0),
+        ))
+
+    total     = len(results)
+    paginated = results[offset: offset + limit]
+
+    return jsonify({
+        "total":     total,
+        "offset":    offset,
+        "limit":     limit,
+        "meta":      _PROSPECT_CACHE_META,
+        "prospects": paginated,
+    })
+
+
 # ── Prospect grade ────────────────────────────────────────────────────────────
 
 def compute_prospect_grade(success_prob: Optional[float], draft_grade_class: Optional[int]) -> str:
@@ -2433,6 +2528,7 @@ initialize_player_database()
 load_position_model_artifacts()
 load_or_train_success_model()
 load_or_train_draft_grade_model()
+load_prospect_cache()
 
 AUTO_SYNC_COLLEGE_PROSPECTS = os.getenv("AUTO_SYNC_COLLEGE_PROSPECTS", "true").lower() == "true"
 if AUTO_SYNC_COLLEGE_PROSPECTS and player_database_count_by_source("college_prospect") == 0:

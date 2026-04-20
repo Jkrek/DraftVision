@@ -47,6 +47,11 @@ function Navbar() {
               </Link>
             </li>
             <li className="nav-item">
+              <Link to="/leaderboard" className="nav-links" onClick={closeMobileMenu}>
+                Leaderboard
+              </Link>
+            </li>
+            <li className="nav-item">
               <Link to="/services" className="nav-links" onClick={closeMobileMenu}>
                 Compare
               </Link>

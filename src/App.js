@@ -11,6 +11,7 @@ import SignUp from './components/pages/SignUp';
 import Auth0ProviderWithHistory from './auth/auth0-provider-with-history';
 
 import PredictionComponent from './components/PredictionComponent';
+import Leaderboard from './components/pages/Leaderboard';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/predict" element={<PredictionComponent />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
         </Routes>
       </Auth0ProviderWithHistory>
     </Router>

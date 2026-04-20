@@ -1,6 +1,7 @@
 import React, {
   useCallback, useEffect, useMemo, useRef, useState, memo,
 } from 'react';
+import { useLocation } from 'react-router-dom';
 import '../App.css';
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -272,6 +273,20 @@ export default function PredictionComponent() {
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated  = useMemo(() => filtered.slice(0, page * PAGE_SIZE), [filtered, page]);
+
+  // ── auto-predict from ?name= query param (e.g. navigated from Leaderboard) ─
+  const location       = useLocation();
+  const didAutoPredict = useRef(false);
+  useEffect(() => {
+    if (didAutoPredict.current) return;
+    const name = new URLSearchParams(location.search).get('name');
+    if (name && name.length >= 2) {
+      didAutoPredict.current = true;
+      // Clean the URL so a back-navigation doesn't re-trigger
+      window.history.replaceState(null, '', '/predict');
+      runPrediction({ name, position: 'UNK', team: '' });
+    }
+  }, [location.search, runPrediction]);
 
   const isSuccess  = prediction?.success === 'Success';
   const windowWidth = useWindowWidth();
