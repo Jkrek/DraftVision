@@ -16,6 +16,62 @@ const POSITION_COLORS = {
 // ── Helpers ────────────────────────────────────────────────────────────────
 function posColor(pos) { return POSITION_COLORS[pos] || POSITION_COLORS.default; }
 
+// ── Grade color helper ─────────────────────────────────────────────────────
+function gradeColor(grade) {
+  if (!grade) return '#64748b';
+  if (grade.startsWith('A')) return '#f59e0b';
+  if (grade.startsWith('B')) return '#818cf8';
+  if (grade.startsWith('C')) return '#64748b';
+  return '#ef4444';
+}
+
+// ── SVG Radar Chart ────────────────────────────────────────────────────────
+function RadarChart({ axes, size = 180 }) {
+  const cx = size / 2, cy = size / 2, r = size * 0.33;
+  const n   = axes.length;
+  const ang = (i) => (Math.PI * 2 * i / n) - Math.PI / 2;
+  const pt  = (i, v) => [cx + Math.cos(ang(i)) * r * v, cy + Math.sin(ang(i)) * r * v];
+  const outerPts = axes.map((_, i) => pt(i, 1));
+  const dataPts  = axes.map((a, i) => pt(i, Math.max(0.04, Math.min(1, a.value))));
+  const poly = pts => pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ') + 'Z';
+  return (
+    <svg width={size} height={size} style={{ overflow: 'visible' }}>
+      {[0.25, 0.5, 0.75, 1.0].map(ring => (
+        <polygon key={ring}
+          points={outerPts.map(([x,y]) => `${(cx+(x-cx)*ring).toFixed(1)},${(cy+(y-cy)*ring).toFixed(1)}`).join(' ')}
+          fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+      ))}
+      {outerPts.map(([x,y], i) => (
+        <line key={i} x1={cx.toFixed(1)} y1={cy.toFixed(1)} x2={x.toFixed(1)} y2={y.toFixed(1)}
+          stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+      ))}
+      <path d={poly(dataPts)} fill="rgba(99,102,241,0.18)" stroke="#6366f1" strokeWidth="2" strokeLinejoin="round" />
+      {dataPts.map(([x,y], i) => <circle key={i} cx={x.toFixed(1)} cy={y.toFixed(1)} r="3.5" fill="#818cf8" />)}
+      {axes.map((a, i) => {
+        const a2 = ang(i);
+        const lx = cx + Math.cos(a2) * (r + 22), ly = cy + Math.sin(a2) * (r + 22);
+        return (
+          <text key={i} x={lx.toFixed(1)} y={ly.toFixed(1)} textAnchor="middle"
+            dominantBaseline="middle" fontSize="9" fill="#64748b" fontFamily="system-ui,sans-serif">
+            {a.label}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ── useWindowWidth ─────────────────────────────────────────────────────────
+function useWindowWidth() {
+  const [w, setW] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  useEffect(() => {
+    const h = () => setW(window.innerWidth);
+    window.addEventListener('resize', h);
+    return () => window.removeEventListener('resize', h);
+  }, []);
+  return w;
+}
+
 // ── Shared styles (defined once, not recreated per render) ─────────────────
 const glassCard = {
   background: 'rgba(30,41,59,0.85)',
@@ -217,7 +273,9 @@ export default function PredictionComponent() {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated  = useMemo(() => filtered.slice(0, page * PAGE_SIZE), [filtered, page]);
 
-  const isSuccess = prediction?.success === 'Success';
+  const isSuccess  = prediction?.success === 'Success';
+  const windowWidth = useWindowWidth();
+  const isMobile   = windowWidth < 900;
 
   // ── tab style helper ──────────────────────────────────────────
   const tabStyle = (active, pos = posFilter) => ({
@@ -304,7 +362,7 @@ export default function PredictionComponent() {
         </div>
 
         {/* ── Two-panel layout ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '1.25rem', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '340px 1fr', gap: '1.25rem', alignItems: 'start' }}>
 
           {/* ── LEFT: Filter + Prospect List ── */}
           <div style={{ ...glassCard, overflow: 'hidden' }}>
@@ -412,154 +470,196 @@ export default function PredictionComponent() {
               <div style={{ ...glassCard, padding: '1.5rem', color: '#ef4444', textAlign: 'center' }}>{predError}</div>
             )}
 
-            {prediction && !predicting && (
-              <div style={{ ...glassCard, padding: '1.75rem' }}>
+            {prediction && !predicting && (() => {
+              const pos    = prediction?.predicted_position || '?';
+              const pc     = posColor(pos);
+              const grade  = prediction?.prospect_grade;
+              const gc     = gradeColor(grade);
+              const dgc    = prediction?.draft_grade_class;
+              const dgColor = dgc === 0 ? '#f59e0b' : dgc === 1 ? '#818cf8' : '#64748b';
+              const phys   = prediction?.physical || {};
+              const comps  = Array.isArray(prediction?.historical_comps) ? prediction.historical_comps : [];
 
-                {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.3rem' }}>
-                      <span style={{
-                        padding: '3px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 700,
-                        background: `${posColor(prediction?.predicted_position)}22`,
-                        border: `1px solid ${posColor(prediction?.predicted_position)}`,
-                        color: posColor(prediction?.predicted_position),
-                      }}>{prediction?.predicted_position || '?'}</span>
-                      <span style={{ color: '#64748b', fontSize: '13px' }}>{prediction?.stats?.team || ''}</span>
-                    </div>
-                    <h2 style={{ color: '#f1f5f9', margin: 0, fontSize: '1.6rem', fontWeight: 800 }}>
-                      {prediction?.resolved_name || selected?.name}
-                    </h2>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                    {/* Draft Grade badge */}
-                    {prediction?.draft_grade && (
-                      <div style={{
-                        padding: '0.65rem 1.1rem', borderRadius: '10px', textAlign: 'center',
-                        background: prediction.draft_grade_class === 0 ? 'rgba(245,158,11,0.15)'
-                          : prediction.draft_grade_class === 1 ? 'rgba(99,102,241,0.15)'
-                          : 'rgba(100,116,139,0.15)',
-                        border: `2px solid ${prediction.draft_grade_class === 0 ? '#f59e0b'
-                          : prediction.draft_grade_class === 1 ? '#6366f1'
-                          : '#64748b'}`,
-                        minWidth: '110px',
-                      }}>
-                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Draft Projection</div>
-                        <div style={{
-                          fontWeight: 800, fontSize: '0.85rem', marginTop: '3px',
-                          color: prediction.draft_grade_class === 0 ? '#f59e0b'
-                            : prediction.draft_grade_class === 1 ? '#818cf8'
-                            : '#94a3b8',
-                        }}>{prediction.draft_grade}</div>
-                      </div>
-                    )}
-                    {/* NFL Success badge */}
-                    <div style={{
-                      padding: '0.65rem 1.25rem', borderRadius: '10px', textAlign: 'center',
-                      background: isSuccess ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
-                      border: `2px solid ${isSuccess ? '#22c55e' : '#ef4444'}`,
-                      minWidth: '100px',
-                    }}>
-                      <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>NFL Success</div>
-                      <div style={{ fontWeight: 800, color: isSuccess ? '#22c55e' : '#ef4444', fontSize: '0.95rem', marginTop: '3px' }}>
-                        {isSuccess ? 'Likely' : 'Unlikely'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              // Radar axes (0–1 scale)
+              const radarAxes = [
+                { label: 'Production',   value: (prediction.stats?.production_score  || 0) / 100 },
+                { label: 'Athleticism',  value: (prediction.stats?.combine_speed_score || 0) / 100 },
+                { label: 'Competition',  value: Math.max(0, (11 - (prediction.stats?.conference_tier || 5)) / 10) },
+                { label: 'Physical',     value: (((phys.height_score || 50) + (phys.vert_score || 50)) / 200) },
+                { label: 'Accolades',    value: Math.min(1, (prediction.stats?.is_award_winner || 0) * 0.6 + (prediction.stats?.is_all_american || 0) * 0.4) },
+              ];
 
-                {/* Probability bar */}
-                {typeof prediction.success_probability === 'number' && (
-                  <div style={{ marginBottom: '1.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                      <span style={{ color: '#94a3b8', fontSize: '13px' }}>NFL Success Probability</span>
-                      <span style={{ color: '#f1f5f9', fontWeight: 700 }}>{prediction.success_probability}%</span>
-                    </div>
-                    <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: '999px', height: '10px', overflow: 'hidden' }}>
-                      <div style={{
-                        height: '100%', width: `${prediction.success_probability}%`, borderRadius: '999px',
-                        background: isSuccess ? 'linear-gradient(90deg,#16a34a,#22c55e)' : 'linear-gradient(90deg,#b91c1c,#ef4444)',
-                        transition: 'width 0.7s ease',
-                      }} />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475569', fontSize: '11px', marginTop: '3px' }}>
-                      <span>0% — Bust</span><span>50%</span><span>100% — Elite</span>
-                    </div>
-                  </div>
-                )}
+              // Determine which college stats to show (offensive vs defensive)
+              const isDefensive = ['CB','S','DB','LB','DL','DE','DT'].includes(pos);
+              const isOL = ['OL','OT','OG','C'].includes(pos);
+              const statPairs = isDefensive
+                ? [['Games', prediction.stats?.games_played], ['Tackles', prediction.stats?.tackles], ['Sacks', prediction.stats?.sacks], ['INTs', prediction.stats?.interceptions], ['PDs', prediction.stats?.pass_deflections], ['Prod.', prediction.stats?.production_score]]
+                : isOL
+                ? [['Games', prediction.stats?.games_played], ['Prod.', prediction.stats?.production_score]]
+                : [['Games', prediction.stats?.games_played], ['Pass TD', prediction.stats?.passing_touchdowns], ['Pass Yds', (prediction.stats?.passing_yards||0).toLocaleString()], ['Rush TD', prediction.stats?.rushing_touchdowns], ['Rush Yds', (prediction.stats?.rushing_yards||0).toLocaleString()], ...(prediction.summary?.completion_pct ? [['CMP%', prediction.summary.completion_pct],['INT',prediction.summary.interceptions??'—'],['QBR',prediction.summary.passer_rating??'—']] : [['Prod.', prediction.stats?.production_score]])];
 
-                {/* Scout profile + stats */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.5rem' }}>
-                  {prediction?.summary && (
+              return (
+                <div style={{ ...glassCard, padding: '1.75rem' }}>
+
+                  {/* ── Header ── */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
                     <div>
-                      <p style={{ color: '#475569', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Scout Profile</p>
-                      {Object.entries(prediction.summary).map(([k, v]) => (
-                        <div key={k} style={{
-                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                          padding: '0.45rem 0.7rem', marginBottom: '0.35rem',
-                          background: 'rgba(255,255,255,0.04)', borderRadius: '6px',
-                        }}>
-                          <span style={{ color: '#64748b', fontSize: '12px', textTransform: 'capitalize' }}>{k.replace(/_/g, ' ')}</span>
-                          <span style={{ color: '#e2e8f0', fontWeight: 600, fontSize: '13px' }}>{v}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                        <span style={{ padding: '3px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, background: `${pc}22`, border: `1px solid ${pc}`, color: pc }}>{pos}</span>
+                        <span style={{ color: '#64748b', fontSize: '12px' }}>{prediction?.stats?.team || ''}</span>
+                      </div>
+                      <h2 style={{ color: '#f1f5f9', margin: 0, fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.2 }}>
+                        {prediction?.resolved_name || selected?.name}
+                      </h2>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                      {/* Prospect Grade — most prominent */}
+                      {grade && (
+                        <div style={{ padding: '0.5rem 1rem', borderRadius: '10px', textAlign: 'center', background: `${gc}18`, border: `2px solid ${gc}`, minWidth: '64px' }}>
+                          <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Grade</div>
+                          <div style={{ fontWeight: 900, fontSize: '1.5rem', color: gc, lineHeight: 1.1, marginTop: '1px' }}>{grade}</div>
+                        </div>
+                      )}
+                      {/* Draft Projection */}
+                      {prediction?.draft_grade && (
+                        <div style={{ padding: '0.5rem 0.8rem', borderRadius: '10px', textAlign: 'center', background: `${dgColor}15`, border: `2px solid ${dgColor}`, minWidth: '100px' }}>
+                          <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Draft</div>
+                          <div style={{ fontWeight: 800, fontSize: '0.78rem', color: dgColor, marginTop: '2px' }}>{prediction.draft_grade}</div>
+                        </div>
+                      )}
+                      {/* NFL Success */}
+                      <div style={{ padding: '0.5rem 0.8rem', borderRadius: '10px', textAlign: 'center', background: isSuccess ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.1)', border: `2px solid ${isSuccess ? '#22c55e' : '#ef4444'}`, minWidth: '80px' }}>
+                        <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>NFL</div>
+                        <div style={{ fontWeight: 800, fontSize: '0.78rem', color: isSuccess ? '#22c55e' : '#ef4444', marginTop: '2px' }}>{isSuccess ? 'Likely' : 'Unlikely'}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── Probability bar ── */}
+                  {typeof prediction.success_probability === 'number' && (
+                    <div style={{ marginBottom: '1.5rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ color: '#94a3b8', fontSize: '12px' }}>NFL Success Probability</span>
+                        <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '13px' }}>{prediction.success_probability}%</span>
+                      </div>
+                      <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: '999px', height: '8px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${prediction.success_probability}%`, borderRadius: '999px', background: isSuccess ? 'linear-gradient(90deg,#16a34a,#22c55e)' : 'linear-gradient(90deg,#b91c1c,#ef4444)', transition: 'width 0.8s ease' }} />
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475569', fontSize: '10px', marginTop: '2px' }}>
+                        <span>0% — Bust</span><span>50%</span><span>100% — Elite</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Radar Chart + Scout Profile ── */}
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '200px 1fr', gap: '1.25rem', marginBottom: '1.5rem', alignItems: 'start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <p style={{ color: '#475569', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 0.5rem' }}>Prospect Profile</p>
+                      <RadarChart axes={radarAxes} size={isMobile ? 150 : 180} />
+                    </div>
+                    <div>
+                      <p style={{ color: '#475569', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 0.5rem' }}>Scout Summary</p>
+                      {prediction?.summary && Object.entries(prediction.summary).map(([k, v]) => (
+                        <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0.65rem', marginBottom: '0.3rem', background: 'rgba(255,255,255,0.04)', borderRadius: '6px' }}>
+                          <span style={{ color: '#64748b', fontSize: '11px', textTransform: 'capitalize' }}>{k.replace(/_/g, ' ')}</span>
+                          <span style={{ color: '#e2e8f0', fontWeight: 600, fontSize: '12px' }}>{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ── Physical Profile ── */}
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <p style={{ color: '#475569', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      Physical Profile
+                      {phys.is_real && <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '8px' }}>· COMBINE</span>}
+                      {!phys.is_real && <span style={{ color: '#475569', fontWeight: 600, fontSize: '8px' }}>· EST.</span>}
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '0.4rem' }}>
+                      {[
+                        ['Height',   phys.display_height || '—'],
+                        ['Weight',   phys.display_weight || '—'],
+                        ['40-Yard',  phys.combine_forty ? `${phys.combine_forty}s` : '—'],
+                        ['Vertical', phys.vertical_inches ? `${phys.vertical_inches}"` : '—'],
+                        ['Bench',    phys.combine_bench  ? `${phys.combine_bench} reps` : '—'],
+                        ['Broad',    phys.combine_broad  ? `${phys.combine_broad}"` : '—'],
+                      ].map(([label, val]) => (
+                        <div key={label} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '0.5rem 0.4rem', textAlign: 'center' }}>
+                          <p style={{ color: '#475569', fontSize: '8px', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
+                          <p style={{ color: val === '—' ? '#334155' : '#e2e8f0', fontWeight: 700, fontSize: '0.8rem', margin: 0 }}>{val}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ── College Stats ── */}
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <p style={{ color: '#475569', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 0.5rem' }}>
+                      College Stats {prediction.data_source === 'espn_live' && <span style={{ color: '#22c55e', fontWeight: 700 }}>· Live ESPN</span>}
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: '0.35rem' }}>
+                      {statPairs.map(([label, val]) => (
+                        <div key={label} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px', padding: '0.4rem', textAlign: 'center' }}>
+                          <p style={{ color: '#475569', fontSize: '8px', margin: '0 0 2px', textTransform: 'uppercase' }}>{label}</p>
+                          <p style={{ color: '#e2e8f0', fontWeight: 700, fontSize: '0.85rem', margin: 0 }}>{val ?? '—'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ── Historical Comps ── */}
+                  {comps.length > 0 && (
+                    <div style={{ marginBottom: '1.5rem' }}>
+                      <p style={{ color: '#475569', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 0.6rem' }}>Similar Profiles</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                        {comps.map((comp, i) => {
+                          const cpc = posColor(comp.position);
+                          const simColor = comp.similarity >= 80 ? '#22c55e' : comp.similarity >= 60 ? '#f59e0b' : '#64748b';
+                          return (
+                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '0.6rem 0.8rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: `${cpc}22`, color: cpc, border: `1px solid ${cpc}`, fontWeight: 700 }}>{comp.position}</span>
+                                <div>
+                                  <p style={{ color: '#e2e8f0', fontWeight: 600, fontSize: '0.82rem', margin: 0 }}>{comp.name}</p>
+                                  <p style={{ color: '#475569', fontSize: '11px', margin: '1px 0 0' }}>{comp.outcome}</p>
+                                </div>
+                              </div>
+                              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                <p style={{ color: simColor, fontWeight: 700, fontSize: '0.85rem', margin: 0 }}>{comp.similarity}%</p>
+                                <p style={{ color: '#334155', fontSize: '9px', margin: 0 }}>match</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Feature Importance ── */}
+                  {Array.isArray(prediction?.top_factors) && prediction.top_factors.length > 0 && (
+                    <div style={{ marginBottom: '1.25rem' }}>
+                      <p style={{ color: '#475569', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.6rem' }}>Top Prediction Factors</p>
+                      {prediction.top_factors.map(f => (
+                        <div key={f.feature} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
+                          <span style={{ color: '#94a3b8', fontSize: '11px', minWidth: '150px' }}>{f.feature}</span>
+                          <div style={{ flex: 1, background: 'rgba(255,255,255,0.06)', borderRadius: '999px', height: '5px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${Math.min(f.importance, 100)}%`, borderRadius: '999px', background: 'linear-gradient(90deg,#3b82f6,#818cf8)' }} />
+                          </div>
+                          <span style={{ color: '#e2e8f0', fontSize: '11px', minWidth: '32px', textAlign: 'right', fontWeight: 600 }}>{f.importance}%</span>
                         </div>
                       ))}
                     </div>
                   )}
 
-                  {prediction?.stats && (
-                    <div>
-                      <p style={{ color: '#475569', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
-                        College Stats {prediction.data_source === 'espn_live' && <span style={{ color: '#22c55e', fontWeight: 700 }}>· Live ESPN</span>}
-                      </p>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.35rem' }}>
-                        {[
-                          ['Games', prediction.stats.games_played],
-                          ['Pass TD', prediction.stats.passing_touchdowns],
-                          ['Pass Yds', (prediction.stats.passing_yards || 0).toLocaleString()],
-                          ['Rush TD', prediction.stats.rushing_touchdowns],
-                          ['Rush Yds', (prediction.stats.rushing_yards || 0).toLocaleString()],
-                          ...(prediction.summary?.completion_pct ? [
-                            ['CMP%', prediction.summary.completion_pct],
-                            ['INT', prediction.summary.interceptions ?? '—'],
-                            ['QBR', prediction.summary.passer_rating ?? '—'],
-                          ] : [
-                            ['Prod.', prediction.stats.production_score],
-                          ]),
-                        ].map(([label, val]) => (
-                          <div key={label} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px', padding: '0.4rem', textAlign: 'center' }}>
-                            <p style={{ color: '#475569', fontSize: '9px', margin: '0 0 2px', textTransform: 'uppercase' }}>{label}</p>
-                            <p style={{ color: '#e2e8f0', fontWeight: 700, fontSize: '0.9rem', margin: 0 }}>{val ?? '—'}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Feature importance */}
-                {Array.isArray(prediction?.top_factors) && prediction.top_factors.length > 0 && (
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <p style={{ color: '#475569', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.6rem' }}>Top Prediction Factors</p>
-                    {prediction.top_factors.map(f => (
-                      <div key={f.feature} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.45rem' }}>
-                        <span style={{ color: '#94a3b8', fontSize: '12px', minWidth: '160px' }}>{f.feature}</span>
-                        <div style={{ flex: 1, background: 'rgba(255,255,255,0.06)', borderRadius: '999px', height: '6px', overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${Math.min(f.importance, 100)}%`, borderRadius: '999px', background: 'linear-gradient(90deg,#3b82f6,#60a5fa)' }} />
-                        </div>
-                        <span style={{ color: '#e2e8f0', fontSize: '11px', minWidth: '36px', textAlign: 'right', fontWeight: 600 }}>{f.importance}%</span>
-                      </div>
-                    ))}
+                  {/* ── Footer ── */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.75rem', color: '#475569', fontSize: '11px', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <span>{prediction?.model_used ? 'XGBoost · Two-model ML' : 'Rule fallback'}</span>
+                    <span>Source: {prediction?.data_source}</span>
+                    <button onClick={() => { setPrediction(null); setSelected(null); }} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: '11px' }}>Clear ✕</button>
                   </div>
-                )}
-
-                {/* Footer */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.75rem', color: '#475569', fontSize: '11px' }}>
-                  <span>{prediction?.model_used ? '🤖 XGBoost Classifier' : '📐 Rule fallback'}</span>
-                  <span>Source: {prediction?.data_source}</span>
-                  <button onClick={() => { setPrediction(null); setSelected(null); }} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: '11px' }}>Clear ✕</button>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       </div>

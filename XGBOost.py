@@ -891,6 +891,10 @@ def generate_estimated_profile(name: str, position: str, team: str, jersey: int 
     raw_round = 8 - int(composite * 7)
     draft_round = max(1, min(8, raw_round))
 
+    # Estimated physical profile (position averages — replaced by real data when available)
+    pos_key = p if p in _POS_AVG_PHYSICAL else "QB"
+    est_h, est_w = _POS_AVG_PHYSICAL.get(pos_key, (73, 220))
+
     return {
         "name": name,
         "position": position,
@@ -911,6 +915,14 @@ def generate_estimated_profile(name: str, position: str, team: str, jersey: int 
         "production_score": round(production_raw, 1),
         "is_award_winner": accolades["is_award_winner"],
         "is_all_american": accolades["is_all_american"],
+        "height_inches":   est_h,
+        "weight_lbs":      est_w,
+        "display_height":  f"{est_h // 12}'{est_h % 12}\"",
+        "display_weight":  f"{est_w} lbs",
+        "height_score":    round(height_to_score(p, est_h), 1),
+        "weight_score":    round(weight_to_score(p, est_w), 1),
+        "vert_score":      50.0,
+        "physical_is_real": False,
     }
 
 
@@ -926,15 +938,14 @@ ESPN_CORE_ATHLETE_URL = "https://sports.core.api.espn.com/v2/sports/football/lea
 
 
 def _espn_resolve_athlete_info(espn_id: str) -> Dict[str, str]:
-    """Resolve team name and position from the ESPN core athlete endpoint.
-    Returns {"team": "...", "position": "..."} or empty strings on failure.
-    """
+    """Resolve team name, position, height, weight from the ESPN core athlete endpoint."""
     cache_key = f"espn_athlete:{espn_id}"
     cached = cache_get(cache_key)
     if cached is not None:
         return cached
 
-    result = {"team": "", "position": ""}
+    result = {"team": "", "position": "", "height_inches": 0, "weight_lbs": 0,
+              "display_height": "", "display_weight": ""}
     try:
         r = requests.get(ESPN_CORE_ATHLETE_URL.format(espn_id=espn_id), timeout=5)
         if not r.ok:
@@ -947,7 +958,6 @@ def _espn_resolve_athlete_info(espn_id: str) -> Dict[str, str]:
             rp = requests.get(pos_ref, timeout=5)
             if rp.ok:
                 result["position"] = rp.json().get("abbreviation", "")
-        # Also try inline
         if not result["position"]:
             pos_inline = ath.get("position") or {}
             result["position"] = str(pos_inline.get("abbreviation") or pos_inline.get("name") or "")
@@ -958,6 +968,12 @@ def _espn_resolve_athlete_info(espn_id: str) -> Dict[str, str]:
             rt = requests.get(team_ref, timeout=5)
             if rt.ok:
                 result["team"] = rt.json().get("displayName", "")
+
+        # Physical measurements
+        result["height_inches"]  = int(ath.get("height") or 0)
+        result["weight_lbs"]     = int(ath.get("weight") or 0)
+        result["display_height"] = str(ath.get("displayHeight") or "")
+        result["display_weight"] = str(ath.get("displayWeight") or "")
 
         cache_set(cache_key, result, ttl=STATS_CACHE_TTL)
     except Exception:
@@ -1066,11 +1082,70 @@ def fetch_real_espn_stats(espn_id: str, position: str, player_name: str) -> Opti
         return None
 
 
-def fetch_combine_measurables(espn_id: str, position: str) -> dict:
-    """Fetch real NFL combine 40-yard dash + vertical from ESPN core athlete.
+def height_to_score(position: str, height_inches: float) -> float:
+    """0-100 position-normalized height score. 100=elite prototypical height."""
+    if not height_inches or height_inches < 60:
+        return 50.0
+    p = (position or "").upper()
+    # (poor_threshold, elite_threshold) in inches
+    bm = {
+        "QB": (71, 76), "RB": (68, 72), "WR": (70, 75),
+        "TE": (75, 79), "CB": (70, 74), "S":  (71, 75),
+        "DB": (70, 74), "LB": (73, 77), "DL": (74, 78),
+        "DE": (74, 78), "OL": (76, 80), "OT": (77, 81),
+    }
+    poor_h, elite_h = bm.get(p, (71, 75))
+    return float(max(0.0, min(100.0, (height_inches - poor_h) / (elite_h - poor_h) * 100)))
 
-    Returns {"combine_speed_score": float, "combine_forty": float,
-             "combine_vertical": float} or empty dict on failure.
+
+def weight_to_score(position: str, weight_lbs: float) -> float:
+    """0-100 position-normalized weight score (too light OR too heavy penalized)."""
+    if not weight_lbs or weight_lbs < 150:
+        return 50.0
+    p = (position or "").upper()
+    # (ideal_low, ideal_high) — staying in range = 100, outside = scaled down
+    bm = {
+        "QB": (210, 235), "RB": (195, 225), "WR": (185, 215),
+        "TE": (245, 270), "CB": (185, 210), "S":  (200, 220),
+        "DB": (190, 215), "LB": (230, 255), "DL": (270, 310),
+        "DE": (255, 290), "OL": (295, 325), "OT": (300, 330),
+    }
+    lo, hi = bm.get(p, (200, 240))
+    if lo <= weight_lbs <= hi:
+        return 100.0
+    if weight_lbs < lo:
+        return float(max(0.0, 100.0 - (lo - weight_lbs) * 3))
+    return float(max(0.0, 100.0 - (weight_lbs - hi) * 2))
+
+
+def vertical_to_score(position: str, vertical_inches: float) -> float:
+    """0-100 position-normalized vertical jump score."""
+    if not vertical_inches or vertical_inches < 20:
+        return 50.0
+    p = (position or "").upper()
+    bm = {
+        "QB": (29, 38), "RB": (32, 42), "WR": (34, 44),
+        "TE": (30, 40), "CB": (34, 44), "S":  (33, 43),
+        "LB": (31, 40), "DL": (29, 38), "OL": (26, 34),
+    }
+    poor_v, elite_v = bm.get(p, (30, 40))
+    return float(max(0.0, min(100.0, (vertical_inches - poor_v) / (elite_v - poor_v) * 100)))
+
+
+# Position-average height/weight used when no ESPN data is available
+_POS_AVG_PHYSICAL = {
+    "QB": (75, 218), "RB": (71, 212), "WR": (73, 200), "TE": (77, 255),
+    "CB": (71, 196), "S":  (73, 208), "DB": (72, 202), "LB": (75, 242),
+    "DL": (76, 288), "DE": (75, 265), "OL": (78, 312), "OT": (79, 315),
+}
+
+
+def fetch_combine_measurables(espn_id: str, position: str) -> dict:
+    """Fetch full NFL combine profile from ESPN core athlete.
+
+    Returns dict with combine_speed_score, forty, vertical, bench, broad,
+    shuttle, 3cone, height_inches, weight_lbs, and derived scores.
+    Returns empty dict if no ESPN entry or no 40-time found.
     """
     if not espn_id:
         return {}
@@ -1087,15 +1162,44 @@ def fetch_combine_measurables(espn_id: str, position: str) -> dict:
         data  = resp.json()
         draft = data.get("draft") or {}
         forty    = float(draft.get("combined40yd") or 0)
-        vertical = float(draft.get("combineVert") or 0)
-        if not forty:
+        vertical = float(draft.get("combineVert")  or 0)
+        bench    = int(float(draft.get("combineBench")   or 0))
+        broad    = float(draft.get("combineBroad")  or 0)
+        shuttle  = float(draft.get("combineShuttle") or 0)
+        cone3    = float(draft.get("combine3Cone")   or 0)
+        height_in = int(data.get("height") or 0)
+        weight_lb = int(data.get("weight") or 0)
+
+        if not forty and not height_in:
             cache_set(cache_key, {}, ttl=STATS_CACHE_TTL)
             return {}
-        speed = forty_to_speed_score(position, forty)
+
+        speed = forty_to_speed_score(position, forty) if forty else 50.0
+        vert_sc  = vertical_to_score(position, vertical)
+        height_sc = height_to_score(position, height_in)
+        weight_sc = weight_to_score(position, weight_lb)
+
+        # Build display strings
+        def fmt_height(h):
+            if not h: return ""
+            return f"{h // 12}'{h % 12}\""
+
         result = {
-            "combine_speed_score": round(speed, 1),
-            "combine_forty":       forty,
-            "combine_vertical":    vertical,
+            "combine_speed_score":  round(speed, 1),
+            "combine_forty":        forty,
+            "combine_vertical":     vertical,
+            "combine_bench":        bench,
+            "combine_broad":        broad,
+            "combine_shuttle":      shuttle,
+            "combine_3cone":        cone3,
+            "height_inches":        height_in,
+            "weight_lbs":           weight_lb,
+            "display_height":       str(data.get("displayHeight") or fmt_height(height_in)),
+            "display_weight":       str(data.get("displayWeight") or (f"{weight_lb} lbs" if weight_lb else "")),
+            "vert_score":           round(vert_sc, 1),
+            "height_score":         round(height_sc, 1),
+            "weight_score":         round(weight_sc, 1),
+            "physical_is_real":     True,
         }
         cache_set(cache_key, result, ttl=STATS_CACHE_TTL * 24)
         return result
@@ -1151,13 +1255,25 @@ def fetch_player_data(player_name: str) -> Tuple[Optional[Dict[str, object]], st
             for k in ("_team", "_season", "_completion_pct", "_interceptions", "_qb_rating"):
                 if real_stats.get(k) is not None:
                     profile[k] = real_stats[k]
-            # Enrich with real combine measurables when available
+            # Enrich with real combine + physical measurables
             combine_data = fetch_combine_measurables(espn_id, effective_pos or position)
             if combine_data:
-                profile["combine_speed_score"] = combine_data["combine_speed_score"]
-                profile["combine_forty"]    = combine_data.get("combine_forty", 0)
-                profile["combine_vertical"] = combine_data.get("combine_vertical", 0)
-            # Recompute production_score with the updated real stats
+                for key in ("combine_speed_score","combine_forty","combine_vertical",
+                            "combine_bench","combine_broad","combine_shuttle","combine_3cone",
+                            "height_inches","weight_lbs","display_height","display_weight",
+                            "height_score","weight_score","vert_score","physical_is_real"):
+                    if combine_data.get(key) is not None:
+                        profile[key] = combine_data[key]
+            # Fill height/weight from athlete info if combine didn't have it
+            if not profile.get("height_inches") and ath_info.get("height_inches"):
+                profile["height_inches"]  = ath_info["height_inches"]
+                profile["weight_lbs"]     = ath_info.get("weight_lbs", 0)
+                profile["display_height"] = ath_info.get("display_height", "")
+                profile["display_weight"] = ath_info.get("display_weight", "")
+                profile["height_score"]   = round(height_to_score(effective_pos or position, ath_info["height_inches"]), 1)
+                profile["weight_score"]   = round(weight_to_score(effective_pos or position, ath_info.get("weight_lbs", 0)), 1)
+                profile["physical_is_real"] = True
+            # Recompute production_score with updated real stats
             profile["production_score"] = round(compute_production_score(
                 profile["position"], profile), 1)
             return profile, "espn_live"
@@ -1167,9 +1283,20 @@ def fetch_player_data(player_name: str) -> Tuple[Optional[Dict[str, object]], st
         if espn_id:
             combine_data = fetch_combine_measurables(espn_id, position)
             if combine_data:
-                result["combine_speed_score"] = combine_data["combine_speed_score"]
-                result["combine_forty"]    = combine_data.get("combine_forty", 0)
-                result["combine_vertical"] = combine_data.get("combine_vertical", 0)
+                for key in ("combine_speed_score","combine_forty","combine_vertical",
+                            "combine_bench","combine_broad","combine_shuttle","combine_3cone",
+                            "height_inches","weight_lbs","display_height","display_weight",
+                            "height_score","weight_score","vert_score","physical_is_real"):
+                    if combine_data.get(key) is not None:
+                        result[key] = combine_data[key]
+            if not result.get("height_inches") and ath_info.get("height_inches"):
+                result["height_inches"]  = ath_info["height_inches"]
+                result["weight_lbs"]     = ath_info.get("weight_lbs", 0)
+                result["display_height"] = ath_info.get("display_height", "")
+                result["display_weight"] = ath_info.get("display_weight", "")
+                result["height_score"]   = round(height_to_score(position, ath_info["height_inches"]), 1)
+                result["weight_score"]   = round(weight_to_score(position, ath_info.get("weight_lbs", 0)), 1)
+                result["physical_is_real"] = True
         return result, source
 
     # 2) Fallback to local CSV metadata.
@@ -1823,6 +1950,119 @@ def cache_invalidate(key: str) -> None:
         _cache.pop(key, None)
 
 
+# ── Prospect grade ────────────────────────────────────────────────────────────
+
+def compute_prospect_grade(success_prob: Optional[float], draft_grade_class: Optional[int]) -> str:
+    """Map (success_probability %, draft_grade_class) → letter grade A+…D."""
+    p = float(success_prob or 0)
+    d = int(draft_grade_class) if draft_grade_class is not None else 3
+    if p >= 88 and d == 0: return "A+"
+    if p >= 80 and d <= 1: return "A"
+    if p >= 72 and d <= 1: return "A-"
+    if p >= 64 and d <= 2: return "B+"
+    if p >= 54 and d <= 2: return "B"
+    if p >= 44:            return "B-"
+    if p >= 34:            return "C+"
+    if p >= 24:            return "C"
+    if p >= 15:            return "C-"
+    return "D"
+
+
+# ── Named historical players for similarity comps ─────────────────────────────
+# Stored by position group so matching only compares same-position players
+_POS_GROUP = {
+    "QB": "QB", "RB": "RB", "WR": "WR", "TE": "TE",
+    "CB": "DB", "S": "DB", "DB": "DB", "FS": "DB", "SS": "DB",
+    "LB": "LB", "ILB": "LB", "OLB": "LB", "MLB": "LB",
+    "DL": "DL", "DE": "DL", "DT": "DL", "EDGE": "DL",
+    "OL": "OL", "OT": "OL", "OG": "OL", "C": "OL",
+}
+
+NAMED_HISTORICAL_COMPS = [
+    # QBs
+    {"name":"Patrick Mahomes","position":"QB","conference_tier":5,"production_score":85,"combine_speed_score":72,"is_award_winner":0,"is_all_american":0,"nfl_success":1,"outcome":"3x Super Bowl MVP"},
+    {"name":"Josh Allen","position":"QB","conference_tier":3,"production_score":76,"combine_speed_score":74,"is_award_winner":0,"is_all_american":0,"nfl_success":1,"outcome":"Elite starter, 4x Pro Bowl"},
+    {"name":"Joe Burrow","position":"QB","conference_tier":1,"production_score":90,"combine_speed_score":70,"is_award_winner":1,"is_all_american":1,"nfl_success":1,"outcome":"#1 Pick, Heisman, Super Bowl"},
+    {"name":"Lamar Jackson","position":"QB","conference_tier":2,"production_score":88,"combine_speed_score":85,"is_award_winner":1,"is_all_american":1,"nfl_success":1,"outcome":"2x NFL MVP"},
+    {"name":"Jalen Hurts","position":"QB","conference_tier":2,"production_score":80,"combine_speed_score":67,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"Super Bowl, 3x Pro Bowl"},
+    {"name":"Brock Purdy","position":"QB","conference_tier":4,"production_score":72,"combine_speed_score":62,"is_award_winner":0,"is_all_american":0,"nfl_success":1,"outcome":"49ers starter (Mr. Irrelevant, R7)"},
+    {"name":"Trevor Lawrence","position":"QB","conference_tier":1,"production_score":85,"combine_speed_score":74,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#1 Overall Pick"},
+    # WRs
+    {"name":"Justin Jefferson","position":"WR","conference_tier":2,"production_score":88,"combine_speed_score":93,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#22 Pick, 4x Pro Bowl, All-Pro"},
+    {"name":"Ja'Marr Chase","position":"WR","conference_tier":1,"production_score":85,"combine_speed_score":90,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#5 Pick, 2x All-Pro"},
+    {"name":"Devonta Smith","position":"WR","conference_tier":1,"production_score":86,"combine_speed_score":79,"is_award_winner":1,"is_all_american":1,"nfl_success":1,"outcome":"Heisman, #10 Pick"},
+    {"name":"Tyreek Hill","position":"WR","conference_tier":8,"production_score":82,"combine_speed_score":96,"is_award_winner":0,"is_all_american":0,"nfl_success":1,"outcome":"7x Pro Bowl (small-school speed)"},
+    {"name":"CeeDee Lamb","position":"WR","conference_tier":2,"production_score":80,"combine_speed_score":83,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#17 Pick, 2x All-Pro"},
+    # RBs
+    {"name":"Saquon Barkley","position":"RB","conference_tier":3,"production_score":90,"combine_speed_score":82,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#2 Pick, 3x Pro Bowl"},
+    {"name":"Christian McCaffrey","position":"RB","conference_tier":3,"production_score":88,"combine_speed_score":88,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#8 Pick, 4x Pro Bowl"},
+    {"name":"Bijan Robinson","position":"RB","conference_tier":2,"production_score":85,"combine_speed_score":80,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#8 Pick, Pro Bowl"},
+    {"name":"Ashton Jeanty","position":"RB","conference_tier":7,"production_score":88,"combine_speed_score":85,"is_award_winner":1,"is_all_american":1,"nfl_success":1,"outcome":"2025 Draft — projected Top 10"},
+    # TEs
+    {"name":"Travis Kelce","position":"TE","conference_tier":4,"production_score":80,"combine_speed_score":68,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"9x Pro Bowl (Day 2 pick!)"},
+    {"name":"Kyle Pitts","position":"TE","conference_tier":2,"production_score":82,"combine_speed_score":72,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#4 Overall Pick"},
+    {"name":"George Kittle","position":"TE","conference_tier":3,"production_score":78,"combine_speed_score":65,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"5x Pro Bowl"},
+    # DBs (CB + S)
+    {"name":"Patrick Surtain II","position":"CB","conference_tier":1,"production_score":78,"combine_speed_score":91,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#9 Pick, 2x All-Pro"},
+    {"name":"Sauce Gardner","position":"CB","conference_tier":4,"production_score":75,"combine_speed_score":89,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#4 Pick, DROY, All-Pro"},
+    {"name":"Kyle Hamilton","position":"S","conference_tier":2,"production_score":80,"combine_speed_score":82,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#14 Pick, 2x Pro Bowl"},
+    {"name":"Derwin James","position":"S","conference_tier":1,"production_score":78,"combine_speed_score":84,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#17 Pick, 3x Pro Bowl"},
+    # LBs
+    {"name":"Micah Parsons","position":"LB","conference_tier":3,"production_score":82,"combine_speed_score":78,"is_award_winner":1,"is_all_american":1,"nfl_success":1,"outcome":"#12 Pick, 3x All-Pro"},
+    {"name":"Will Anderson Jr.","position":"LB","conference_tier":1,"production_score":85,"combine_speed_score":80,"is_award_winner":1,"is_all_american":1,"nfl_success":1,"outcome":"#3 Pick, Nagurski, Pro Bowl"},
+    {"name":"Roquan Smith","position":"LB","conference_tier":1,"production_score":78,"combine_speed_score":74,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#8 Pick, 2x All-Pro"},
+    # DLs
+    {"name":"Chase Young","position":"DL","conference_tier":1,"production_score":88,"combine_speed_score":82,"is_award_winner":1,"is_all_american":1,"nfl_success":1,"outcome":"#2 Pick, Nagurski, DROY"},
+    {"name":"Myles Garrett","position":"DL","conference_tier":2,"production_score":85,"combine_speed_score":78,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#1 Pick, 4x All-Pro"},
+    {"name":"Jalen Carter","position":"DL","conference_tier":1,"production_score":82,"combine_speed_score":80,"is_award_winner":1,"is_all_american":1,"nfl_success":1,"outcome":"#9 Pick, Nagurski"},
+    # OLs
+    {"name":"Penei Sewell","position":"OL","conference_tier":5,"production_score":55,"combine_speed_score":52,"is_award_winner":1,"is_all_american":1,"nfl_success":1,"outcome":"#7 Pick, Outland Trophy, All-Pro"},
+    {"name":"Tristan Wirfs","position":"OL","conference_tier":3,"production_score":52,"combine_speed_score":60,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#13 Pick, 2x All-Pro"},
+]
+
+
+def find_historical_comps(player_stats: Dict[str, object], n: int = 3) -> list:
+    """Return top-n most similar historical players by feature distance."""
+    pos = (str(player_stats.get("position", "") or "")).upper()
+    player_group = _POS_GROUP.get(pos, pos)
+
+    prod  = float(player_stats.get("production_score") or 0)
+    speed = float(player_stats.get("combine_speed_score") or 50)
+    tier  = float(player_stats.get("conference_tier") or 5)
+    award = int(player_stats.get("is_award_winner") or 0)
+    aa    = int(player_stats.get("is_all_american") or 0)
+    tier_norm = (11.0 - tier) / 10.0 * 100  # invert so higher = better
+
+    scored = []
+    for comp in NAMED_HISTORICAL_COMPS:
+        comp_group = _POS_GROUP.get(comp["position"].upper(), comp["position"].upper())
+        if comp_group != player_group:
+            continue
+        cp = float(comp["production_score"])
+        cs = float(comp["combine_speed_score"])
+        ct = (11.0 - float(comp["conference_tier"])) / 10.0 * 100
+        ca = int(comp["is_award_winner"])
+        caa = int(comp["is_all_american"])
+        dist = (
+            ((prod - cp) / 100) ** 2 * 2.0
+            + ((speed - cs) / 100) ** 2 * 1.5
+            + ((tier_norm - ct) / 100) ** 2 * 1.0
+            + (award - ca) ** 2 * 0.3
+            + (aa - caa) ** 2 * 0.2
+        ) ** 0.5
+        similarity = max(0, round(100 - dist * 100))
+        scored.append({
+            "name":       comp["name"],
+            "position":   comp["position"],
+            "similarity": similarity,
+            "outcome":    comp["outcome"],
+            "nfl_success": comp["nfl_success"],
+        })
+
+    scored.sort(key=lambda x: x["similarity"], reverse=True)
+    return scored[:n]
+
+
 # ── Serve React production build ──────────────────────────────────────────────
 BUILD_DIR = os.path.join(os.path.dirname(__file__), "build")
 
@@ -2088,8 +2328,9 @@ def predict():
     else:
         reasoning = "XGBoost prediction from college production, athleticism, conference tier, and accolades."
 
-    # Draft grade prediction (independent multiclass model)
+    # Draft grade + prospect grade
     draft_grade_label_str, draft_grade_class, draft_grade_prob = predict_draft_grade(player_data)
+    prospect_grade = compute_prospect_grade(success_probability, draft_grade_class)
 
     position = str(player_data.get("position", "Unknown"))
     draft_round = int(player_data.get("draft_round") or 8)
@@ -2141,6 +2382,27 @@ def predict():
     if interceptions is not None and position.upper() == "QB":
         summary["interceptions"] = str(interceptions)
 
+    # Historical player comps
+    historical_comps = find_historical_comps(player_data)
+
+    # Full physical profile dict for frontend display
+    physical = {
+        "height_inches":   player_data.get("height_inches", 0),
+        "weight_lbs":      player_data.get("weight_lbs", 0),
+        "display_height":  player_data.get("display_height", ""),
+        "display_weight":  player_data.get("display_weight", ""),
+        "combine_forty":   player_data.get("combine_forty", 0),
+        "vertical_inches": player_data.get("combine_vertical", 0),
+        "combine_bench":   player_data.get("combine_bench", 0),
+        "combine_broad":   player_data.get("combine_broad", 0),
+        "combine_shuttle": player_data.get("combine_shuttle", 0),
+        "combine_3cone":   player_data.get("combine_3cone", 0),
+        "height_score":    player_data.get("height_score", 50),
+        "weight_score":    player_data.get("weight_score", 50),
+        "vert_score":      player_data.get("vert_score", 50),
+        "is_real":         bool(player_data.get("physical_is_real", False)),
+    }
+
     return jsonify(
         {
             "requested_name":      player_name,
@@ -2154,9 +2416,12 @@ def predict():
             "model_used":          model_used,
             "model_type":          "success_classifier",
             "data_source":         data_source,
+            "prospect_grade":      prospect_grade,
             "draft_grade":         draft_grade_label_str,
             "draft_grade_class":   draft_grade_class,
             "draft_grade_prob":    draft_grade_prob,
+            "historical_comps":    historical_comps,
+            "physical":            physical,
             "stats":               player_data,
             "summary":             summary,
             "top_factors":         top_feature_importances(4),
