@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend
 COPY XGBOost.py ./
-COPY *.json *.pkl ./
+COPY *.json *.pkl *.cbm ./
 
 # Copy React build from stage 1
 COPY --from=frontend /app/build ./build
