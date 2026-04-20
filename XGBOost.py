@@ -53,6 +53,10 @@ DRAFT_GRADE_CALIBRATED_PATH = "draft_grade_calibrated_model.pkl" # calibrated pr
 CATBOOST_DRAFT_GRADE_PATH  = "catboost_draft_grade_model.cbm"
 TRAINING_DATA_PATH         = "training_data/combine_outcomes.csv"
 PROSPECT_CACHE_PATH        = "training_data/prospect_cache.json"
+MOCK_DRAFT_PATH            = "mock_draft.json"
+HS_PROSPECT_CACHE_PATH     = "training_data/hs_prospect_cache.json"
+CFBD_API_KEY               = os.environ.get("CFBD_API_KEY", "")
+CFBD_BASE_URL              = "https://api.collegefootballdata.com"
 PLAYER_DATA_PATH     = "nfl_players.csv"
 PLAYER_DB_PATH       = "players.db"
 ESPN_CFB_TEAMS_URL        = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams"
@@ -2158,6 +2162,13 @@ def cache_invalidate(key: str) -> None:
 _PROSPECT_CACHE: list = []
 _PROSPECT_CACHE_META: dict = {}
 
+# ── Mock draft storage ─────────────────────────────────────────────────────────
+_MOCK_DRAFT_DATA: dict = {"picks": [], "title": "", "generated_at": None, "total": 0}
+
+# ── High school prospect cache ─────────────────────────────────────────────────
+_HS_PROSPECT_CACHE: list = []
+_HS_PROSPECT_CACHE_META: dict = {}
+
 _POS_GROUPS = {
     "DB": {"CB", "S", "DB", "FS", "SS"},
     "LB": {"LB", "ILB", "OLB", "MLB"},
@@ -2244,6 +2255,203 @@ def api_prospects():
         "limit":     limit,
         "meta":      _PROSPECT_CACHE_META,
         "prospects": paginated,
+    })
+
+
+# ── Mock draft ─────────────────────────────────────────────────────────────────
+
+def load_mock_draft() -> None:
+    global _MOCK_DRAFT_DATA
+    if os.path.exists(MOCK_DRAFT_PATH):
+        try:
+            with open(MOCK_DRAFT_PATH) as f:
+                _MOCK_DRAFT_DATA = json.load(f)
+            print(f"Loaded mock draft: {_MOCK_DRAFT_DATA.get('total', 0)} picks.")
+        except Exception as exc:
+            print(f"Failed to load mock draft: {exc}")
+
+
+_NFL_TEAM_COLORS = {
+    "49ers": "#AA0000", "bears": "#0B162A", "bengals": "#FB4F14", "bills": "#00338D",
+    "broncos": "#FB4F14", "browns": "#311D00", "buccaneers": "#D50A0A", "cardinals": "#97233F",
+    "chargers": "#0080C6", "chiefs": "#E31837", "colts": "#003A70", "commanders": "#5A1414",
+    "cowboys": "#003594", "dolphins": "#008E97", "eagles": "#004C54", "falcons": "#A71930",
+    "giants": "#0B2265", "jaguars": "#006778", "jets": "#125740", "lions": "#0076B6",
+    "packers": "#203731", "panthers": "#0085CA", "patriots": "#002244", "raiders": "#000000",
+    "rams": "#003594", "ravens": "#241773", "saints": "#D3BC8D", "seahawks": "#002244",
+    "steelers": "#101820", "texans": "#03202F", "titans": "#0C2340", "vikings": "#4F2683",
+}
+
+def _team_color(nfl_team: str) -> str:
+    t = (nfl_team or "").lower()
+    for key, color in _NFL_TEAM_COLORS.items():
+        if key in t:
+            return color
+    return "#334155"
+
+
+@app.post("/api/mock-draft/upload")
+def upload_mock_draft():
+    import io, csv as csv_mod
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Invalid JSON"}), 400
+
+    csv_content = str(payload.get("csv_content") or "").strip()
+    title       = str(payload.get("title") or "JKrek's Mock Draft").strip()
+    if not csv_content:
+        return jsonify({"error": "csv_content is required"}), 400
+
+    picks = []
+    try:
+        reader = csv_mod.DictReader(io.StringIO(csv_content))
+        for row in reader:
+            # Normalize keys to lowercase for flexible column matching
+            keys = {k.lower().strip().replace(" ", "_"): str(v).strip() for k, v in (row or {}).items()}
+
+            def _find(*candidates):
+                for c in candidates:
+                    v = keys.get(c, "")
+                    if v and v.lower() not in ("", "none", "n/a", "-"):
+                        return v
+                return ""
+
+            player = _find("player", "name", "player_name", "athlete")
+            if not player:
+                continue
+            pick_raw = _find("pick", "overall", "overall_pick", "#", "pick_#")
+            try:
+                pick_num = int(float(pick_raw)) if pick_raw else len(picks) + 1
+            except ValueError:
+                pick_num = len(picks) + 1
+
+            nfl_team = _find("team", "nfl_team", "franchise", "club")
+            position = _find("position", "pos").upper()
+            school   = _find("school", "college", "university")
+            grade    = _find("pff_grade", "pff", "grade", "rating", "score")
+            round_n  = _find("round", "rd", "rnd")
+
+            picks.append({
+                "pick":     pick_num,
+                "round":    round_n,
+                "nfl_team": nfl_team,
+                "player":   player,
+                "position": position,
+                "school":   school,
+                "pff_grade": grade,
+                "color":    _team_color(nfl_team),
+            })
+    except Exception as exc:
+        return jsonify({"error": f"CSV parse error: {exc}"}), 400
+
+    if not picks:
+        return jsonify({"error": "No valid picks found in CSV"}), 400
+
+    global _MOCK_DRAFT_DATA
+    _MOCK_DRAFT_DATA = {
+        "picks":        picks,
+        "title":        title,
+        "generated_at": __import__("datetime").datetime.utcnow().isoformat() + "Z",
+        "total":        len(picks),
+    }
+    try:
+        with open(MOCK_DRAFT_PATH, "w") as f:
+            json.dump(_MOCK_DRAFT_DATA, f, separators=(",", ":"))
+    except Exception:
+        pass
+
+    return jsonify({"success": True, "total": len(picks)})
+
+
+@app.get("/api/mock-draft")
+def get_mock_draft():
+    return jsonify(_MOCK_DRAFT_DATA)
+
+
+# ── High school prospects ──────────────────────────────────────────────────────
+
+def load_hs_prospect_cache() -> None:
+    global _HS_PROSPECT_CACHE, _HS_PROSPECT_CACHE_META
+    if not os.path.exists(HS_PROSPECT_CACHE_PATH):
+        print("HS prospect cache not found (run build_hs_prospect_cache.py to create it).")
+        return
+    try:
+        with open(HS_PROSPECT_CACHE_PATH) as f:
+            data = json.load(f)
+        _HS_PROSPECT_CACHE = data.get("prospects", [])
+        _HS_PROSPECT_CACHE_META = {
+            "generated_at": data.get("generated_at"),
+            "total":        data.get("total", len(_HS_PROSPECT_CACHE)),
+            "years":        data.get("years", []),
+        }
+        print(f"Loaded {len(_HS_PROSPECT_CACHE)} HS prospects from cache.")
+    except Exception as exc:
+        print(f"Failed to load HS prospect cache: {exc}")
+
+
+@app.get("/api/hs-prospects")
+def api_hs_prospects():
+    pos_filter   = (request.args.get("position") or "").strip().upper()
+    stars_filter = request.args.get("stars", "")
+    year_filter  = request.args.get("year", "")
+    search       = (request.args.get("search") or "").strip().lower()
+    sort_by      = (request.args.get("sort") or "rank").strip()
+    try:
+        page  = max(0, int(request.args.get("page", 0)))
+        limit = min(500, max(10, int(request.args.get("limit", 100))))
+    except ValueError:
+        page, limit = 0, 100
+    offset = page * limit
+
+    results = _HS_PROSPECT_CACHE
+
+    _HS_POS_GROUPS = {
+        "DB": {"CB", "S", "DB", "FS", "SS"},
+        "LB": {"LB", "ILB", "OLB", "MLB"},
+        "DL": {"DL", "DE", "DT", "EDGE", "NT"},
+        "OL": {"OL", "OT", "OG", "C"},
+    }
+
+    if pos_filter and pos_filter != "ALL":
+        group = _HS_POS_GROUPS.get(pos_filter)
+        if group:
+            results = [p for p in results if (p.get("position") or "").upper() in group]
+        else:
+            results = [p for p in results if (p.get("position") or "").upper() == pos_filter]
+
+    if stars_filter and stars_filter != "ALL":
+        try:
+            s = int(stars_filter)
+            results = [p for p in results if p.get("stars") == s]
+        except ValueError:
+            pass
+
+    if year_filter and year_filter != "ALL":
+        results = [p for p in results if str(p.get("year", "")) == year_filter]
+
+    if search:
+        results = [p for p in results if
+                   search in (p.get("name") or "").lower() or
+                   search in (p.get("school") or "").lower() or
+                   search in (p.get("committed_to") or "").lower() or
+                   search in (p.get("state") or "").lower()]
+
+    if sort_by == "stars":
+        results = sorted(results, key=lambda p: -(p.get("stars") or 0))
+    elif sort_by == "name":
+        results = sorted(results, key=lambda p: (p.get("name") or ""))
+    elif sort_by == "rating":
+        results = sorted(results, key=lambda p: -(float(p.get("rating") or 0)))
+    else:  # default: rank
+        results = sorted(results, key=lambda p: (p.get("ranking") or 9999))
+
+    return jsonify({
+        "total":         len(results),
+        "offset":        offset,
+        "limit":         limit,
+        "meta":          _HS_PROSPECT_CACHE_META,
+        "api_key_set":   bool(CFBD_API_KEY),
+        "prospects":     results[offset: offset + limit],
     })
 
 
@@ -2735,6 +2943,8 @@ load_position_model_artifacts()
 load_or_train_success_model()
 load_or_train_draft_grade_model()
 load_prospect_cache()
+load_mock_draft()
+load_hs_prospect_cache()
 
 AUTO_SYNC_COLLEGE_PROSPECTS = os.getenv("AUTO_SYNC_COLLEGE_PROSPECTS", "true").lower() == "true"
 if AUTO_SYNC_COLLEGE_PROSPECTS and player_database_count_by_source("college_prospect") == 0:

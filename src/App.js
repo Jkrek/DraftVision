@@ -12,6 +12,8 @@ import Auth0ProviderWithHistory from './auth/auth0-provider-with-history';
 
 import PredictionComponent from './components/PredictionComponent';
 import Leaderboard from './components/pages/Leaderboard';
+import MockDraft from './components/pages/MockDraft';
+import HSProspects from './components/pages/HSProspects';
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/predict" element={<PredictionComponent />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/mock-draft" element={<MockDraft />} />
+          <Route path="/hs-prospects" element={<HSProspects />} />
         </Routes>
       </Auth0ProviderWithHistory>
     </Router>
