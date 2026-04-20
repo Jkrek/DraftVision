@@ -43,14 +43,6 @@ function StarRating({ stars }) {
   );
 }
 
-function gradeColor(grade) {
-  if (!grade) return '#64748b';
-  if (grade.startsWith('A')) return '#f59e0b';
-  if (grade.startsWith('B')) return '#818cf8';
-  if (grade.startsWith('C')) return '#64748b';
-  return '#ef4444';
-}
-
 export default function HSProspects() {
   const [prospects, setProspects]   = useState([]);
   const [meta, setMeta]             = useState(null);

@@ -1,89 +1,75 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
-import { Button } from './button';
 import AuthButton from './AuthButton';
 
 function Navbar() {
-  const [click, setClick] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
 
-  const handleClick = () => setClick(!click);
-  const closeMobileMenu = () => setClick(false);
-  const [button, setButton] = useState(true);
+  const close = () => setMenuOpen(false);
 
-  const showButton = () => {
-    if (window.innerWidth <= 960) {
-      setButton(false);
-    } else {
-      setButton(true);
-    }
-  };
+  // Close menu on route change
+  useEffect(() => { close(); }, [location.pathname]);
 
+  // Prevent body scroll when menu is open
   useEffect(() => {
-    showButton();
-    window.addEventListener('resize', showButton);
-    return () => window.removeEventListener('resize', showButton);
-  }, []);
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
+  const isActive = (path) => location.pathname === path ? 'nav-links active' : 'nav-links';
+
+  const navLinks = [
+    { to: '/predict',      label: 'Predict'       },
+    { to: '/leaderboard',  label: 'Leaderboard'   },
+    { to: '/mock-draft',   label: 'Mock Draft'     },
+    { to: '/hs-prospects', label: 'HS Prospects'  },
+    { to: '/services',     label: 'Compare'        },
+    { to: '/products',     label: 'College Stars'  },
+  ];
 
   return (
-    <>
-      <nav className="navbar">
-        <div className="navbar-container">
-          <Link to="/" className="navbar-logo" onClick={closeMobileMenu}>
-            🏈 DraftVision
+    <nav className="navbar">
+      <div className="navbar-container">
+
+        {/* Logo */}
+        <Link to="/" className="navbar-logo" onClick={close}>
+          <div className="navbar-logo-mark">🏈</div>
+          <span className="navbar-logo-text">DraftVision</span>
+        </Link>
+
+        {/* Nav links */}
+        <ul className={menuOpen ? 'nav-menu active' : 'nav-menu'}>
+          {navLinks.map(({ to, label }) => (
+            <li className="nav-item" key={to}>
+              <Link to={to} className={isActive(to)} onClick={close}>
+                {label}
+              </Link>
+            </li>
+          ))}
+          {/* Auth — shown inside mobile menu */}
+          <li className="nav-item" style={{ padding: '1rem 2rem' }}>
+            <AuthButton />
+          </li>
+        </ul>
+
+        {/* Right side */}
+        <div className="nav-right">
+          <AuthButton />
+          <div className="nav-divider" />
+          <Link to="/sign-up" className="nav-cta">
+            Get Access
           </Link>
-          <div className="menu-icon" onClick={handleClick}>
-            <i className={click ? 'fas fa-times' : 'fas fa-bars'} />
-          </div>
-          <ul className={click ? 'nav-menu active' : 'nav-menu'}>
-            <li className="nav-item">
-              <Link to="/" className="nav-links" onClick={closeMobileMenu}>
-                Home
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/predict" className="nav-links" onClick={closeMobileMenu}>
-                Predict
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/leaderboard" className="nav-links" onClick={closeMobileMenu}>
-                Leaderboard
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/services" className="nav-links" onClick={closeMobileMenu}>
-                Compare
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/products" className="nav-links" onClick={closeMobileMenu}>
-                College Stars
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/mock-draft" className="nav-links" onClick={closeMobileMenu}>
-                Mock Draft
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/hs-prospects" className="nav-links" onClick={closeMobileMenu}>
-                HS Prospects
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/sign-up" className="nav-links" onClick={closeMobileMenu}>
-                Sign Up
-              </Link>
-            </li>
-            <li className="nav-item">
-              <AuthButton />
-            </li>
-          </ul>
-          {button && <Button buttonStyle="btn--outline" to="/sign-up">SIGN UP</Button>}
         </div>
-      </nav>
-    </>
+
+        {/* Hamburger */}
+        <div className="menu-icon" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
+          <i className={menuOpen ? 'fas fa-times' : 'fas fa-bars'} />
+        </div>
+
+      </div>
+    </nav>
   );
 }
 

@@ -1,94 +1,133 @@
+/* ── How It Works ───────────────────────────────────────────────────────────── */
 .how-it-works {
-  padding: 5rem 1.5rem;
-  background: linear-gradient(180deg,
-    rgba(99, 102, 241, 0.06) 0%,
-    rgba(8, 15, 30, 0.0) 100%
-  );
+  padding: 6rem 1.5rem;
+  background: linear-gradient(180deg, rgba(99,102,241,0.05) 0%, rgba(7,13,27,0) 100%);
   border-top: 1px solid rgba(255,255,255,0.05);
 }
 
 .how-it-works__inner {
-  max-width: 1120px;
+  max-width: 1140px;
   margin: 0 auto;
 }
 
 .how-it-works__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: var(--primary-color);
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.how-it-works__eyebrow::before {
+  content: '';
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--primary-color);
+  border-radius: 1px;
 }
 
 .how-it-works__heading {
-  color: var(--text-light);
-  font-size: 2.4rem;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
   font-weight: 800;
-  margin-bottom: 1rem;
+  color: var(--text-light);
   letter-spacing: -0.5px;
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
 }
 
 .how-it-works__intro {
   color: var(--text-mid);
   font-size: 1.05rem;
-  max-width: 680px;
-  margin-bottom: 3rem;
+  max-width: 620px;
   line-height: 1.7;
+  margin-bottom: 3.5rem;
 }
 
+/* ── Step grid ── */
 .how-it-works__grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  position: relative;
+}
+
+/* Connecting line between cards */
+.how-it-works__grid::before {
+  content: '';
+  position: absolute;
+  top: 3.2rem;
+  left: calc(16.67% + 1rem);
+  right: calc(16.67% + 1rem);
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(99,102,241,0.3) 20%,
+    rgba(168,85,247,0.3) 80%,
+    transparent
+  );
+  pointer-events: none;
 }
 
 .how-it-works__card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-top: 3px solid var(--step-color, var(--primary-color));
-  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-  border-radius: 14px;
-  padding: 1.75rem 1.5rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(13, 21, 40, 0.7);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 2rem 1.75rem;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.how-it-works__card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at top left,
+    rgba(var(--step-color-rgb, 99,102,241), 0.06) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
 }
 
 .how-it-works__card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px var(--step-color, var(--primary-color));
+  transform: translateY(-5px);
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px var(--step-color, var(--primary-color)) inset;
 }
 
 .how-it-works__step-number {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 900;
   line-height: 1;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
   color: var(--step-color, var(--primary-color));
-  opacity: 0.9;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -2px;
+  letter-spacing: -3px;
+  opacity: 0.85;
 }
 
 .how-it-works__card-title {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--text-light);
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.65rem;
   letter-spacing: -0.2px;
 }
 
 .how-it-works__card-text {
   color: var(--text-mid);
-  line-height: 1.65;
-  font-size: 0.95rem;
+  line-height: 1.68;
+  font-size: 0.9rem;
 }
 
 @media (max-width: 900px) {
   .how-it-works__grid {
     grid-template-columns: 1fr;
   }
-
-  .how-it-works__heading {
-    font-size: 1.9rem;
-  }
+  .how-it-works__grid::before { display: none; }
+  .how-it-works { padding: 4rem 1.25rem; }
 }

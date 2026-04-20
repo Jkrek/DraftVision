@@ -1,93 +1,96 @@
 import React from 'react';
-import './Footer.css';
 import { Link } from 'react-router-dom';
+import './Footer.css';
+
+const NAV_COLS = [
+  {
+    heading: 'DraftVision',
+    links: [
+      { label: 'Predict',       to: '/predict'      },
+      { label: 'Leaderboard',   to: '/leaderboard'  },
+      { label: 'Mock Draft',    to: '/mock-draft'   },
+      { label: 'HS Prospects',  to: '/hs-prospects' },
+      { label: 'Compare',       to: '/services'     },
+      { label: 'College Stars', to: '/products'     },
+    ],
+  },
+  {
+    heading: 'The Model',
+    links: [
+      { label: 'XGBoost + CatBoost', to: '/predict' },
+      { label: 'Feature Importance',  to: '/predict' },
+      { label: 'Conference Tiers',    to: '/predict' },
+      { label: 'Success Criteria',    to: '/predict' },
+      { label: 'Draft Grade Logic',   to: '/predict' },
+    ],
+  },
+  {
+    heading: 'About',
+    links: [
+      { label: 'Jared Krekeler',        to: '/' },
+      { label: 'University of Cincinnati', to: '/' },
+      { label: 'Computer Science',      to: '/' },
+      { label: 'Spring 2025',           to: '/' },
+    ],
+  },
+  {
+    heading: 'Tech Stack',
+    links: [
+      { label: 'XGBoost / CatBoost', to: '/' },
+      { label: 'Flask + Python',     to: '/' },
+      { label: 'React 18',           to: '/' },
+      { label: 'ESPN CFB API',       to: '/' },
+      { label: 'CFBD API',           to: '/' },
+      { label: 'Fly.io',             to: '/' },
+    ],
+  },
+];
 
 function Footer() {
   return (
-    <div className='footer-container'>
-      <section className='footer-subscription'>
-        <p className='footer-subscription-heading'>
-          Stay ahead of the draft with DraftVision
-        </p>
-        <p className='footer-subscription-text'>
-          ML-powered NFL prospect predictions · Built at the University of Cincinnati
-        </p>
-        <div className='input-areas'>
-          <form onSubmit={e => e.preventDefault()}>
-            <input
-              className='footer-input'
-              name='email'
-              type='email'
-              placeholder='Your Email'
-            />
-            <Link to='/sign-up'>
-              <button type='button' className='btn btn--outline btn--medium' style={{ marginLeft: '8px' }}>
-                Get Access
-              </button>
-            </Link>
-          </form>
-        </div>
-      </section>
-
-      <div className='footer-links'>
-        <div className='footer-link-wrapper'>
-          <div className='footer-link-items'>
-            <h2>DraftVision</h2>
-            <Link to='/'>Home</Link>
-            <Link to='/predict'>Predict Prospects</Link>
-            <Link to='/services'>Compare Players</Link>
-            <Link to='/products'>College Stars</Link>
-            <Link to='/sign-up'>Sign Up</Link>
+    <footer className="footer">
+      {/* CTA band */}
+      <div className="footer-cta">
+        <div className="footer-cta-inner">
+          <div>
+            <h3 className="footer-cta-heading">Stay ahead of the draft</h3>
+            <p className="footer-cta-sub">ML-powered NFL prospect predictions · Built at the University of Cincinnati</p>
           </div>
-          <div className='footer-link-items'>
-            <h2>The Model</h2>
-            <Link to='/predict'>How it Works</Link>
-            <Link to='/predict'>Feature Importance</Link>
-            <Link to='/predict'>Position Analysis</Link>
-            <Link to='/predict'>Success Criteria</Link>
-          </div>
-        </div>
-        <div className='footer-link-wrapper'>
-          <div className='footer-link-items'>
-            <h2>About</h2>
-            <Link to='/'>Jared Krekeler</Link>
-            <Link to='/'>University of Cincinnati</Link>
-            <Link to='/'>Computer Science</Link>
-            <Link to='/'>Spring 2025</Link>
-          </div>
-          <div className='footer-link-items'>
-            <h2>Tech Stack</h2>
-            <Link to='/'>XGBoost ML</Link>
-            <Link to='/'>Flask API</Link>
-            <Link to='/'>React 18</Link>
-            <Link to='/'>ESPN CFB API</Link>
-          </div>
+          <Link to="/predict" className="footer-cta-btn">Run a Prediction</Link>
         </div>
       </div>
 
-      <section className='social-media'>
-        <div className='social-media-wrap'>
-          <div className='footer-logo'>
-            <Link to='/' className='social-logo' style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '1.3rem' }}>🏈</span>
-              DraftVision
-            </Link>
+      {/* Links grid */}
+      <div className="footer-links-grid">
+        {NAV_COLS.map((col) => (
+          <div key={col.heading} className="footer-col">
+            <h4 className="footer-col-heading">{col.heading}</h4>
+            {col.links.map((l) => (
+              <Link key={l.label} to={l.to} className="footer-link">{l.label}</Link>
+            ))}
           </div>
-          <small className='website-rights'>DraftVision · Jared Krekeler · UC © 2025</small>
-          <div className='social-icons'>
-            <Link className='social-icon-link github' to='/' target='_blank' aria-label='GitHub'>
-              <i className='fab fa-github' />
-            </Link>
-            <Link className='social-icon-link linkedin' to='/' target='_blank' aria-label='LinkedIn'>
-              <i className='fab fa-linkedin' />
-            </Link>
-            <Link className='social-icon-link twitter' to='/' target='_blank' aria-label='Twitter'>
-              <i className='fab fa-twitter' />
-            </Link>
-          </div>
+        ))}
+      </div>
+
+      {/* Bottom bar */}
+      <div className="footer-bottom">
+        <Link to="/" className="footer-bottom-logo">
+          🏈 <span>DraftVision</span>
+        </Link>
+        <span className="footer-bottom-copy">© 2025 Jared Krekeler · University of Cincinnati</span>
+        <div className="footer-bottom-socials">
+          <a href="https://github.com" target="_blank" rel="noreferrer" aria-label="GitHub" className="footer-social">
+            <i className="fab fa-github" />
+          </a>
+          <a href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="footer-social">
+            <i className="fab fa-linkedin" />
+          </a>
+          <a href="https://twitter.com" target="_blank" rel="noreferrer" aria-label="Twitter" className="footer-social">
+            <i className="fab fa-twitter" />
+          </a>
         </div>
-      </section>
-    </div>
+      </div>
+    </footer>
   );
 }
 

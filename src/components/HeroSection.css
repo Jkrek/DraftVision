@@ -1,117 +1,276 @@
+/* ── Hero ───────────────────────────────────────────────────────────────────── */
 .hero-container {
-  height: 100vh;
-  width: 100%;
+  position: relative;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  object-fit: contain;
-  position: relative;
-  z-index: 1;
+  justify-content: center;
+  text-align: center;
+  padding: 6rem 1.5rem 5rem;
   overflow: hidden;
+  isolation: isolate;
 }
 
+/* Background image */
 .hero-background-image {
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  z-index: -2;
-  top: 0;
-  left: 0;
+  position: absolute;
+  inset: 0;
   background-size: cover;
-  background-position: center;
-  filter: brightness(0.45);
+  background-position: center 30%;
+  filter: brightness(0.35) saturate(0.8);
+  z-index: -3;
 }
 
-/* Dark gradient overlay for readability */
+/* Dark gradient overlay */
 .hero-container::before {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
     170deg,
-    rgba(8, 15, 30, 0.55) 0%,
-    rgba(8, 15, 30, 0.72) 60%,
-    rgba(8, 15, 30, 0.92) 100%
+    rgba(7, 13, 27, 0.45) 0%,
+    rgba(7, 13, 27, 0.65) 50%,
+    rgba(7, 13, 27, 0.94) 100%
   );
-  z-index: -1;
+  z-index: -2;
 }
 
-/* Subtle animated glow blob behind title */
+/* Glow orb */
 .hero-container::after {
   content: '';
   position: absolute;
-  top: 30%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 600px;
-  height: 300px;
-  background: radial-gradient(ellipse at center, rgba(99,102,241,0.18) 0%, transparent 70%);
+  width: 700px;
+  height: 350px;
+  background: radial-gradient(ellipse at center,
+    rgba(99,102,241,0.22) 0%,
+    rgba(168,85,247,0.10) 50%,
+    transparent 72%
+  );
   pointer-events: none;
   z-index: -1;
 }
 
-.hero-container > h1 {
-  font-size: 108px;
+/* ── Eyebrow pill ── */
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(99,102,241,0.13);
+  border: 1px solid rgba(99,102,241,0.3);
+  color: #a5b4fc;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  animation: fadeInDown 0.7s ease-out;
+}
+
+.hero-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6366f1;
+  box-shadow: 0 0 6px #6366f1;
+  animation: pulse 2s infinite;
+}
+
+/* ── Title ── */
+.hero-title {
+  font-size: clamp(64px, 12vw, 112px);
   font-weight: 900;
-  letter-spacing: -2px;
-  text-align: center;
-  margin-bottom: 0;
-  line-height: 1;
-  background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+  letter-spacing: -3px;
+  line-height: 0.95;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #c7d2fe 0%, #a78bfa 45%, #f472b6 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: fadeInDown 0.9s ease-out;
-  filter: drop-shadow(0 0 40px rgba(139, 92, 246, 0.35));
+  animation: fadeInDown 0.8s ease-out 0.1s both;
+  filter: drop-shadow(0 0 60px rgba(139, 92, 246, 0.3));
 }
 
-.hero-container > p {
-  margin-top: 16px;
-  color: var(--text-light);
-  font-size: 1.35rem;
-  font-family: 'Outfit', sans-serif;
+/* ── Subtitle ── */
+.hero-sub {
+  font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+  color: rgba(238, 242, 255, 0.85);
   font-weight: 400;
-  text-align: center;
-  letter-spacing: 0.01em;
-  animation: fadeInUp 0.9s ease-out 0.4s backwards;
+  max-width: 600px;
+  margin: 0 auto 0.6rem;
+  line-height: 1.6;
+  animation: fadeInUp 0.8s ease-out 0.3s both;
 }
 
-.hero-container > p.subtitle {
-  font-size: 1rem;
-  color: var(--text-mid);
-  margin-top: 6px;
-  letter-spacing: 0.03em;
+.hero-tagline {
+  font-size: 0.9rem;
+  color: rgba(148, 163, 184, 0.75);
+  margin-bottom: 2.5rem;
+  animation: fadeInUp 0.8s ease-out 0.45s both;
 }
 
+/* ── Stat strip ── */
+.hero-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 2.8rem;
+  animation: fadeInUp 0.8s ease-out 0.55s both;
+  flex-wrap: wrap;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 2rem;
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.hero-stat:last-child {
+  border-right: none;
+}
+
+.hero-stat-value {
+  font-size: 1.7rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #818cf8, #c084fc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1;
+}
+
+.hero-stat-label {
+  font-size: 0.72rem;
+  color: rgba(148, 163, 184, 0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* ── Buttons ── */
 .hero-btns {
-  margin-top: 36px;
   display: flex;
   gap: 12px;
-  animation: fadeInUp 0.9s ease-out 0.8s backwards;
+  justify-content: center;
+  animation: fadeInUp 0.8s ease-out 0.65s both;
+  flex-wrap: wrap;
 }
 
-.fa-play-circle {
-  margin-left: 6px;
+.hero-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 30px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 20px rgba(99,102,241,0.35);
 }
 
+.hero-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(99,102,241,0.5);
+}
+
+.hero-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 30px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  color: rgba(238,242,255,0.9);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border: 1.5px solid rgba(255,255,255,0.14);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hero-btn-secondary:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.25);
+}
+
+/* ── Scroll cue ── */
+.hero-scroll-cue {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  animation: fadeInUp 1s ease-out 1.2s both;
+}
+
+.hero-scroll-cue span {
+  font-size: 0.68rem;
+  color: rgba(148,163,184,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.hero-scroll-line {
+  width: 1px;
+  height: 36px;
+  background: linear-gradient(180deg, rgba(99,102,241,0.6), transparent);
+  animation: scrollLine 2s ease-in-out infinite;
+}
+
+/* ── Animations ── */
 @keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-40px); }
+  from { opacity: 0; transform: translateY(-24px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(40px); }
+  from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@media screen and (max-width: 960px) {
-  .hero-container > h1 { font-size: 72px; letter-spacing: -1px; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(0.8); }
 }
 
-@media screen and (max-width: 768px) {
-  .hero-container > h1 { font-size: 52px; }
-  .hero-container > p  { font-size: 1.1rem; }
-  .hero-container > p.subtitle { font-size: 0.88rem; }
-  .hero-btns { flex-direction: column; align-items: center; }
+@keyframes scrollLine {
+  0%   { opacity: 0; transform: scaleY(0); transform-origin: top; }
+  50%  { opacity: 1; transform: scaleY(1); transform-origin: top; }
+  100% { opacity: 0; transform: scaleY(1); transform-origin: bottom; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero-stat { padding: 0 1.2rem; }
+  .hero-stat-value { font-size: 1.3rem; }
+  .hero-btns { gap: 10px; }
+  .hero-btn-primary,
+  .hero-btn-secondary { padding: 13px 22px; font-size: 0.88rem; }
+}
+
+@media (max-width: 480px) {
+  .hero-stats { gap: 0.5rem; }
+  .hero-stat { border-right: none; padding: 0.5rem 1rem; }
+  .hero-btns { flex-direction: column; align-items: center; width: 100%; max-width: 280px; margin: 0 auto; }
+  .hero-btn-primary, .hero-btn-secondary { width: 100%; justify-content: center; }
 }
