@@ -115,7 +115,11 @@ def call_predict(player, api_url, timeout=15):
     try:
         r = requests.post(
             f"{api_url}/predict",
-            json={"name": player["name"]},
+            json={
+                "name":     player["name"],
+                "position": player.get("position", "Unknown"),
+                "team":     player.get("team", "Unknown"),
+            },
             timeout=timeout,
         )
         if not r.ok:

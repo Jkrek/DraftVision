@@ -1236,7 +1236,7 @@ def fetch_combine_measurables(espn_id: str, position: str) -> dict:
         return {}
 
 
-def fetch_player_data(player_name: str) -> Tuple[Optional[Dict[str, object]], str]:
+def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fallback_team: str = "Unknown") -> Tuple[Optional[Dict[str, object]], str]:
     normalized = normalize_name(player_name)
 
     # 1) Resolve from local database first.
@@ -1349,8 +1349,8 @@ def fetch_player_data(player_name: str) -> Tuple[Optional[Dict[str, object]], st
         )
         return result, "csv_fallback"
 
-    # 3) Last fallback: generic baseline.
-    result = generate_estimated_profile(name=player_name.strip(), position="Unknown", team="Unknown")
+    # 3) Last fallback: generic baseline, using caller-supplied position/team if known.
+    result = generate_estimated_profile(name=player_name.strip(), position=fallback_position, team=fallback_team)
     upsert_player_record(
         result["name"],
         result["position"],
@@ -2607,7 +2607,11 @@ def predict():
     if len(player_name) > 80:
         return jsonify({"error": "Player name is too long."}), 400
 
-    player_data, data_source = fetch_player_data(player_name)
+    # Optional roster hints — used as fallback when ESPN can't resolve the player
+    fallback_position = str(payload.get("position") or "Unknown").strip().upper() or "Unknown"
+    fallback_team = str(payload.get("team") or "Unknown").strip() or "Unknown"
+
+    player_data, data_source = fetch_player_data(player_name, fallback_position, fallback_team)
     if not player_data:
         return jsonify({"error": "Unable to resolve player data."}), 404
 
