@@ -13,9 +13,9 @@ export default function Products() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    fetch('/players?limit=300&source=college_prospect')
+    fetch('/api/prospects?limit=5000')
       .then(r => r.json())
-      .then(d => setProspects(Array.isArray(d.players) ? d.players : []))
+      .then(d => setProspects(Array.isArray(d.prospects) ? d.prospects : []))
       .catch(() => setProspects([]))
       .finally(() => setLoading(false));
   }, []);
