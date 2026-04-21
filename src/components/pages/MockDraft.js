@@ -55,14 +55,27 @@ export default function MockDraft() {
       .finally(() => setLoading(false));
   }, []);
 
-  const uploadCSV = useCallback(async (text) => {
+  const uploadImage = useCallback(async (file) => {
     setUploading(true);
     setError(null);
     try {
+      // Read file as base64
+      const b64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          // e.target.result is "data:image/png;base64,XXXX" — strip the prefix
+          const [, data] = e.target.result.split(',');
+          resolve(data);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const mediaType = file.type || 'image/png';
       const res  = await fetch('/api/mock-draft/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ csv_content: text, title: 'JKrek\'s Mock Draft' }),
+        body: JSON.stringify({ image_b64: b64, media_type: mediaType, title: 'JKrek\'s Mock Draft' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed');
@@ -81,10 +94,8 @@ export default function MockDraft() {
 
   const handleFile = useCallback((file) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => uploadCSV(e.target.result);
-    reader.readAsText(file);
-  }, [uploadCSV]);
+    uploadImage(file);
+  }, [uploadImage]);
 
   const handleDrop = useCallback((e) => {
     e.preventDefault();
@@ -154,7 +165,7 @@ export default function MockDraft() {
           <input
             ref={fileRef}
             type="file"
-            accept=".csv,text/csv"
+            accept="image/png,image/jpeg,image/webp,image/*"
             style={{ display: 'none' }}
             onChange={e => handleFile(e.target.files[0])}
           />
@@ -162,7 +173,7 @@ export default function MockDraft() {
             {uploading ? 'Uploading…' : picks.length > 0 ? 'Update Mock Draft' : 'Upload PFF Mock Draft CSV'}
           </p>
           <p style={{ color: '#475569', fontSize: '0.78rem', margin: 0 }}>
-            {uploading ? 'Parsing picks…' : 'Drag & drop or click · CSV export from PFF Mock Draft Simulator'}
+            {uploading ? 'Claude is reading the image…' : 'Drag & drop or click · PNG screenshot from PFF Mock Draft Simulator'}
           </p>
         </div>
 

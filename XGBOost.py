@@ -2292,60 +2292,96 @@ def _team_color(nfl_team: str) -> str:
 
 @app.post("/api/mock-draft/upload")
 def upload_mock_draft():
-    import io, csv as csv_mod
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
         return jsonify({"error": "Invalid JSON"}), 400
 
-    csv_content = str(payload.get("csv_content") or "").strip()
-    title       = str(payload.get("title") or "JKrek's Mock Draft").strip()
-    if not csv_content:
-        return jsonify({"error": "csv_content is required"}), 400
+    image_b64  = str(payload.get("image_b64") or "").strip()
+    media_type = str(payload.get("media_type") or "image/png").strip()
+    title      = str(payload.get("title") or "JKrek's Mock Draft").strip()
+
+    if not image_b64:
+        return jsonify({"error": "image_b64 is required"}), 400
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return jsonify({"error": "ANTHROPIC_API_KEY not configured on server"}), 503
+
+    # ── Call Claude vision to extract picks ────────────────────────────────────
+    try:
+        import anthropic as _anthropic
+        client = _anthropic.Anthropic(api_key=api_key)
+
+        msg = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=4096,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": media_type,
+                            "data": image_b64,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": (
+                            "This is a screenshot of an NFL mock draft. "
+                            "Extract every pick that is visible.\n\n"
+                            "Return ONLY a valid JSON array — no markdown, no explanation. "
+                            "Each element must have these exact fields:\n"
+                            "  pick       (integer: overall pick number)\n"
+                            "  round      (integer: round number)\n"
+                            "  nfl_team   (string: full NFL team name)\n"
+                            "  player     (string: player full name)\n"
+                            "  position   (string: position abbreviation, e.g. QB, WR, OT)\n"
+                            "  school     (string: college/university, empty string if unknown)\n"
+                            "  pff_grade  (string: PFF grade if shown, empty string if not)\n\n"
+                            "If a field is not visible, use an empty string or 0 for integers. "
+                            "Return the array sorted by pick number ascending."
+                        ),
+                    },
+                ],
+            }],
+        )
+
+        raw = msg.content[0].text.strip()
+        # Strip markdown code fences if Claude wraps in ```json
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+            raw = raw.strip()
+
+        picks_raw = json.loads(raw)
+
+    except json.JSONDecodeError as exc:
+        return jsonify({"error": f"Claude returned unparseable JSON: {exc}"}), 500
+    except Exception as exc:
+        return jsonify({"error": f"Vision extraction failed: {exc}"}), 500
 
     picks = []
-    try:
-        reader = csv_mod.DictReader(io.StringIO(csv_content))
-        for row in reader:
-            # Normalize keys to lowercase for flexible column matching
-            keys = {k.lower().strip().replace(" ", "_"): str(v).strip() for k, v in (row or {}).items()}
-
-            def _find(*candidates):
-                for c in candidates:
-                    v = keys.get(c, "")
-                    if v and v.lower() not in ("", "none", "n/a", "-"):
-                        return v
-                return ""
-
-            player = _find("player", "name", "player_name", "athlete")
-            if not player:
-                continue
-            pick_raw = _find("pick", "overall", "overall_pick", "#", "pick_#")
-            try:
-                pick_num = int(float(pick_raw)) if pick_raw else len(picks) + 1
-            except ValueError:
-                pick_num = len(picks) + 1
-
-            nfl_team = _find("team", "nfl_team", "franchise", "club")
-            position = _find("position", "pos").upper()
-            school   = _find("school", "college", "university")
-            grade    = _find("pff_grade", "pff", "grade", "rating", "score")
-            round_n  = _find("round", "rd", "rnd")
-
-            picks.append({
-                "pick":     pick_num,
-                "round":    round_n,
-                "nfl_team": nfl_team,
-                "player":   player,
-                "position": position,
-                "school":   school,
-                "pff_grade": grade,
-                "color":    _team_color(nfl_team),
-            })
-    except Exception as exc:
-        return jsonify({"error": f"CSV parse error: {exc}"}), 400
+    for p in (picks_raw if isinstance(picks_raw, list) else []):
+        player = str(p.get("player") or "").strip()
+        if not player:
+            continue
+        nfl_team = str(p.get("nfl_team") or "").strip()
+        picks.append({
+            "pick":      int(p.get("pick") or len(picks) + 1),
+            "round":     int(p.get("round") or 1),
+            "nfl_team":  nfl_team,
+            "player":    player,
+            "position":  str(p.get("position") or "").upper().strip(),
+            "school":    str(p.get("school") or "").strip(),
+            "pff_grade": str(p.get("pff_grade") or "").strip(),
+            "color":     _team_color(nfl_team),
+        })
 
     if not picks:
-        return jsonify({"error": "No valid picks found in CSV"}), 400
+        return jsonify({"error": "No picks found in image"}), 400
 
     global _MOCK_DRAFT_DATA
     _MOCK_DRAFT_DATA = {

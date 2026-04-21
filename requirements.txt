@@ -9,4 +9,5 @@ requests==2.32.5
 scikit-learn==1.8.0
 xgboost==3.2.0
 catboost==1.2.7
+anthropic>=0.40.0
 # tabpfn not in prod: requires torch (~800MB) and scikit-learn<1.7 — install manually for local training
