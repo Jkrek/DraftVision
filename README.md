@@ -1,70 +1,56 @@
-# Getting Started with Create React App
+# DraftVision 🏈
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**A full-stack machine-learning web app that predicts NFL draft success for college and high-school football prospects.**
 
-## Available Scripts
+Live demo: **[draft.jkrek.com](https://draft.jkrek.com)**  ·  Built by [Jared Krekeler](https://github.com/Jkrek)
 
-In the project directory, you can run:
+> Enter any college or high-school player and DraftVision returns a success probability, projected draft grade, and historical NFL comparisons — powered by a 3-model ML ensemble over live ESPN and College Football Data.
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Highlights
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **9,000+ college prospects** ranked and gradeable; **10,000+ high-school recruits** (2020–2027 classes) from the CFBD 247Sports composite.
+- **3-model ML ensemble** — calibrated XGBoost (`CalibratedClassifierCV`) + CatBoost + a rule-based fallback, probability-averaged for a stable success score.
+- **16 engineered features** — e.g. a 0–100 position-normalized `production_score`, a 1–10 `conference_tier`, a position-normalized `combine_speed_score`, All-American / award flags, and position one-hots.
+- **Claude Vision mock-draft import** — drop in a PNG of a mock draft (e.g. PFF's image-only export) and `claude-haiku-4-5-20251001` extracts the picks into clean JSON — no brittle parsing.
+- **AI mock-draft generators** — college and HS mock drafts that mirror real draft-room logic (per-team positional needs, honored commitments, best-available fallback).
+- **Sub-100ms leaderboard** — an offline cache pipeline pre-computes every FBS roster so pages load with zero live API calls.
 
-### `npm test`
+## Tech Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| Layer | Tools |
+|------|------|
+| Frontend | React (SPA, React Router), Auth0, ag-grid |
+| Backend | Python, Flask (serves the built React app as a single artifact) |
+| ML | XGBoost, CatBoost, scikit-learn (calibration), Pandas / NumPy |
+| Data | ESPN API (live rosters/stats), College Football Data API, Claude Vision API |
+| Deploy | Docker → Fly.io |
 
-### `npm run build`
+## How it works
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Predict** (`/predict`) — a player name is fuzzy-matched against live ESPN rosters, features are engineered on the fly, and the ensemble returns a success probability + draft grade. Cosine similarity across the 16-feature vector surfaces historical NFL comps.
+2. **Leaderboard** (`/leaderboard`) — `build_prospect_cache.py` walks every FBS roster, scores each player, and bakes results into the Docker image, so the ranked grid of 9,033 prospects loads instantly.
+3. **Mock drafts** (`/mock-draft`, `/college-mock-draft`, `/hs-mock-draft`) — import a mock via Claude Vision, or generate one from a needs-based simulation over the real NFL draft order.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Pre-trained models (`.cbm` / `.pkl` / `.json`) are baked into the image — no training at request time.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Run locally
 
-### `npm run eject`
+```bash
+# Backend (Flask API on :5001)
+pip install -r requirements.txt
+python -m src.app        # see "Run Instructions" / DEPLOY.md for the exact entrypoint
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# Frontend (React on :3000, proxies to :5001)
+npm install
+npm start
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+See `DEPLOY.md` for the Docker/Fly.io deployment and `DEMO_GUIDE.md` for a full feature walkthrough.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## About
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+DraftVision was built as a Computer Science Senior Design project at the University of Cincinnati. It combines applied machine learning (feature engineering, model calibration, ensembling), live data integration, and full-stack web development in a single deployed product.
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+*Data from ESPN and the College Football Data API. Not affiliated with the NFL, NFLPA, or any team.*
