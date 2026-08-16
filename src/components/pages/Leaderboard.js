@@ -367,6 +367,15 @@ export default function Leaderboard() {
                   />
                   <span className="lb-rank lb-c-rank">{i + 1}</span>
                   <span className="lb-name lb-c-name">
+                    {p.espn_team_id && (
+                      <img
+                        className="lb-team-logo"
+                        src={`https://a.espncdn.com/i/teamlogos/ncaa/500/${p.espn_team_id}.png`}
+                        alt=""
+                        loading="lazy"
+                        onError={e => { e.target.style.display = 'none'; }}
+                      />
+                    )}
                     <span>{p.name}</span>
                     {p.data_source && p.data_source !== 'espn_live' && (
                       <span className="lb-est" title="No verified season stats — profile is estimated">EST</span>

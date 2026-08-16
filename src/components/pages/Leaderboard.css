@@ -353,6 +353,14 @@
   white-space: nowrap;
 }
 
+.lb-team-logo {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+}
+
 /* provenance badge: profile estimated, no verified season stats */
 .lb-est {
   flex: 0 0 auto;

@@ -145,6 +145,7 @@ def fetch_roster(team_id, team_name):
             "position":   position,
             "espn_id":    str(athlete.get("id") or "").strip(),
             "team":       team_name,
+            "team_id":    str(team_id).strip(),
             "class_year": class_abbr,
         })
 
@@ -182,6 +183,8 @@ def call_predict(player, api_url, timeout=15):
             "production_score":   round(float(stats.get("production_score") or 0), 1),
             "combine_speed_score": round(float(stats.get("combine_speed_score") or 50), 1),
             "games_played":       int(float(stats.get("games_played") or 0)),
+            # ESPN NCAA team id -> logo at a.espncdn.com/i/teamlogos/ncaa/500/{id}.png
+            "espn_team_id":       player.get("team_id") or "",
             "class_year":         player.get("class_year") or "",
             "draft_class":        projected_draft_class(
                                       player.get("class_year"),

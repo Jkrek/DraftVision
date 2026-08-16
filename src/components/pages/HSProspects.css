@@ -203,10 +203,23 @@
 .hsp-col-name {
   flex: 2 1 190px;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--color-neutral-100);
   white-space: nowrap;
   overflow: hidden;
+}
+.hsp-col-name > span {
+  overflow: hidden;
   text-overflow: ellipsis;
+}
+.hsp-school-icon {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  color: var(--color-accent-400);
+  opacity: 0.85;
 }
 
 .hsp-col-school { flex: 1.6 1 160px; min-width: 0; }

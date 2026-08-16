@@ -114,6 +114,15 @@ export default function Services() {
             >
               <div className="col-rank">{rank}</div>
               <div className="col-player">
+                {p.espn_team_id && (
+                  <img
+                    className="col-team-logo"
+                    src={`https://a.espncdn.com/i/teamlogos/ncaa/500/${p.espn_team_id}.png`}
+                    alt=""
+                    loading="lazy"
+                    onError={e => { e.target.style.display = 'none'; }}
+                  />
+                )}
                 {p.name}
                 {p.data_source && p.data_source !== 'espn_live' && (
                   <span className="col-est" title="No verified season stats — profile is estimated">EST</span>

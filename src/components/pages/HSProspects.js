@@ -232,7 +232,30 @@ export default function HSProspects() {
                 #{p.ranking || '—'}
               </div>
 
-              <div className="hsp-col-name">{p.name}</div>
+              <div className="hsp-col-name">
+                <svg
+                  className="hsp-school-icon"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  {/* shield */}
+                  <path
+                    d="M10 1.8 L17 4.2 V9.6 C17 13.8 14.2 16.9 10 18.4 C5.8 16.9 3 13.8 3 9.6 V4.2 Z"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinejoin="round"
+                  />
+                  {/* goal post */}
+                  <path
+                    d="M7 12.4 V8.2 M13 12.4 V8.2 M7 8.9 H13 M10 12.6 V8.9"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span>{p.name}</span>
+              </div>
 
               <div className="hsp-col-school">
                 <div className="hsp-school">{p.school || '—'}</div>
