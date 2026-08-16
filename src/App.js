@@ -1,8 +1,9 @@
 import React from 'react';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
+import './nocturne.css';
 import './App.css';
 import Navbar from './components/Navbar';
+import Ticker from './components/Ticker';
+import Footer from './components/Footer';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/pages/home';
 import Services from './components/pages/services';
@@ -20,6 +21,7 @@ function App() {
     <Router>
       <Auth0ProviderWithHistory>
         <Navbar />
+        <Ticker />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<Services />} />
@@ -30,6 +32,7 @@ function App() {
           <Route path="/mock-draft" element={<MockDraft />} />
           <Route path="/hs-prospects" element={<HSProspects />} />
         </Routes>
+        <Footer />
       </Auth0ProviderWithHistory>
     </Router>
   );

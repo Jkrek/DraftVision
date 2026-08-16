@@ -1,16 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../App.css';
+import './Leaderboard.css';
 
-const POSITION_TABS = ['ALL', 'QB', 'RB', 'WR', 'TE', 'DB', 'LB', 'DL', 'OL'];
-const GRADE_FILTERS = ['ALL', 'A', 'B', 'C', 'D'];
 const PAGE_SIZE = 100;
-
-const POSITION_COLORS = {
-  QB: '#3b82f6', RB: '#22c55e', WR: '#f59e0b', TE: '#a78bfa',
-  DB: '#f43f5e', LB: '#fb923c', DL: '#ef4444', OL: '#64748b',
-  default: '#94a3b8',
-};
 
 const POS_GROUP_MAP = {
   DB: new Set(['CB', 'S', 'DB', 'FS', 'SS']),
@@ -19,29 +11,23 @@ const POS_GROUP_MAP = {
   OL: new Set(['OL', 'OT', 'OG', 'C', 'LS']),
 };
 
+const GROUP_ORDER = ['QB', 'RB', 'WR', 'TE', 'OL', 'DL', 'LB', 'DB'];
+
 const DRAFT_SHORT = {
-  'Top 50 Pick':        '🟢 Top 50',
-  'Day 2 Pick':         '🔵 Day 2',
-  'Late Round Pick':    '🟡 Late Rd',
-  'Undrafted Prospect': '⬜ UDFA',
+  'Top 50 Pick':        'Top 50',
+  'Day 2 Pick':         'Day 2',
+  'Late Round Pick':    'Late round',
+  'Undrafted Prospect': 'UDFA',
 };
 
 const GRADE_ORDER = { 'A+': 0, 'A': 1, 'A-': 2, 'B+': 3, 'B': 4, 'B-': 5, 'C+': 6, 'C': 7, 'C-': 8, 'D': 9 };
 
-function posColor(pos) {
+function posGroup(pos) {
   const p = (pos || '').toUpperCase();
   for (const [group, set] of Object.entries(POS_GROUP_MAP)) {
-    if (set.has(p)) return POSITION_COLORS[group];
+    if (set.has(p)) return group;
   }
-  return POSITION_COLORS[p] || POSITION_COLORS.default;
-}
-
-function gradeColor(grade) {
-  if (!grade) return '#64748b';
-  if (grade.startsWith('A')) return '#f59e0b';
-  if (grade.startsWith('B')) return '#818cf8';
-  if (grade.startsWith('C')) return '#64748b';
-  return '#ef4444';
+  return p || '?';
 }
 
 function posMatchesTab(pos, tab) {
@@ -51,6 +37,8 @@ function posMatchesTab(pos, tab) {
   return group ? group.has(p) : p === tab;
 }
 
+const clampPct = (v) => Math.max(0, Math.min(100, Number(v) || 0));
+
 export default function Leaderboard() {
   const navigate = useNavigate();
 
@@ -59,11 +47,12 @@ export default function Leaderboard() {
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState(null);
 
-  const [posTab, setPosTab]           = useState('ALL');
-  const [gradeFilter, setGradeFilter] = useState('ALL');
-  const [search, setSearch]           = useState('');
-  const [sortBy, setSortBy]           = useState('grade');
-  const [page, setPage]               = useState(0);
+  const [posTab, setPosTab]     = useState('ALL');
+  const [search, setSearch]     = useState('');
+  const [sortBy, setSortBy]     = useState('grade');
+  const [page, setPage]         = useState(0);
+  const [expanded, setExpanded] = useState(null);
+  const [animKey, setAnimKey]   = useState(0);
 
   useEffect(() => {
     setLoading(true);
@@ -82,12 +71,11 @@ export default function Leaderboard() {
     let list = prospects;
     if (posTab !== 'ALL')
       list = list.filter(p => posMatchesTab(p.position, posTab));
-    if (gradeFilter !== 'ALL')
-      list = list.filter(p => (p.grade || '').startsWith(gradeFilter));
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(p =>
         (p.name || '').toLowerCase().includes(q) ||
+        (p.position || '').toLowerCase().includes(q) ||
         (p.team || '').toLowerCase().includes(q),
       );
     }
@@ -102,7 +90,41 @@ export default function Leaderboard() {
       (GRADE_ORDER[a.grade] ?? 9) - (GRADE_ORDER[b.grade] ?? 9) ||
       (b.success_probability || 0) - (a.success_probability || 0),
     );
-  }, [prospects, posTab, gradeFilter, search, sortBy]);
+  }, [prospects, posTab, search, sortBy]);
+
+  // Position distribution — distinct groups actually present in the data.
+  const dist = useMemo(() => {
+    const counts = new Map();
+    prospects.forEach(p => {
+      const g = posGroup(p.position);
+      counts.set(g, (counts.get(g) || 0) + 1);
+    });
+    const groups = [...counts.keys()].sort((a, b) => {
+      const ai = GROUP_ORDER.indexOf(a), bi = GROUP_ORDER.indexOf(b);
+      if (ai !== -1 || bi !== -1) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+      return counts.get(b) - counts.get(a);
+    });
+    const max = Math.max(1, ...counts.values());
+    return groups.map(g => ({
+      label: g,
+      count: counts.get(g),
+      pct: Math.max(4, (counts.get(g) / max) * 100),
+    }));
+  }, [prospects]);
+
+  const posTabs = useMemo(() => ['ALL', ...dist.map(d => d.label)], [dist]);
+
+  // Scale for the translucent fill bar behind each row (relative grade).
+  const [minProb, maxProb] = useMemo(() => {
+    if (!filtered.length) return [0, 100];
+    let lo = Infinity, hi = -Infinity;
+    filtered.forEach(p => {
+      const v = p.success_probability || 0;
+      if (v < lo) lo = v;
+      if (v > hi) hi = v;
+    });
+    return [lo, hi];
+  }, [filtered]);
 
   const total   = filtered.length;
   const shown   = useMemo(() => filtered.slice(0, (page + 1) * PAGE_SIZE), [filtered, page]);
@@ -112,216 +134,225 @@ export default function Leaderboard() {
     navigate(`/predict?name=${encodeURIComponent(p.name)}`);
   }, [navigate]);
 
-  const resetFilters = useCallback(() => {
-    setPosTab('ALL'); setGradeFilter('ALL'); setSearch(''); setSortBy('grade'); setPage(0);
+  const selectPos = useCallback((pos) => {
+    setPosTab(prev => (prev === pos && pos !== 'ALL' ? 'ALL' : pos));
+    setPage(0);
+    setExpanded(null);
+    setAnimKey(k => k + 1);
   }, []);
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  const onSearch = useCallback((e) => {
+    setSearch(e.target.value);
+    setPage(0);
+    setExpanded(null);
+    setAnimKey(k => k + 1);
+  }, []);
+
+  const onSort = useCallback((key) => {
+    setSortBy(key);
+    setPage(0);
+    setExpanded(null);
+    setAnimKey(k => k + 1);
+  }, []);
+
+  const resetFilters = useCallback(() => {
+    setPosTab('ALL'); setSearch(''); setSortBy('grade'); setPage(0); setExpanded(null);
+    setAnimKey(k => k + 1);
+  }, []);
+
+  const sortHeaders = [
+    { label: 'Rk',         cls: 'lb-c-rank',   sort: null },
+    { label: 'Player',     cls: 'lb-c-name',   sort: 'name' },
+    { label: 'Pos',        cls: 'lb-c-pos',    sort: null },
+    { label: 'School',     cls: 'lb-c-school', sort: 'team' },
+    { label: 'Projection', cls: 'lb-c-proj',   sort: null },
+    { label: 'Grade',      cls: 'lb-c-grade',  sort: 'grade' },
+    { label: 'Success',    cls: 'lb-c-prob',   sort: 'success' },
+  ];
+
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--background-dark)', padding: '2rem 1rem 5rem' }}>
+    <div className="lb-page">
 
-      {/* ── Header ── */}
-      <div style={{ maxWidth: 1100, margin: '0 auto 2rem' }}>
-        <h1 style={{
-          textAlign: 'center', margin: '0 0 0.5rem', fontSize: 'clamp(1.6rem, 4vw, 2.2rem)',
-          fontWeight: 800, letterSpacing: '-0.5px',
-          background: 'linear-gradient(135deg,#818cf8,#c084fc)',
-          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-        }}>
-          Prospect Leaderboard
-        </h1>
-        <p style={{ textAlign: 'center', color: '#64748b', margin: '0 0 0.4rem', fontSize: '0.95rem' }}>
-          ML-graded predictions for every Power 5 college prospect
-        </p>
-        {meta ? (
-          <p style={{ textAlign: 'center', color: '#475569', fontSize: '0.78rem', margin: 0 }}>
-            {(meta.total || prospects.length).toLocaleString()} prospects
-            {meta.generated_at && ` · updated ${new Date(meta.generated_at).toLocaleDateString()}`}
-          </p>
-        ) : !loading && (
-          <p style={{ textAlign: 'center', color: '#f59e0b', fontSize: '0.82rem', margin: 0 }}>
-            Cache empty — run{' '}
-            <code style={{ background: 'rgba(245,158,11,0.12)', padding: '2px 6px', borderRadius: 4, fontSize: '0.8rem' }}>
-              python build_prospect_cache.py
-            </code>{' '}
-            to populate
-          </p>
-        )}
-        {error && <p style={{ textAlign: 'center', color: '#ef4444', fontSize: '0.85rem', margin: 0 }}>{error}</p>}
-      </div>
-
-      {/* ── Main ── */}
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-
-        {/* ── Filter bar ── */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.1rem', alignItems: 'center' }}>
-
-          {/* Position tabs */}
-          <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
-            {POSITION_TABS.map(pos => {
-              const active = posTab === pos;
-              const color  = pos === 'ALL' ? '#818cf8' : posColor(pos);
-              return (
-                <button key={pos} onClick={() => { setPosTab(pos); setPage(0); }} style={{
-                  padding: '5px 13px', borderRadius: 20, fontSize: '0.76rem', fontWeight: 700,
-                  border: `1px solid ${active ? color : 'rgba(255,255,255,0.08)'}`,
-                  background: active ? color : 'rgba(255,255,255,0.04)',
-                  color: active ? '#fff' : '#64748b', cursor: 'pointer', transition: 'all 0.12s',
-                }}>{pos}</button>
-              );
-            })}
+      {/* ── Photo header ── */}
+      <header className="lb-hero">
+        <div className="lb-hero-media" aria-hidden="true">
+          <img src={process.env.PUBLIC_URL + '/images/CFB Content/zion.webp'} alt="" />
+        </div>
+        <div className="lb-hero-scrim-x" aria-hidden="true" />
+        <div className="lb-hero-scrim-y" aria-hidden="true" />
+        <div className="lb-hero-inner">
+          <div className="lb-hero-text">
+            <div className="lb-eyebrow">Prospect leaderboard</div>
+            <h1 className="lb-title">Every graded prospect</h1>
           </div>
-
-          {/* Grade filter */}
-          <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
-            {GRADE_FILTERS.map(g => {
-              const active = gradeFilter === g;
-              const color  = g === 'ALL' ? '#64748b' : gradeColor(g);
-              return (
-                <button key={g} onClick={() => { setGradeFilter(g); setPage(0); }} style={{
-                  padding: '5px 13px', borderRadius: 20, fontSize: '0.76rem', fontWeight: 700,
-                  border: `1px solid ${active ? color : 'rgba(255,255,255,0.08)'}`,
-                  background: active ? `${color}25` : 'rgba(255,255,255,0.04)',
-                  color: active ? color : '#64748b', cursor: 'pointer', transition: 'all 0.12s',
-                }}>{g === 'ALL' ? 'All Grades' : `${g} Grade`}</button>
-              );
-            })}
+          <div className="lb-count">
+            {loading
+              ? 'Loading…'
+              : `${total.toLocaleString()} shown` + (meta ? ' · cached, sub-100ms' : '')}
           </div>
+        </div>
+      </header>
 
-          {/* Search */}
+      <div className="lb-main">
+
+        {/* ── Search + position filter ── */}
+        <div className="lb-controls">
           <input
+            className="input lb-search"
+            type="search"
             value={search}
-            onChange={e => { setSearch(e.target.value); setPage(0); }}
-            placeholder="Search name or school…"
-            style={{
-              padding: '7px 12px', borderRadius: 8,
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(15,23,42,0.7)', color: '#e2e8f0',
-              fontSize: '0.85rem', outline: 'none', minWidth: 180, flex: 1,
-            }}
+            onChange={onSearch}
+            placeholder="Search player, position or school"
+            aria-label="Search player, position or school"
           />
-
-          {/* Sort */}
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{
-            padding: '7px 12px', borderRadius: 8,
-            border: '1px solid rgba(255,255,255,0.1)',
-            background: 'rgba(15,23,42,0.9)', color: '#e2e8f0',
-            fontSize: '0.85rem', cursor: 'pointer',
-          }}>
-            <option value="grade">Sort: Grade</option>
-            <option value="success">Sort: Success %</option>
-            <option value="name">Sort: Name</option>
-            <option value="team">Sort: School</option>
-          </select>
-        </div>
-
-        {/* ── Result count ── */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-          <p style={{ color: '#475569', fontSize: '0.8rem', margin: 0 }}>
-            {loading ? 'Loading…' : `${total.toLocaleString()} prospect${total !== 1 ? 's' : ''}`}
-          </p>
-          {(posTab !== 'ALL' || gradeFilter !== 'ALL' || search) && (
-            <button onClick={resetFilters} style={{
-              background: 'none', border: 'none', color: '#475569',
-              fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline',
-            }}>Clear filters</button>
-          )}
-        </div>
-
-        {/* ── Table ── */}
-        <div style={{
-          background: 'rgba(15,23,42,0.7)',
-          border: '1px solid rgba(255,255,255,0.07)',
-          borderRadius: 12, overflow: 'hidden',
-        }}>
-          {/* Header row */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '2.4rem 1fr 1.5fr 3.2rem 3.8rem 5rem 7.5rem',
-            gap: '0 0.5rem', padding: '0.65rem 1rem',
-            background: 'rgba(255,255,255,0.025)',
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
-          }}>
-            {['#', 'Name', 'School', 'Pos', 'Grade', 'Success', 'Draft Proj'].map(col => (
-              <span key={col} style={{
-                color: '#334155', fontSize: '0.68rem', fontWeight: 700,
-                textTransform: 'uppercase', letterSpacing: '0.06em',
-              }}>{col}</span>
+          <div className="lb-seg" role="group" aria-label="Filter by position">
+            {posTabs.map(pos => (
+              <button
+                key={pos}
+                type="button"
+                className={`lb-seg-btn${posTab === pos ? ' active' : ''}`}
+                aria-pressed={posTab === pos}
+                onClick={() => selectPos(pos)}
+              >
+                {pos}
+              </button>
             ))}
           </div>
+        </div>
 
-          {/* Rows */}
+        {/* ── Position distribution ── */}
+        {dist.length > 0 && (
+          <div className="lb-dist">
+            {dist.map((d, i) => (
+              <button
+                key={d.label}
+                type="button"
+                className={`lb-dist-cell${posTab === d.label ? ' active' : ''}`}
+                onClick={() => selectPos(d.label)}
+              >
+                <span className="lb-dist-head">
+                  <span className="lb-dist-label">{d.label}</span>
+                  <span className="lb-dist-count">{d.count.toLocaleString()}</span>
+                </span>
+                <span className="lb-dist-track">
+                  <span
+                    className="lb-dist-bar"
+                    style={{ width: `${d.pct}%`, animationDelay: `${(i * 0.05).toFixed(2)}s` }}
+                  />
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* ── Board table ── */}
+        <div className="lb-table">
+          <div className="lb-thead">
+            {sortHeaders.map(h => h.sort ? (
+              <button
+                key={h.label}
+                type="button"
+                className={`lb-th ${h.cls}${sortBy === h.sort ? ' active' : ''}`}
+                onClick={() => onSort(h.sort)}
+              >
+                {h.label}
+              </button>
+            ) : (
+              <div key={h.label} className={`lb-th-static ${h.cls}`}>{h.label}</div>
+            ))}
+            <div className="lb-c-chev" aria-hidden="true" />
+          </div>
+
           {loading ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>Loading prospects…</div>
+            <div className="lb-state">Loading prospects…</div>
+          ) : error ? (
+            <div className="lb-state">{error}</div>
           ) : shown.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>
-              {prospects.length === 0
-                ? 'No prospects cached — run build_prospect_cache.py to populate'
-                : 'No prospects match your filters'}
+            <div className="lb-state">
+              {prospects.length === 0 ? (
+                <>Cache empty — run <code>python build_prospect_cache.py</code> to populate.</>
+              ) : (
+                <>
+                  No prospects match your filters.{' '}
+                  <button type="button" className="lb-clear" onClick={resetFilters}>Clear filters</button>
+                </>
+              )}
             </div>
           ) : shown.map((p, i) => {
-            const gc = gradeColor(p.grade);
-            const pc = posColor(p.position);
-            const sp = p.success_probability || 0;
-            const spColor = sp >= 65 ? '#22c55e' : sp >= 45 ? '#f59e0b' : '#64748b';
+            const id   = `${p.name}-${i}`;
+            const open = expanded === id;
+            const top  = i < 3;
+            const sp   = p.success_probability || 0;
+            const fillPct = maxProb > minProb
+              ? 6 + 94 * ((sp - minProb) / (maxProb - minProb))
+              : 50;
+
+            const minis = [];
+            if (p.production_score != null)
+              minis.push({ label: 'Production score', value: `${Number(p.production_score).toFixed(1)} / 100`, pct: clampPct(p.production_score) });
+            if (p.combine_speed_score != null)
+              minis.push({ label: 'Combine speed score', value: `${Number(p.combine_speed_score).toFixed(1)} / 100`, pct: clampPct(p.combine_speed_score) });
+            if (p.success_probability != null)
+              minis.push({ label: 'Success probability', value: `${sp.toFixed(1)}%`, pct: clampPct(sp) });
 
             return (
-              <div
-                key={`${p.name}-${i}`}
-                onClick={() => handlePlayerClick(p)}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2.4rem 1fr 1.5fr 3.2rem 3.8rem 5rem 7.5rem',
-                  gap: '0 0.5rem', padding: '0.65rem 1rem',
-                  cursor: 'pointer', alignItems: 'center',
-                  borderBottom: '1px solid rgba(255,255,255,0.035)',
-                  transition: 'background 0.1s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.08)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                {/* Rank */}
-                <span style={{ color: '#334155', fontSize: '0.72rem', fontWeight: 600 }}>
-                  {i + 1}
-                </span>
+              <div className="lb-rowwrap" key={id}>
+                <div
+                  className={`lb-row${top ? ' lb-row-top' : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={open}
+                  onClick={() => setExpanded(open ? null : id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setExpanded(open ? null : id);
+                    }
+                  }}
+                >
+                  <span
+                    className="lb-fill"
+                    key={`fill-${animKey}`}
+                    aria-hidden="true"
+                    style={{ width: `${fillPct.toFixed(1)}%`, animationDelay: `${(i % PAGE_SIZE * 0.025).toFixed(3)}s` }}
+                  />
+                  <span className="lb-rank lb-c-rank">{i + 1}</span>
+                  <span className="lb-name lb-c-name"><span>{p.name}</span></span>
+                  <span className="lb-pos lb-c-pos">{(p.position || '?').toUpperCase()}</span>
+                  <span className="lb-school lb-c-school">{p.team || '—'}</span>
+                  <span className="lb-proj lb-c-proj">{DRAFT_SHORT[p.draft_grade] || p.draft_grade || '—'}</span>
+                  <span className="lb-grade lb-c-grade"><span>{p.grade || '—'}</span></span>
+                  <span className="lb-prob lb-c-prob">{p.success_probability != null ? sp.toFixed(1) : '—'}</span>
+                  <span className={`lb-chev lb-c-chev${open ? ' open' : ''}`} aria-hidden="true">›</span>
+                </div>
 
-                {/* Name */}
-                <span style={{
-                  color: '#e2e8f0', fontSize: '0.87rem', fontWeight: 600,
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                }}>{p.name}</span>
-
-                {/* School */}
-                <span style={{
-                  color: '#64748b', fontSize: '0.78rem',
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                }}>{p.team || '—'}</span>
-
-                {/* Position badge */}
-                <span style={{
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  width: 30, height: 20, borderRadius: 4,
-                  background: `${pc}18`, border: `1px solid ${pc}40`,
-                  color: pc, fontSize: '0.68rem', fontWeight: 700,
-                }}>{(p.position || '?').toUpperCase()}</span>
-
-                {/* Grade badge */}
-                <span style={{
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  width: 34, height: 24, borderRadius: 6,
-                  background: `${gc}18`, border: `1.5px solid ${gc}`,
-                  color: gc, fontSize: '0.8rem', fontWeight: 800,
-                }}>{p.grade || '—'}</span>
-
-                {/* Success % */}
-                <span style={{ color: spColor, fontSize: '0.85rem', fontWeight: 700 }}>
-                  {p.success_probability != null ? `${Math.round(sp)}%` : '—'}
-                </span>
-
-                {/* Draft projection */}
-                <span style={{ color: '#475569', fontSize: '0.74rem' }}>
-                  {DRAFT_SHORT[p.draft_grade] || p.draft_grade || '—'}
-                </span>
+                <div className={`lb-panel${open ? ' open' : ''}`} aria-hidden={!open}>
+                  <div className="lb-panel-inner">
+                    {minis.length > 0 && (
+                      <div className="lb-minis">
+                        {minis.map(m => (
+                          <div className="lb-mini" key={m.label}>
+                            <div className="lb-mini-head">
+                              <span>{m.label}</span>
+                              <span className="lb-mini-val">{m.value}</span>
+                            </div>
+                            <div className="lb-mini-track">
+                              <span className="lb-mini-bar" style={{ width: `${m.pct}%` }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className="lb-report"
+                      tabIndex={open ? 0 : -1}
+                      onClick={(e) => { e.stopPropagation(); handlePlayerClick(p); }}
+                    >
+                      Full scouting report →
+                    </button>
+                  </div>
+                </div>
               </div>
             );
           })}
@@ -329,13 +360,8 @@ export default function Leaderboard() {
 
         {/* ── Load more ── */}
         {hasMore && (
-          <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-            <button onClick={() => setPage(pg => pg + 1)} style={{
-              padding: '10px 28px', borderRadius: 8,
-              border: '1px solid rgba(99,102,241,0.4)',
-              background: 'rgba(99,102,241,0.1)', color: '#818cf8',
-              fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
-            }}>
+          <div className="lb-more">
+            <button type="button" className="btn btn-primary" onClick={() => setPage(pg => pg + 1)}>
               Load more ({(total - shown.length).toLocaleString()} remaining)
             </button>
           </div>
@@ -344,4 +370,3 @@ export default function Leaderboard() {
     </div>
   );
 }
-

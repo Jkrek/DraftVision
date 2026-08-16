@@ -1,16 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import './Navbar.css';
 import AuthButton from './AuthButton';
 
+const NAV_LINKS = [
+  { to: '/',             label: 'Overview',      end: true },
+  { to: '/services',     label: 'College Stars'  },
+  { to: '/hs-prospects', label: 'HS Prospects'   },
+  { to: '/mock-draft',   label: 'Mock Draft'     },
+  { to: '/leaderboard',  label: 'Leaderboard'    },
+  { to: '/predict',      label: 'Predict'        },
+];
+
+function ChevronLogo({ className }) {
+  return (
+    <svg
+      className={className}
+      width="26"
+      height="26"
+      viewBox="0 0 32 32"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path d="M4 6 L16 26 L28 6" stroke="var(--color-accent-300)" strokeWidth="2.2" strokeLinecap="square" />
+      <path d="M10.5 6 L16 15 L21.5 6" stroke="var(--color-accent-700)" strokeWidth="2.2" strokeLinecap="square" />
+      <circle cx="16" cy="26" r="2.6" fill="var(--color-accent)" />
+      <circle cx="16" cy="26" r="6.5" stroke="var(--color-accent)" strokeWidth="1" opacity=".38" />
+    </svg>
+  );
+}
+
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [condensed, setCondensed] = useState(false);
+  const [progress, setProgress] = useState(0);
   const location = useLocation();
 
-  const close = () => setMenuOpen(false);
+  const close = useCallback(() => setMenuOpen(false), []);
 
   // Close menu on route change
-  useEffect(() => { close(); }, [location.pathname]);
+  useEffect(() => { close(); }, [location.pathname, close]);
 
   // Prevent body scroll when menu is open
   useEffect(() => {
@@ -18,56 +47,88 @@ function Navbar() {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
-  const isActive = (path) => location.pathname === path ? 'nav-links active' : 'nav-links';
+  // Scroll: condense the bar + drive the progress line (cheap, rAF-throttled)
+  useEffect(() => {
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        const y = window.scrollY || 0;
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        setCondensed(y > 40);
+        setProgress(max > 0 ? Math.min(1, y / max) : 0);
+        ticking = false;
+      });
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
 
-  const navLinks = [
-    { to: '/predict',      label: 'Predict'       },
-    { to: '/leaderboard',  label: 'Leaderboard'   },
-    { to: '/mock-draft',   label: 'Mock Draft'     },
-    { to: '/hs-prospects', label: 'HS Prospects'  },
-    { to: '/services',     label: 'Compare'        },
-    { to: '/products',     label: 'College Stars'  },
-  ];
+  const linkClass = ({ isActive }) =>
+    isActive ? 'nav-link nav-link-active' : 'nav-link';
 
   return (
-    <nav className="navbar">
+    <nav className={condensed ? 'navbar navbar-condensed' : 'navbar'}>
+      <div
+        className="navbar-progress"
+        style={{ transform: `scaleX(${progress})` }}
+        aria-hidden="true"
+      />
       <div className="navbar-container">
 
         {/* Logo */}
         <Link to="/" className="navbar-logo" onClick={close}>
-          <div className="navbar-logo-mark">🏈</div>
-          <span className="navbar-logo-text">DraftVision</span>
+          <ChevronLogo className="navbar-logo-mark" />
+          <span className="navbar-logo-text">
+            Draft<span className="navbar-logo-accent">Vision</span>
+          </span>
         </Link>
 
-        {/* Nav links */}
-        <ul className={menuOpen ? 'nav-menu active' : 'nav-menu'}>
-          {navLinks.map(({ to, label }) => (
-            <li className="nav-item" key={to}>
-              <Link to={to} className={isActive(to)} onClick={close}>
-                {label}
-              </Link>
-            </li>
+        {/* Desktop links */}
+        <div className="nav-menu-desktop">
+          {NAV_LINKS.map(({ to, label, end }) => (
+            <NavLink key={to} to={to} end={end} className={linkClass}>
+              {label}
+            </NavLink>
           ))}
-          {/* Auth — shown inside mobile menu */}
-          <li className="nav-item" style={{ padding: '1rem 2rem' }}>
-            <AuthButton />
-          </li>
-        </ul>
+        </div>
 
         {/* Right side */}
         <div className="nav-right">
           <AuthButton />
-          <div className="nav-divider" />
-          <Link to="/sign-up" className="nav-cta">
-            Get Access
-          </Link>
+          <Link to="/sign-up" className="nav-cta">Get access</Link>
         </div>
 
         {/* Hamburger */}
-        <div className="menu-icon" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
+        <button
+          type="button"
+          className="menu-icon"
+          onClick={() => setMenuOpen(o => !o)}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+        >
           <i className={menuOpen ? 'fas fa-times' : 'fas fa-bars'} />
-        </div>
+        </button>
 
+      </div>
+
+      {/* Mobile slide-down panel */}
+      <div className={menuOpen ? 'nav-menu-mobile open' : 'nav-menu-mobile'}>
+        {NAV_LINKS.map(({ to, label, end }) => (
+          <NavLink key={to} to={to} end={end} className={linkClass} onClick={close}>
+            {label}
+          </NavLink>
+        ))}
+        <div className="nav-menu-mobile-auth">
+          <AuthButton />
+          <Link to="/sign-up" className="nav-cta" onClick={close}>Get access</Link>
+        </div>
       </div>
     </nav>
   );

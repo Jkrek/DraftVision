@@ -1,15 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import '../../App.css';
+import './HSProspects.css';
 
 const POSITION_TABS = ['ALL', 'QB', 'RB', 'WR', 'TE', 'DB', 'LB', 'DL', 'OL'];
 const STARS_FILTERS = ['ALL', '5', '4', '3'];
 const PAGE_SIZE     = 100;
-
-const POSITION_COLORS = {
-  QB: '#3b82f6', RB: '#22c55e', WR: '#f59e0b', TE: '#a78bfa',
-  DB: '#f43f5e', LB: '#fb923c', DL: '#ef4444', OL: '#64748b',
-  default: '#94a3b8',
-};
 
 const POS_GROUP_MAP = {
   DB: new Set(['CB', 'S', 'DB', 'FS', 'SS']),
@@ -18,14 +12,6 @@ const POS_GROUP_MAP = {
   OL: new Set(['OL', 'OT', 'OG', 'C']),
 };
 
-function posColor(pos) {
-  const p = (pos || '').toUpperCase();
-  for (const [group, set] of Object.entries(POS_GROUP_MAP)) {
-    if (set.has(p)) return POSITION_COLORS[group];
-  }
-  return POSITION_COLORS[p] || POSITION_COLORS.default;
-}
-
 function posMatchesTab(pos, tab) {
   if (tab === 'ALL') return true;
   const p = (pos || '').toUpperCase();
@@ -33,12 +19,12 @@ function posMatchesTab(pos, tab) {
   return group ? group.has(p) : p === tab;
 }
 
-function StarRating({ stars }) {
+function StarPill({ stars }) {
   const s = parseInt(stars) || 0;
   return (
-    <span style={{ color: '#f59e0b', fontSize: '0.72rem', letterSpacing: '-1px' }}>
-      {'★'.repeat(s)}
-      <span style={{ color: '#1e293b' }}>{'★'.repeat(Math.max(0, 5 - s))}</span>
+    <span className="hsp-star-pill" aria-label={`${s} star rating`}>
+      <span className="hsp-star-filled">{'★'.repeat(s)}</span>
+      <span className="hsp-star-empty">{'★'.repeat(Math.max(0, 5 - s))}</span>
     </span>
   );
 }
@@ -116,119 +102,93 @@ export default function HSProspects() {
   const hasActiveFilter = posTab !== 'ALL' || starsFilter !== 'ALL' || yearFilter !== 'ALL' || search;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--background-dark)', padding: '2rem 1rem 5rem' }}>
+    <div className="hsp-page">
+      <div className="hsp-inner">
 
-      {/* Header */}
-      <div style={{ maxWidth: 1100, margin: '0 auto 2rem' }}>
-        <h1 style={{
-          textAlign: 'center', margin: '0 0 0.5rem', fontSize: 'clamp(1.6rem,4vw,2.2rem)',
-          fontWeight: 800, letterSpacing: '-0.5px',
-          background: 'linear-gradient(135deg,#f59e0b,#22c55e)',
-          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-        }}>
-          High School Prospects
-        </h1>
-        <p style={{ textAlign: 'center', color: '#64748b', margin: '0 0 0.4rem', fontSize: '0.95rem' }}>
-          Top-ranked recruiting classes — powered by 247Sports composite ratings
-        </p>
-        {meta ? (
-          <p style={{ textAlign: 'center', color: '#475569', fontSize: '0.78rem', margin: 0 }}>
-            {(meta.total || prospects.length).toLocaleString()} prospects
-            {meta.generated_at && ` · updated ${new Date(meta.generated_at).toLocaleDateString()}`}
-          </p>
-        ) : !loading && (
-          <p style={{ textAlign: 'center', color: '#f59e0b', fontSize: '0.82rem', margin: 0 }}>
-            Cache empty — run{' '}
-            <code style={{ background: 'rgba(245,158,11,0.12)', padding: '2px 6px', borderRadius: 4, fontSize: '0.8rem' }}>
-              python build_hs_prospect_cache.py
-            </code>{' '}
-            to populate
+        {/* Header */}
+        <header className="hsp-header">
+          <div className="hsp-heading">
+            <div className="hsp-eyebrow">High school pipeline</div>
+            <h1 className="hsp-title">HS Prospects</h1>
+          </div>
+          <div className="hsp-count">
+            {loading
+              ? 'Loading…'
+              : meta
+                ? `${(meta.total || prospects.length).toLocaleString()} prospects${meta.generated_at ? ` · updated ${new Date(meta.generated_at).toLocaleDateString()}` : ''}`
+                : `${prospects.length.toLocaleString()} prospects`}
+          </div>
+        </header>
+
+        {!meta && !loading && (
+          <p className="hsp-note">
+            Cache empty — run <code>python build_hs_prospect_cache.py</code> to populate
           </p>
         )}
         {apiKeyMissing && (
-          <p style={{ textAlign: 'center', color: '#64748b', fontSize: '0.78rem', margin: '0.3rem 0 0' }}>
-            Set{' '}
-            <code style={{ background: 'rgba(100,116,139,0.15)', padding: '1px 5px', borderRadius: 3 }}>
-              CFBD_API_KEY
-            </code>{' '}
-            env var (free at collegefootballdata.com) to fetch live data
+          <p className="hsp-note">
+            Set <code>CFBD_API_KEY</code> env var (free at collegefootballdata.com) to fetch live data
           </p>
         )}
-        {error && <p style={{ textAlign: 'center', color: '#ef4444', fontSize: '0.85rem', margin: 0 }}>{error}</p>}
-      </div>
-
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        {error && <p className="hsp-error">{error}</p>}
 
         {/* Filter bar */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.1rem', alignItems: 'center' }}>
+        <div className="hsp-filters">
+          <input
+            className="hsp-search"
+            value={search}
+            onChange={e => { setSearch(e.target.value); setPage(0); }}
+            placeholder="Search name, school, state or commit"
+            aria-label="Search prospects"
+          />
 
           {/* Position tabs */}
-          <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
-            {POSITION_TABS.map(pos => {
-              const active = posTab === pos;
-              const color  = pos === 'ALL' ? '#818cf8' : posColor(pos);
-              return (
-                <button key={pos} onClick={() => { setPosTab(pos); setPage(0); }} style={{
-                  padding: '5px 13px', borderRadius: 20, fontSize: '0.76rem', fontWeight: 700,
-                  border: `1px solid ${active ? color : 'rgba(255,255,255,0.08)'}`,
-                  background: active ? color : 'rgba(255,255,255,0.04)',
-                  color: active ? '#fff' : '#64748b', cursor: 'pointer', transition: 'all 0.12s',
-                }}>{pos}</button>
-              );
-            })}
+          <div className="hsp-seg" role="group" aria-label="Filter by position">
+            {POSITION_TABS.map(pos => (
+              <button
+                key={pos}
+                onClick={() => { setPosTab(pos); setPage(0); }}
+                className={`hsp-seg-btn${posTab === pos ? ' is-active' : ''}`}
+              >
+                {pos}
+              </button>
+            ))}
           </div>
 
           {/* Stars filter */}
-          <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
-            {STARS_FILTERS.map(s => {
-              const active = starsFilter === s;
-              return (
-                <button key={s} onClick={() => { setStarsFilter(s); setPage(0); }} style={{
-                  padding: '5px 13px', borderRadius: 20, fontSize: '0.76rem', fontWeight: 700,
-                  border: `1px solid ${active ? '#f59e0b' : 'rgba(255,255,255,0.08)'}`,
-                  background: active ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.04)',
-                  color: active ? '#f59e0b' : '#64748b', cursor: 'pointer', transition: 'all 0.12s',
-                }}>
-                  {s === 'ALL' ? 'All Stars' : `${'★'.repeat(parseInt(s))} ${s}★`}
-                </button>
-              );
-            })}
+          <div className="hsp-seg" role="group" aria-label="Filter by star rating">
+            {STARS_FILTERS.map(s => (
+              <button
+                key={s}
+                onClick={() => { setStarsFilter(s); setPage(0); }}
+                className={`hsp-seg-btn${starsFilter === s ? ' is-active' : ''}`}
+              >
+                {s === 'ALL' ? 'All stars' : `${s}★`}
+              </button>
+            ))}
           </div>
 
           {/* Year filter */}
           {availableYears.length > 1 && (
-            <select value={yearFilter} onChange={e => { setYearFilter(e.target.value); setPage(0); }} style={{
-              padding: '7px 12px', borderRadius: 8,
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(15,23,42,0.9)', color: '#e2e8f0',
-              fontSize: '0.85rem', cursor: 'pointer',
-            }}>
-              <option value="ALL">All Classes</option>
+            <select
+              className="hsp-select"
+              value={yearFilter}
+              onChange={e => { setYearFilter(e.target.value); setPage(0); }}
+              aria-label="Filter by class year"
+            >
+              <option value="ALL">All classes</option>
               {availableYears.map(y => <option key={y} value={String(y)}>Class of {y}</option>)}
             </select>
           )}
 
-          {/* Search */}
-          <input
-            value={search}
-            onChange={e => { setSearch(e.target.value); setPage(0); }}
-            placeholder="Search name, school, state, commit…"
-            style={{
-              padding: '7px 12px', borderRadius: 8,
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(15,23,42,0.7)', color: '#e2e8f0',
-              fontSize: '0.85rem', outline: 'none', minWidth: 200, flex: 1,
-            }}
-          />
-
           {/* Sort */}
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{
-            padding: '7px 12px', borderRadius: 8,
-            border: '1px solid rgba(255,255,255,0.1)',
-            background: 'rgba(15,23,42,0.9)', color: '#e2e8f0',
-            fontSize: '0.85rem', cursor: 'pointer',
-          }}>
-            <option value="rank">Sort: National Rank</option>
+          <select
+            className="hsp-select"
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            aria-label="Sort prospects"
+          >
+            <option value="rank">Sort: National rank</option>
             <option value="stars">Sort: Stars</option>
             <option value="rating">Sort: Rating</option>
             <option value="name">Sort: Name</option>
@@ -236,134 +196,74 @@ export default function HSProspects() {
         </div>
 
         {/* Result count */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-          <p style={{ color: '#475569', fontSize: '0.8rem', margin: 0 }}>
+        <div className="hsp-resultbar">
+          <p className="hsp-result-count">
             {loading ? 'Loading…' : `${total.toLocaleString()} prospect${total !== 1 ? 's' : ''}`}
           </p>
           {hasActiveFilter && (
-            <button onClick={resetFilters} style={{
-              background: 'none', border: 'none', color: '#475569',
-              fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline',
-            }}>Clear filters</button>
+            <button className="hsp-clear" onClick={resetFilters}>Clear filters</button>
           )}
         </div>
 
         {/* Table */}
-        <div style={{
-          background: 'rgba(15,23,42,0.7)',
-          border: '1px solid rgba(255,255,255,0.07)',
-          borderRadius: 12, overflow: 'hidden',
-        }}>
-          {/* Header */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '3rem 1fr 1.6fr 3.2rem 4.2rem 3.2rem 4.5rem 5.5rem',
-            gap: '0 0.5rem', padding: '0.65rem 1rem',
-            background: 'rgba(255,255,255,0.025)',
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
-          }}>
-            {['Rank', 'Name', 'HS / City', 'Pos', 'Stars', 'Yr', 'Rating', 'Commit'].map(col => (
-              <span key={col} style={{
-                color: '#334155', fontSize: '0.68rem', fontWeight: 700,
-                textTransform: 'uppercase', letterSpacing: '0.06em',
-              }}>{col}</span>
-            ))}
+        <div className="hsp-table">
+          <div className="hsp-thead" aria-hidden="true">
+            <div className="hsp-col-rank">Rk</div>
+            <div className="hsp-col-name">Player</div>
+            <div className="hsp-col-school">HS / City</div>
+            <div className="hsp-col-pos">Pos</div>
+            <div className="hsp-col-stars">Stars</div>
+            <div className="hsp-col-year">Yr</div>
+            <div className="hsp-col-commit">Commit</div>
+            <div className="hsp-col-rating">Rating</div>
           </div>
 
-          {/* Rows */}
           {loading ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>Loading prospects…</div>
+            <div className="hsp-empty">Loading prospects…</div>
           ) : shown.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#475569' }}>
+            <div className="hsp-empty">
               {prospects.length === 0
                 ? 'No HS prospects cached — run build_hs_prospect_cache.py to populate'
                 : 'No prospects match your filters'}
             </div>
-          ) : shown.map((p, i) => {
-            const pc = posColor(p.position);
-
-            return (
-              <div
-                key={`${p.name}-${i}`}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '3rem 1fr 1.6fr 3.2rem 4.2rem 3.2rem 4.5rem 5.5rem',
-                  gap: '0 0.5rem', padding: '0.65rem 1rem',
-                  alignItems: 'center',
-                  borderBottom: '1px solid rgba(255,255,255,0.035)',
-                  cursor: 'default',
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.05)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                {/* Rank */}
-                <span style={{ color: p.ranking <= 25 ? '#f59e0b' : '#334155', fontSize: '0.78rem', fontWeight: 700 }}>
-                  #{p.ranking || '—'}
-                </span>
-
-                {/* Name */}
-                <span style={{
-                  color: '#e2e8f0', fontSize: '0.87rem', fontWeight: 600,
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                }}>{p.name}</span>
-
-                {/* HS / city */}
-                <div style={{ minWidth: 0 }}>
-                  <div style={{
-                    color: '#64748b', fontSize: '0.78rem',
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  }}>{p.school || '—'}</div>
-                  {(p.city || p.state) && (
-                    <div style={{ color: '#334155', fontSize: '0.68rem' }}>
-                      {[p.city, p.state].filter(Boolean).join(', ')}
-                    </div>
-                  )}
-                </div>
-
-                {/* Position */}
-                <span style={{
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  width: 30, height: 20, borderRadius: 4,
-                  background: `${pc}18`, border: `1px solid ${pc}40`,
-                  color: pc, fontSize: '0.68rem', fontWeight: 700,
-                }}>{(p.position || '?').toUpperCase()}</span>
-
-                {/* Stars */}
-                <StarRating stars={p.stars} />
-
-                {/* Class year */}
-                <span style={{ color: '#475569', fontSize: '0.78rem' }}>{p.year || '—'}</span>
-
-                {/* Rating */}
-                <span style={{
-                  color: p.rating >= 0.99 ? '#f59e0b' : p.rating >= 0.93 ? '#22c55e' : '#64748b',
-                  fontSize: '0.82rem', fontWeight: 700,
-                }}>
-                  {p.rating ? p.rating.toFixed(4) : '—'}
-                </span>
-
-                {/* Committed to */}
-                <span style={{
-                  color: p.committed_to ? '#818cf8' : '#334155',
-                  fontSize: '0.74rem', fontWeight: p.committed_to ? 600 : 400,
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                }}>
-                  {p.committed_to || 'Uncommitted'}
-                </span>
+          ) : shown.map((p, i) => (
+            <div key={`${p.name}-${i}`} className="hsp-row">
+              <div className={`hsp-col-rank${p.ranking <= 25 ? ' is-top' : ''}`}>
+                #{p.ranking || '—'}
               </div>
-            );
-          })}
+
+              <div className="hsp-col-name">{p.name}</div>
+
+              <div className="hsp-col-school">
+                <div className="hsp-school">{p.school || '—'}</div>
+                {(p.city || p.state) && (
+                  <div className="hsp-school-loc">
+                    {[p.city, p.state].filter(Boolean).join(', ')}
+                  </div>
+                )}
+              </div>
+
+              <div className="hsp-col-pos">{(p.position || '?').toUpperCase()}</div>
+
+              <div className="hsp-col-stars"><StarPill stars={p.stars} /></div>
+
+              <div className="hsp-col-year">{p.year || '—'}</div>
+
+              <div className={`hsp-col-commit${p.committed_to ? ' is-committed' : ''}`}>
+                {p.committed_to || 'Uncommitted'}
+              </div>
+
+              <div className={`hsp-col-rating${p.rating >= 0.99 ? ' is-elite' : ''}`}>
+                {p.rating ? p.rating.toFixed(4) : '—'}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Load more */}
         {hasMore && (
-          <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-            <button onClick={() => setPage(pg => pg + 1)} style={{
-              padding: '10px 28px', borderRadius: 8,
-              border: '1px solid rgba(245,158,11,0.4)',
-              background: 'rgba(245,158,11,0.1)', color: '#f59e0b',
-              fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
-            }}>
+          <div className="hsp-more">
+            <button className="btn btn-primary" onClick={() => setPage(pg => pg + 1)}>
               Load more ({(total - shown.length).toLocaleString()} remaining)
             </button>
           </div>

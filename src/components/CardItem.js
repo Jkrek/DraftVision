@@ -1,18 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-function CardItem({ src, text, label, path }) {
+/* One "Top of the board" prospect cell — rank, grade pill, name,
+   pos · team, and a big weight-300 probability numeral. */
+function CardItem({ rank, grade, name, pos, team, prob }) {
   return (
-    <li className='cards__item'>
-      <Link className='cards__item__link' to={path}>
-        <figure className='cards__item__pic-wrap' data-category={label}>
-          <img src={src} alt={label || 'Future Star'} className='cards__item__img' />
-        </figure>
-        <div className='cards__item__info'>
-          <h5 className='cards__item__text'>{text}</h5>
-        </div>
-      </Link>
-    </li>
+    <Link className="board-cell" to="/leaderboard">
+      <div className="board-cell-top">
+        <span className="board-cell-rank">{rank}</span>
+        {grade && <span className="board-cell-grade">{grade}</span>}
+      </div>
+      <div className="board-cell-name">{name}</div>
+      <div className="board-cell-meta">
+        {pos} · {team}
+      </div>
+      <div className="board-cell-prob">
+        <span className="board-cell-prob-num">{prob}</span>
+        <span className="board-cell-prob-label">% success</span>
+      </div>
+    </Link>
   );
 }
 

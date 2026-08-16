@@ -1,0 +1,105 @@
+/* ── Board movers ticker — Nocturne ─────────────────────────────────────────── */
+.ticker {
+  display: flex;
+  align-items: stretch;
+  background: var(--color-neutral-900);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.ticker-label {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px 9px 32px;
+  border-right: 1px solid var(--color-divider);
+}
+
+.ticker-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent);
+}
+
+.ticker-label-text {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent-300);
+  white-space: nowrap;
+}
+
+.ticker-viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+}
+
+.ticker-row {
+  display: flex;
+}
+
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 24px;
+  border-right: 1px solid var(--color-divider);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ticker-rank {
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.ticker-name {
+  color: var(--color-neutral-200);
+}
+
+.ticker-pos {
+  color: var(--color-accent-300);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.ticker-team {
+  color: var(--color-neutral-500);
+}
+
+.ticker-prob {
+  color: var(--color-accent-200);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ticker-dot {
+    animation: ticker-pulse 2.4s infinite;
+  }
+
+  .ticker-track {
+    animation: ticker-scroll 42s linear infinite;
+  }
+
+  .ticker-viewport:hover .ticker-track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes ticker-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}

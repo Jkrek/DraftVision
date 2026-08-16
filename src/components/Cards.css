@@ -1,142 +1,188 @@
-/* ── Feature section ────────────────────────────────────────────────────────── */
-.features-section {
-  padding: 6rem 1.5rem;
-  background: var(--bg);
-  border-top: 1px solid rgba(255,255,255,0.05);
-}
-
-.features-inner {
-  max-width: 1140px;
+/* ── "Top of the board" — 1px-gapped prospect grid ──────────────────────── */
+.board {
+  max-width: 1280px;
   margin: 0 auto;
+  padding: 110px 32px;
 }
-
-.features-eyebrow {
+.board-head {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--primary-color);
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: baseline;
+  margin-bottom: 36px;
 }
-
-.features-eyebrow-line {
-  display: block;
-  width: 22px;
-  height: 2px;
-  background: var(--primary-color);
-  border-radius: 1px;
+.board-heading {
+  margin: 0;
+  flex: 1 1 300px;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(28px, 3.6vw, 40px);
+  letter-spacing: -0.035em;
 }
-
-.features-heading {
-  font-size: clamp(1.8rem, 4vw, 2.5rem);
-  font-weight: 800;
-  color: var(--text-light);
-  letter-spacing: -0.5px;
-  margin-bottom: 0.75rem;
-  line-height: 1.2;
-}
-
-.features-intro {
-  color: var(--text-mid);
-  font-size: 1.05rem;
-  max-width: 600px;
-  line-height: 1.7;
-  margin-bottom: 3rem;
-}
-
-/* ── Feature grid ── */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-
-.feature-card {
-  display: flex;
-  flex-direction: column;
-  padding: 1.75rem;
-  border-radius: 14px;
-  background: rgba(13, 21, 40, 0.7);
-  border: 1px solid rgba(255,255,255,0.06);
+.board-link {
+  font-size: 13px;
+  color: var(--color-accent-300);
   text-decoration: none;
-  transition: all 0.2s ease;
-  position: relative;
+}
+.board-link:hover {
+  color: var(--color-accent-200);
+}
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1px;
+  background: var(--color-divider);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--card-color, var(--primary-color));
-  opacity: 0;
-  transition: opacity 0.2s ease;
+/* Cell — lifts on hover behind an inset accent top bar. */
+.board-cell {
+  display: block;
+  position: relative;
+  background: var(--color-bg);
+  padding: 26px 24px 24px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    background 0.25s,
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.35s;
 }
-
-.feature-card:hover {
-  background: rgba(13, 21, 40, 0.95);
-  border-color: rgba(255,255,255,0.12);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06);
+.board-cell:hover {
+  background: var(--color-neutral-900);
+  transform: translateY(-5px);
+  box-shadow: inset 0 2px 0 var(--color-accent), var(--shadow-md);
 }
-
-.feature-card:hover::before {
-  opacity: 1;
+.board-cell-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 26px;
 }
-
-.feature-card-icon {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+.board-cell-rank {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
 }
-
-.feature-card-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--text-light);
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.2px;
+.board-cell-grade {
+  font-size: 11px;
+  padding: 3px 8px;
+  border: 1px solid var(--color-accent-700);
+  border-radius: 99px;
+  color: var(--color-accent-300);
 }
-
-.feature-card-desc {
-  font-size: 0.875rem;
-  color: var(--text-mid);
-  line-height: 1.65;
-  flex: 1;
-  margin-bottom: 1.25rem;
+.board-cell-name {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+  color: var(--color-neutral-100);
 }
-
-.feature-card-cta {
-  display: inline-flex;
-  align-items: center;
+.board-cell-meta {
+  font-size: 12.5px;
+  color: var(--color-neutral-500);
+  margin-bottom: 22px;
+}
+.board-cell-prob {
+  display: flex;
+  align-items: baseline;
   gap: 6px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--card-color, var(--primary-color));
-  transition: gap 0.15s ease;
+}
+.board-cell-prob-num {
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: var(--color-accent-300);
+  font-variant-numeric: tabular-nums;
+}
+.board-cell-prob-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
 }
 
-.feature-card:hover .feature-card-cta {
-  gap: 9px;
+/* ── CTA band over lamar.png ────────────────────────────────────────────── */
+.ctaband {
+  position: relative;
+  border-top: 1px solid var(--color-divider);
+  overflow: hidden;
+  isolation: isolate;
+}
+.ctaband-media {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+}
+.ctaband-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+  filter: saturate(1.6) contrast(1.1) brightness(0.8);
+}
+.ctaband-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    var(--color-bg) 4%,
+    color-mix(in srgb, var(--color-bg) 90%, transparent) 42%,
+    color-mix(in srgb, var(--color-bg) 50%, transparent) 100%
+  );
+}
+.ctaband-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 90px 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  align-items: center;
+}
+.ctaband-copy {
+  flex: 1 1 420px;
+}
+.ctaband-heading {
+  margin: 0 0 10px;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(26px, 3.2vw, 36px);
+  letter-spacing: -0.035em;
+}
+.ctaband-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-neutral-500);
+}
+.ctaband-ctas {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-/* ── Responsive ── */
-@media (max-width: 960px) {
-  .features-grid { grid-template-columns: repeat(2, 1fr); }
+/* ── motion (gated) ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .ctaband-media img {
+    animation: ctaKen 36s ease-in-out infinite alternate;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .board-cell {
+    transition: none;
+  }
+  .board-cell:hover {
+    transform: none;
+  }
 }
 
-@media (max-width: 600px) {
-  .features-grid { grid-template-columns: 1fr; }
-  .features-section { padding: 4rem 1.25rem; }
+@keyframes ctaKen {
+  0% { transform: scale(1.04) translate3d(0, 0, 0); }
+  100% { transform: scale(1.18) translate3d(-2%, -2%, 0); }
 }
-
-/* ── Legacy: predict page used .cards class ── */
-.cards { padding: 0; background: var(--bg); }
-.predict-page { position: relative; min-height: 100vh; background: transparent; overflow: hidden; }
-.predict-page__overlay { position: fixed; inset: 0; background: transparent; z-index: -2; }

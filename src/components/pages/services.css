@@ -1,37 +1,213 @@
-/* Services.css */
-.services {
-    padding: 20px;
-    text-align: center;
+/* College Stars — Nocturne board table (see src/nocturne.css for tokens) */
+
+.stars-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 32px 100px;
+  box-sizing: border-box;
+}
+
+/* — page header — */
+.stars-head {
+  margin-bottom: 28px;
+}
+.stars-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(32px, 4.6vw, 48px);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--color-text);
+}
+.stars-count {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--color-neutral-500);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stars-head {
+    animation: starsUp 0.7s ease-out both;
   }
-  
-  .services form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  @keyframes starsUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
   }
-  
-  .services label {
-    margin-bottom: 10px;
+}
+
+/* — controls — */
+.stars-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 26px;
+}
+.stars-search {
+  flex: 1 1 280px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-neutral-800);
+  border-radius: var(--radius-md);
+  padding: 11px 14px;
+  font-size: 13.5px;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  outline: none;
+}
+.stars-search::placeholder {
+  color: var(--color-neutral-600);
+}
+.stars-search:focus-visible {
+  border-color: var(--color-accent);
+  outline-offset: 0;
+}
+
+/* — board table — */
+.stars-board {
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.stars-board-head {
+  display: flex;
+  gap: 16px;
+  padding: 11px 22px;
+  background: var(--color-neutral-900);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+.stars-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 13px 22px;
+  font-size: 13.5px;
+  border-top: 1px solid rgba(233, 233, 237, 0.07);
+  transition: background 0.2s;
+}
+.stars-row:hover {
+  background: rgba(145, 132, 217, 0.09);
+}
+.stars-row--top {
+  padding-top: 18px;
+  padding-bottom: 18px;
+  box-shadow: inset 2px 0 0 var(--color-accent);
+}
+
+/* — columns (shared by header + rows) — */
+.col-rank {
+  flex: 0 0 52px;
+  font-variant-numeric: tabular-nums;
+}
+.stars-row .col-rank {
+  font-size: 15px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: var(--color-neutral-600);
+}
+.stars-row--top .col-rank {
+  font-size: 22px;
+  color: var(--color-accent-300);
+}
+.col-player {
+  flex: 2 1 210px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stars-row .col-player {
+  color: var(--color-neutral-100);
+}
+.col-pos {
+  flex: 0 0 58px;
+}
+.stars-row .col-pos {
+  color: var(--color-accent-300);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+.col-school {
+  flex: 1 1 150px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stars-row .col-school {
+  color: var(--color-neutral-500);
+}
+.col-proj {
+  flex: 0 0 120px;
+  text-align: right;
+}
+.stars-row .col-proj {
+  color: var(--color-neutral-400);
+  font-size: 12.5px;
+}
+.col-grade {
+  flex: 0 0 46px;
+  text-align: center;
+}
+.grade-pill {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 7px;
+  border: 1px solid var(--color-accent-700);
+  border-radius: 99px;
+  color: var(--color-accent-300);
+}
+.col-prob {
+  flex: 0 0 86px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.stars-row .col-prob {
+  font-size: 19px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: var(--color-neutral-100);
+}
+.col-prob-unit {
+  font-size: 11px;
+  color: var(--color-neutral-500);
+  margin-left: 2px;
+}
+
+/* — states + load more — */
+.stars-state {
+  padding: 48px 22px;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--color-neutral-500);
+  border-top: 1px solid rgba(233, 233, 237, 0.07);
+}
+.stars-more {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0 0;
+}
+
+/* — responsive — */
+@media (max-width: 760px) {
+  .stars-page {
+    padding: 36px 18px 72px;
   }
-  
-  .services input {
-    padding: 8px;
-    margin-bottom: 10px;
-    width: 200px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+  .stars-board-head,
+  .stars-row {
+    padding-left: 14px;
+    padding-right: 14px;
+    gap: 10px;
   }
-  
-  .services button {
-    padding: 10px 20px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
+  .col-school,
+  .col-proj {
+    display: none;
   }
-  
-  .services button:hover {
-    background-color: #0056b3;
+  .col-rank {
+    flex-basis: 34px;
   }
-  
+}
