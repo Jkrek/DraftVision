@@ -23,6 +23,27 @@ import time
 import requests
 from datetime import datetime, timezone
 
+
+def current_season_year(now=None):
+    """College football season year: Aug-Dec belong to that year's season,
+    Jan-Jul to the previous year's."""
+    now = now or datetime.now(timezone.utc)
+    return now.year if now.month >= 8 else now.year - 1
+
+
+def projected_draft_class(class_abbr, season_year):
+    """Earliest realistic draft class from roster class standing.
+
+    A season-N player's final possible college season is season_year + (4 - N),
+    and the draft follows the season by one calendar year. FR->+4, SO->+3,
+    JR->+2, SR/GR->+1. Redshirts and early declares shift this; it is a
+    projection, not a certainty.
+    """
+    years = {"FR": 1, "SO": 2, "JR": 3, "SR": 4, "GR": 4}.get((class_abbr or "").upper())
+    if years is None:
+        return None
+    return season_year + (4 - years) + 1
+
 OUTPUT_FILE = "training_data/prospect_cache.json"
 
 ESPN_CFB_TEAMS_URL      = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams"
@@ -116,11 +137,15 @@ def fetch_roster(team_id, team_name):
         if position in {"K", "P", "LS", "UNK", ""}:
             continue
 
+        exp = athlete.get("experience") or {}
+        class_abbr = str(exp.get("abbreviation") or "").upper() if isinstance(exp, dict) else ""
+
         players.append({
-            "name":     name,
-            "position": position,
-            "espn_id":  str(athlete.get("id") or "").strip(),
-            "team":     team_name,
+            "name":       name,
+            "position":   position,
+            "espn_id":    str(athlete.get("id") or "").strip(),
+            "team":       team_name,
+            "class_year": class_abbr,
         })
 
     return players
@@ -157,6 +182,10 @@ def call_predict(player, api_url, timeout=15):
             "production_score":   round(float(stats.get("production_score") or 0), 1),
             "combine_speed_score": round(float(stats.get("combine_speed_score") or 50), 1),
             "games_played":       int(float(stats.get("games_played") or 0)),
+            "class_year":         player.get("class_year") or "",
+            "draft_class":        projected_draft_class(
+                                      player.get("class_year"),
+                                      current_season_year()),
             "is_award_winner":    int(stats.get("is_award_winner") or 0),
             "is_all_american":    int(stats.get("is_all_american") or 0),
             # "espn_live" = graded from real ESPN season stats; anything else

@@ -39,6 +39,14 @@ function posMatchesTab(pos, tab) {
 
 const clampPct = (v) => Math.max(0, Math.min(100, Number(v) || 0));
 
+// "2026-08-14T03:12:00Z" -> "Aug 14"; null on anything unparseable.
+function formatBoardDate(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 export default function Leaderboard() {
   const navigate = useNavigate();
 
@@ -48,6 +56,7 @@ export default function Leaderboard() {
   const [error, setError]         = useState(null);
 
   const [posTab, setPosTab]     = useState('ALL');
+  const [classTab, setClassTab] = useState('ALL');
   const [search, setSearch]     = useState('');
   const [sortBy, setSortBy]     = useState('grade');
   const [page, setPage]         = useState(0);
@@ -71,6 +80,8 @@ export default function Leaderboard() {
     let list = prospects;
     if (posTab !== 'ALL')
       list = list.filter(p => posMatchesTab(p.position, posTab));
+    if (classTab !== 'ALL')
+      list = list.filter(p => String(p.draft_class || '') === classTab);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(p =>
@@ -90,7 +101,23 @@ export default function Leaderboard() {
       (GRADE_ORDER[a.grade] ?? 9) - (GRADE_ORDER[b.grade] ?? 9) ||
       (b.success_probability || 0) - (a.success_probability || 0),
     );
-  }, [prospects, posTab, search, sortBy]);
+  }, [prospects, posTab, classTab, search, sortBy]);
+
+  // Draft classes present in the data (cache rows carry projected draft_class
+  // once built with class-year capture; hidden entirely on older caches).
+  const classTabs = useMemo(() => {
+    const years = [...new Set(
+      prospects.map(p => p.draft_class).filter(y => Number.isFinite(Number(y)) && y)
+    )].sort();
+    return years.length ? ['ALL', ...years.map(String)] : [];
+  }, [prospects]);
+
+  const selectClass = useCallback((year) => {
+    setClassTab(prev => (prev === year && year !== 'ALL' ? 'ALL' : year));
+    setPage(0);
+    setExpanded(null);
+    setAnimKey(k => k + 1);
+  }, []);
 
   // Position distribution — distinct groups actually present in the data.
   const dist = useMemo(() => {
@@ -156,9 +183,12 @@ export default function Leaderboard() {
   }, []);
 
   const resetFilters = useCallback(() => {
-    setPosTab('ALL'); setSearch(''); setSortBy('grade'); setPage(0); setExpanded(null);
+    setPosTab('ALL'); setClassTab('ALL'); setSearch(''); setSortBy('grade');
+    setPage(0); setExpanded(null);
     setAnimKey(k => k + 1);
   }, []);
+
+  const boardDate = formatBoardDate(meta && meta.generated_at);
 
   const sortHeaders = [
     { label: 'Rk',         cls: 'lb-c-rank',   sort: null },
@@ -188,7 +218,8 @@ export default function Leaderboard() {
           <div className="lb-count">
             {loading
               ? 'Loading…'
-              : `${total.toLocaleString()} shown` + (meta ? ' · cached, sub-100ms' : '')}
+              : `${total.toLocaleString()} shown` +
+                (boardDate ? ` · Board updated ${boardDate}` : meta ? ' · cached, sub-100ms' : '')}
           </div>
         </div>
       </header>
@@ -218,6 +249,21 @@ export default function Leaderboard() {
               </button>
             ))}
           </div>
+          {classTabs.length > 0 && (
+            <div className="lb-seg" role="group" aria-label="Filter by draft class">
+              {classTabs.map(y => (
+                <button
+                  key={y}
+                  type="button"
+                  className={`lb-seg-btn${classTab === y ? ' active' : ''}`}
+                  aria-pressed={classTab === y}
+                  onClick={() => selectClass(y)}
+                >
+                  {y === 'ALL' ? 'All classes' : `’${String(y).slice(2)}`}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ── Position distribution ── */}
@@ -294,6 +340,9 @@ export default function Leaderboard() {
               minis.push({ label: 'Combine speed score', value: `${Number(p.combine_speed_score).toFixed(1)} / 100`, pct: clampPct(p.combine_speed_score) });
             if (p.success_probability != null)
               minis.push({ label: 'Success probability', value: `${sp.toFixed(1)}%`, pct: clampPct(sp) });
+            const gp = Number(p.games_played);
+            if (Number.isFinite(gp) && gp > 0)
+              minis.push({ label: 'Games played', value: `${gp} / 17`, pct: clampPct((gp / 17) * 100) });
 
             return (
               <div className="lb-rowwrap" key={id}>

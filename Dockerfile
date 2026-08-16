@@ -16,7 +16,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend
-COPY XGBOost.py ./
+COPY XGBOost.py dv_features.py dv_heuristics.py ./
 COPY *.json *.pkl *.cbm ./
 COPY training_data/ ./training_data/
 

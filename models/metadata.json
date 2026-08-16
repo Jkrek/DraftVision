@@ -1,0 +1,392 @@
+{
+  "serve": "ensemble",
+  "serve_gate": {
+    "rule": "serve ensemble iff holdout AUC(ensemble) > AUC(baseline) AND Brier(ensemble) < Brier(baseline); else heuristic",
+    "ensemble": {
+      "auc": 0.6387,
+      "brier": 0.1626
+    },
+    "baseline": {
+      "auc": 0.5989,
+      "brier": 0.3137
+    }
+  },
+  "generated_at": "2026-08-16T21:43:07.484714+00:00",
+  "git_sha": "a1abc92e27dac92ac4153e6749093dd200281d98",
+  "training_data": {
+    "path": "training_data/combine_outcomes.csv",
+    "sha256": "b042c6fad68cdc4f092d07c958202d4e9b599b52059bb195d1f576c2a26d2947"
+  },
+  "seed": 42,
+  "splits": {
+    "strategy": "temporal groups by draft_year (train 2010-2017 + 63 curated seed rows w=5; calibration 2018; test 2019-2020). No player appears in two sets; evaluation is on draft classes after all training classes.",
+    "train_2010_2017_plus_seeds": {
+      "rows": 2975,
+      "weighted_rows": 3227.0,
+      "success_positive": 720,
+      "success_rate": 0.242,
+      "draft_grade_counts": {
+        "0": 543,
+        "1": 591,
+        "2": 958,
+        "3": 883
+      },
+      "feature_missing_frac": {
+        "production_score": 0.8733,
+        "games_played": 0.9788,
+        "combine_speed_score": 0.121,
+        "conference_tier": 0.0
+      }
+    },
+    "calibration_2018": {
+      "rows": 379,
+      "weighted_rows": 379.0,
+      "success_positive": 89,
+      "success_rate": 0.2348,
+      "draft_grade_counts": {
+        "0": 64,
+        "1": 73,
+        "2": 119,
+        "3": 123
+      },
+      "feature_missing_frac": {
+        "production_score": 0.7124,
+        "games_played": 1.0,
+        "combine_speed_score": 0.2902,
+        "conference_tier": 0.0
+      }
+    },
+    "test_2019_2020": {
+      "rows": 733,
+      "weighted_rows": 733.0,
+      "success_positive": 159,
+      "success_rate": 0.2169,
+      "draft_grade_counts": {
+        "0": 128,
+        "1": 156,
+        "2": 225,
+        "3": 224
+      },
+      "feature_missing_frac": {
+        "production_score": 0.6958,
+        "games_played": 1.0,
+        "combine_speed_score": 0.2783,
+        "conference_tier": 0.0
+      }
+    }
+  },
+  "features": [
+    "production_score",
+    "games_played",
+    "combine_speed_score",
+    "conference_tier",
+    "position_qb",
+    "position_rb",
+    "position_wr",
+    "position_te",
+    "position_db",
+    "position_lb",
+    "position_dl",
+    "position_ol",
+    "position_other"
+  ],
+  "models": {
+    "success": {
+      "members": [
+        "xgboost (success_xgboost_model.json)",
+        "catboost (catboost_success_model.cbm)"
+      ],
+      "calibrator": "success_calibrated_model.pkl \u2014 Platt (LogisticRegression on logit of member-mean prob), fit on 2018 ensemble outputs",
+      "scale_pos_weight": 2.6505
+    },
+    "draft_grade": {
+      "members": [
+        "xgboost (draft_grade_model.json)",
+        "catboost (catboost_draft_grade_model.cbm)"
+      ],
+      "calibrator": "draft_grade_calibrated_model.pkl \u2014 multinomial LogisticRegression on log member-mean probs, fit on 2018 ensemble outputs",
+      "class_weights": {
+        "0": 1.1812,
+        "1": 1.2785,
+        "2": 0.7988,
+        "3": 0.8934
+      }
+    }
+  },
+  "evaluation": {
+    "holdout_years": [
+      2019,
+      2020
+    ],
+    "success": {
+      "ensemble_calibrated": {
+        "auc": 0.6387,
+        "brier": 0.1626,
+        "log_loss": 0.5041
+      },
+      "ensemble_raw_mean": {
+        "auc": 0.6387,
+        "brier": 0.2056,
+        "log_loss": 0.5988
+      },
+      "xgboost_member": {
+        "auc": 0.6374,
+        "brier": 0.2073,
+        "log_loss": 0.6017
+      },
+      "catboost_member": {
+        "auc": 0.6371,
+        "brier": 0.2059,
+        "log_loss": 0.6004
+      },
+      "rule_based_baseline": {
+        "auc": 0.5989,
+        "brier": 0.3137,
+        "log_loss": 0.8367
+      },
+      "reliability_10bin_calibrated": [
+        {
+          "bin": "[0.0,0.1)",
+          "count": 20,
+          "mean_predicted": 0.0804,
+          "fraction_positive": 0.1
+        },
+        {
+          "bin": "[0.1,0.2)",
+          "count": 225,
+          "mean_predicted": 0.1625,
+          "fraction_positive": 0.16
+        },
+        {
+          "bin": "[0.2,0.3)",
+          "count": 279,
+          "mean_predicted": 0.2447,
+          "fraction_positive": 0.1613
+        },
+        {
+          "bin": "[0.3,0.4)",
+          "count": 179,
+          "mean_predicted": 0.3398,
+          "fraction_positive": 0.3184
+        },
+        {
+          "bin": "[0.4,0.5)",
+          "count": 26,
+          "mean_predicted": 0.4471,
+          "fraction_positive": 0.6538
+        },
+        {
+          "bin": "[0.5,0.6)",
+          "count": 4,
+          "mean_predicted": 0.5499,
+          "fraction_positive": 0.5
+        },
+        {
+          "bin": "[0.6,0.7)",
+          "count": 0,
+          "mean_predicted": null,
+          "fraction_positive": null
+        },
+        {
+          "bin": "[0.7,0.8)",
+          "count": 0,
+          "mean_predicted": null,
+          "fraction_positive": null
+        },
+        {
+          "bin": "[0.8,0.9)",
+          "count": 0,
+          "mean_predicted": null,
+          "fraction_positive": null
+        },
+        {
+          "bin": "[0.9,1.0]",
+          "count": 0,
+          "mean_predicted": null,
+          "fraction_positive": null
+        }
+      ],
+      "reliability_10bin_baseline": [
+        {
+          "bin": "[0.0,0.1)",
+          "count": 0,
+          "mean_predicted": null,
+          "fraction_positive": null
+        },
+        {
+          "bin": "[0.1,0.2)",
+          "count": 0,
+          "mean_predicted": null,
+          "fraction_positive": null
+        },
+        {
+          "bin": "[0.2,0.3)",
+          "count": 7,
+          "mean_predicted": 0.267,
+          "fraction_positive": 0.0
+        },
+        {
+          "bin": "[0.3,0.4)",
+          "count": 50,
+          "mean_predicted": 0.3671,
+          "fraction_positive": 0.18
+        },
+        {
+          "bin": "[0.4,0.5)",
+          "count": 102,
+          "mean_predicted": 0.4601,
+          "fraction_positive": 0.1176
+        },
+        {
+          "bin": "[0.5,0.6)",
+          "count": 234,
+          "mean_predicted": 0.5553,
+          "fraction_positive": 0.1923
+        },
+        {
+          "bin": "[0.6,0.7)",
+          "count": 206,
+          "mean_predicted": 0.6438,
+          "fraction_positive": 0.2864
+        },
+        {
+          "bin": "[0.7,0.8)",
+          "count": 87,
+          "mean_predicted": 0.7524,
+          "fraction_positive": 0.2069
+        },
+        {
+          "bin": "[0.8,0.9)",
+          "count": 46,
+          "mean_predicted": 0.8414,
+          "fraction_positive": 0.3478
+        },
+        {
+          "bin": "[0.9,1.0]",
+          "count": 1,
+          "mean_predicted": 0.935,
+          "fraction_positive": 0.0
+        }
+      ]
+    },
+    "draft_grade": {
+      "ensemble_calibrated": {
+        "accuracy": 0.4065,
+        "macro_f1": 0.3423,
+        "confusion_matrix": [
+          [
+            66,
+            9,
+            23,
+            30
+          ],
+          [
+            50,
+            2,
+            33,
+            71
+          ],
+          [
+            44,
+            2,
+            90,
+            89
+          ],
+          [
+            28,
+            1,
+            55,
+            140
+          ]
+        ],
+        "confusion_matrix_labels": [
+          "Top 50 Pick",
+          "Day 2 Pick",
+          "Late Round Pick",
+          "Undrafted Prospect"
+        ]
+      },
+      "ensemble_raw_mean": {
+        "accuracy": 0.4093,
+        "macro_f1": 0.4022,
+        "confusion_matrix": [
+          [
+            56,
+            38,
+            25,
+            9
+          ],
+          [
+            40,
+            48,
+            41,
+            27
+          ],
+          [
+            36,
+            45,
+            98,
+            46
+          ],
+          [
+            22,
+            45,
+            59,
+            98
+          ]
+        ],
+        "confusion_matrix_labels": [
+          "Top 50 Pick",
+          "Day 2 Pick",
+          "Late Round Pick",
+          "Undrafted Prospect"
+        ]
+      },
+      "rule_based_baseline": {
+        "accuracy": 0.322,
+        "macro_f1": 0.2702,
+        "confusion_matrix": [
+          [
+            10,
+            54,
+            55,
+            9
+          ],
+          [
+            1,
+            45,
+            93,
+            17
+          ],
+          [
+            2,
+            46,
+            140,
+            37
+          ],
+          [
+            2,
+            54,
+            127,
+            41
+          ]
+        ],
+        "confusion_matrix_labels": [
+          "Top 50 Pick",
+          "Day 2 Pick",
+          "Late Round Pick",
+          "Undrafted Prospect"
+        ]
+      }
+    },
+    "baseline_notes": "rule_based_baseline = dv_heuristics (the app's fallback), accolade flags 0, NaN production/speed \u2192 neutral 50"
+  },
+  "library_versions": {
+    "python": "3.11.4",
+    "numpy": "1.26.4",
+    "pandas": "3.0.0",
+    "scikit-learn": "1.8.0",
+    "xgboost": "3.2.0",
+    "catboost": "1.2.7"
+  }
+}

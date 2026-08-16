@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../App.css';
 import './MockDraft.css';
+import { nflLogoUrl } from '../nflTeams';
 
 const ROUND_PICKS = 32; // picks per round
 
@@ -198,7 +199,18 @@ export default function MockDraft() {
                   </div>
 
                   {/* NFL team */}
-                  <div className="mock-row-team">{pick.nfl_team || '—'}</div>
+                  <div className="mock-row-team">
+                    {nflLogoUrl(pick.nfl_team) && (
+                      <img
+                        className="mock-row-logo"
+                        src={nflLogoUrl(pick.nfl_team, 500)}
+                        alt=""
+                        loading="lazy"
+                        onError={e => { e.target.style.display = 'none'; }}
+                      />
+                    )}
+                    <span>{pick.nfl_team || '—'}</span>
+                  </div>
 
                   {/* Position */}
                   {pick.position

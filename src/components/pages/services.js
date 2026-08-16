@@ -9,8 +9,17 @@ function formatProb(value) {
   return n.toFixed(1);
 }
 
+// "2026-08-14T03:12:00Z" -> "Aug 14"; null on anything unparseable.
+function formatBoardDate(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 export default function Services() {
   const [prospects, setProspects] = useState([]);
+  const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
@@ -19,7 +28,10 @@ export default function Services() {
   useEffect(() => {
     fetch('/api/prospects?limit=5000')
       .then(r => r.json())
-      .then(d => setProspects(Array.isArray(d.prospects) ? d.prospects : []))
+      .then(d => {
+        setProspects(Array.isArray(d.prospects) ? d.prospects : []);
+        setMeta(d.meta || null);
+      })
       .catch(() => {
         setProspects([]);
         setError('Could not load prospects. Is the prediction server running?');
@@ -38,6 +50,7 @@ export default function Services() {
 
   const visible = filtered.slice(0, visibleCount);
   const remaining = filtered.length - visible.length;
+  const boardDate = formatBoardDate(meta && meta.generated_at);
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
@@ -52,7 +65,8 @@ export default function Services() {
         <p className="stars-count">
           {loading
             ? 'Loading graded prospects…'
-            : `${filtered.length.toLocaleString()} of ${prospects.length.toLocaleString()} graded prospects`}
+            : `${filtered.length.toLocaleString()} of ${prospects.length.toLocaleString()} graded prospects` +
+              (boardDate ? ` · Board updated ${boardDate}` : '')}
         </p>
       </header>
 

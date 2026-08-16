@@ -9,8 +9,8 @@ Future Star Predictor backend.
 """
 
 import json
+import math
 import os
-import random
 import sqlite3
 import time
 import hashlib
@@ -24,10 +24,25 @@ import requests
 import xgboost as xgb
 from flask import Flask, jsonify, redirect, request, send_from_directory
 from flask_cors import CORS
-from sklearn.calibration import CalibratedClassifierCV
-from sklearn.model_selection import train_test_split
 
-# Optional heavy models — imported at module level so startup clearly shows status
+# Shared, side-effect-free modules (also imported by scripts/train_models.py so
+# the served features/heuristics can never drift from the trained/evaluated ones)
+from dv_features import (
+    _BASE_FEATURES,
+    DRAFT_GRADE_FEATURES,
+    SUCCESS_FEATURES,
+    DRAFT_GRADE_LABELS,
+    position_flags,
+    _production_group,
+    _raw_production_to_percentile,
+)
+from dv_heuristics import (  # noqa: F401 — rule-based fallback + baseline source of truth
+    success_prob_from_college_profile,
+    draft_grade_from_profile,
+)
+
+# CatBoost is a required ensemble member — imported at module level so startup
+# clearly shows status
 try:
     from catboost import CatBoostClassifier
     CATBOOST_AVAILABLE = True
@@ -35,22 +50,14 @@ except ImportError:
     CATBOOST_AVAILABLE = False
     print("CatBoost not installed (pip install catboost) — XGBoost-only mode")
 
-try:
-    from tabpfn import TabPFNClassifier
-    TABPFN_AVAILABLE = True
-except ImportError:
-    TABPFN_AVAILABLE = False
-    print("TabPFN not installed (pip install tabpfn) — skipping TabPFN model")
-
 POSITION_MODEL_PATH        = "nfl_xgboost_model.json"
 ENCODER_PATH               = "label_encoders.pkl"
-SUCCESS_MODEL_PATH         = "success_xgboost_model.json"        # raw XGBoost (legacy load)
-SUCCESS_CALIBRATED_PATH    = "success_calibrated_model.pkl"      # CalibratedClassifierCV (primary)
-CATBOOST_SUCCESS_PATH      = "catboost_success_model.cbm"
-TABPFN_SUCCESS_PATH        = "tabpfn_success_model.pkl"
-DRAFT_GRADE_MODEL_PATH     = "draft_grade_model.json"            # raw XGBoost
-DRAFT_GRADE_CALIBRATED_PATH = "draft_grade_calibrated_model.pkl" # calibrated primary
-CATBOOST_DRAFT_GRADE_PATH  = "catboost_draft_grade_model.cbm"
+SUCCESS_MODEL_PATH         = "success_xgboost_model.json"        # raw XGBoost ensemble member
+SUCCESS_CALIBRATED_PATH    = "success_calibrated_model.pkl"      # ENSEMBLE calibrator dict (see scripts/train_models.py)
+CATBOOST_SUCCESS_PATH      = "catboost_success_model.cbm"        # CatBoost ensemble member
+DRAFT_GRADE_MODEL_PATH     = "draft_grade_model.json"            # raw XGBoost ensemble member
+DRAFT_GRADE_CALIBRATED_PATH = "draft_grade_calibrated_model.pkl" # ENSEMBLE calibrator dict
+CATBOOST_DRAFT_GRADE_PATH  = "catboost_draft_grade_model.cbm"    # CatBoost ensemble member
 TRAINING_DATA_PATH         = "training_data/combine_outcomes.csv"
 PROSPECT_CACHE_PATH        = "training_data/prospect_cache.json"
 MOCK_DRAFT_PATH            = "mock_draft.json"
@@ -65,28 +72,8 @@ ESPN_NFL_CORE_ATHLETE_URL = "https://sports.core.api.espn.com/v2/sports/football
 HTTP_TIMEOUT_SECONDS = 12
 STATS_CACHE_TTL = 3600  # cache real stats for 1 hour
 
-# Features shared by both models — purely college-performance based, NO draft_round
-_BASE_FEATURES = [
-    "production_score",      # 0–100 composite (position-normalized)
-    "games_played",
-    "combine_speed_score",   # 0–100 (position-normalized 40-yard dash)
-    "conference_tier",       # 1 (SEC elite) → 10 (FCS lower)
-    "is_award_winner",       # 1 if Nagurski/Heisman/Bednarik/etc.
-    "is_all_american",       # 1 if first-team All-American
-    # Position flags
-    "position_qb", "position_rb", "position_wr", "position_te",
-    "position_db", "position_lb", "position_dl", "position_ol", "position_other",
-]
-
-# Draft-grade model: predict which bracket a player will be drafted in
-# Output classes: 0=Top50(R1-2), 1=Day2(R3-4), 2=LateRound(R5-7), 3=Undrafted
-DRAFT_GRADE_FEATURES = _BASE_FEATURES
-
-# Success model: predict NFL career success from college profile ONLY
-# No draft_round — that's what we're trying to predict
-SUCCESS_FEATURES = _BASE_FEATURES
-
-DRAFT_GRADE_LABELS = ["Top 50 Pick", "Day 2 Pick", "Late Round Pick", "Undrafted Prospect"]
+# Feature lists (_BASE_FEATURES / SUCCESS_FEATURES / DRAFT_GRADE_FEATURES) and
+# DRAFT_GRADE_LABELS now live in dv_features.py — shared with scripts/train_models.py.
 
 # Power 5 conference schools (partial list for tier classification)
 POWER5_SCHOOLS = {
@@ -236,11 +223,18 @@ _ALL_AMERICANS = {
 
 
 def detect_accolades(name: str) -> Dict[str, int]:
-    """Return is_award_winner and is_all_american flags from known lists."""
-    n = (name or "").lower().strip()
+    """Return is_award_winner / is_all_american flags — DISPLAY ONLY, not ML features.
+
+    Exact normalized-name match only. Bidirectional substring matching wrongly
+    flagged any player sharing a famous name (e.g. a Notre Dame "DeVonta Smith"
+    matched the Alabama Heisman winner) and empty strings matched everything.
+    """
+    n = " ".join((name or "").lower().split())
+    if not n:
+        return {"is_award_winner": 0, "is_all_american": 0}
     return {
-        "is_award_winner": int(any(aw in n or n in aw for aw in _AWARD_WINNERS)),
-        "is_all_american": int(any(aa in n or n in aa for aa in _ALL_AMERICANS)),
+        "is_award_winner": int(n in _AWARD_WINNERS),
+        "is_all_american": int(n in _ALL_AMERICANS),
     }
 
 
@@ -258,18 +252,49 @@ def combine_speed_for_position(position: str, seed: int) -> float:
     return float(max(0.0, min(100.0, raw)))
 
 
+# Production percentile mapping (_production_group / _raw_production_to_percentile)
+# now lives in dv_features.py — shared with scripts/train_models.py.
+
+
 def compute_production_score(position: str, stats: dict) -> float:
-    """Compute a 0–100 composite production score normalized per position."""
+    """Production score: raw per-position composite mapped to its empirical
+    position-group percentile (0–100).
+
+    The percentile mapping (via training_data/production_percentiles.json,
+    built from 9k+ graded FBS players) removes the raw composite's saturation
+    wall at 100.0 and ranks OL against other OL rather than against skill
+    positions. Falls back to the raw composite if the table is missing.
+    Returns NaN when games_played is unknown (missing ≠ average).
+    """
     p = (position or "").upper()
-    games = max(float(stats.get("games_played", 1) or 1), 1)
-    pass_td  = float(stats.get("passing_touchdowns", 0) or 0)
-    pass_yds = float(stats.get("passing_yards", 0) or 0)
-    rush_td  = float(stats.get("rushing_touchdowns", 0) or 0)
-    rush_yds = float(stats.get("rushing_yards", 0) or 0)
-    tackles  = float(stats.get("tackles", 0) or 0)
-    sacks    = float(stats.get("sacks", 0) or 0)
-    ints     = float(stats.get("interceptions", 0) or 0)
-    pds      = float(stats.get("pass_deflections", 0) or 0)
+    raw = _raw_production_composite(p, stats)
+    if not math.isfinite(raw):
+        return float("nan")
+    pct = _raw_production_to_percentile(_production_group(p), raw)
+    if pct is None:
+        return raw
+    return pct
+
+
+def _raw_production_composite(p: str, stats: dict) -> float:
+    """Raw 0–100 composite production score (internal math, pre-percentile)."""
+    def _stat(key: str) -> float:
+        v = stats.get(key)
+        return float(v) if v is not None else 0.0
+
+    games_raw = stats.get("games_played")
+    games = float(games_raw) if games_raw is not None else float("nan")
+    if not math.isfinite(games) or games <= 0:
+        return float("nan")
+    games = max(games, 1.0)
+    pass_td  = _stat("passing_touchdowns")
+    pass_yds = _stat("passing_yards")
+    rush_td  = _stat("rushing_touchdowns")
+    rush_yds = _stat("rushing_yards")
+    tackles  = _stat("tackles")
+    sacks    = _stat("sacks")
+    ints     = _stat("interceptions")
+    pds      = _stat("pass_deflections")
 
     if p == "QB":
         td_rate = (pass_td / games) / (35 / 15)
@@ -300,8 +325,9 @@ def compute_production_score(position: str, stats: dict) -> float:
         t_rate = (tackles / games) / (45 / 13)
         s_rate = (sacks / games) / (10 / 13)
         score = (t_rate * 0.35 + s_rate * 0.65) * 100
-    elif p in {"OL", "OT", "OG", "C"}:
-        # OL: no counting stats — use games played as proxy for durability
+    elif p in {"OL", "OT", "OG", "G", "C", "LS"}:
+        # OL: no counting stats — games played is the only durability proxy.
+        # The raw cap at 60 is fine: percentile mapping ranks OL against OL.
         score = min(games / 13.0, 1.0) * 60.0
     else:
         combined_td  = (pass_td + rush_td) / games / (12 / 15)
@@ -407,11 +433,12 @@ def enforce_canonical_origin():
 
 position_model = None
 label_encoders = None
-success_model = None           # primary: CalibratedClassifierCV(XGBoost) or raw XGBoost
-catboost_success_model = None  # secondary ensemble member
-tabpfn_success_model = None    # tertiary ensemble member (optional)
-draft_grade_model = None       # primary: CalibratedClassifierCV(XGBoost) or raw XGBoost
+success_model = None            # raw XGBoost ensemble member
+catboost_success_model = None   # CatBoost ensemble member
+success_calibrator = None       # ensemble calibrator dict (applied to the member mean)
+draft_grade_model = None        # raw XGBoost ensemble member (multiclass)
 catboost_draft_grade_model = None
+draft_grade_calibrator = None   # ensemble calibrator dict (applied to the member mean)
 
 SEED_PLAYERS = [
     # ── Active NFL stars (for demo / search) ────────────────────────────────
@@ -865,7 +892,7 @@ def generate_estimated_profile(name: str, position: str, team: str, jersey: int 
         tackles = scaled(20, 80, 5)
         sacks = round(scaled(0, 16, 11) * 0.5, 1)
         pass_deflections = scaled(0, 6, 17)
-    elif p in {"OL", "OT", "OG", "C"}:
+    elif p in {"OL", "OT", "OG", "G", "C", "LS"}:
         passing_touchdowns = 0; passing_yards = 0
         rushing_touchdowns = 0; rushing_yards = 0
     else:
@@ -1172,7 +1199,10 @@ def fetch_combine_measurables(espn_id: str, position: str) -> dict:
             cache_set(cache_key, {}, ttl=STATS_CACHE_TTL)
             return {}
 
-        speed = forty_to_speed_score(position, forty) if forty else 50.0
+        # No 40 time → no speed score. None is skipped by the profile-update
+        # loops (`if combine_data.get(key) is not None`), so the profile keeps
+        # its existing value instead of a fake 50.0 average.
+        speed = forty_to_speed_score(position, forty) if forty else None
         vert_sc  = vertical_to_score(position, vertical)
         height_sc = height_to_score(position, height_in)
         weight_sc = weight_to_score(position, weight_lb)
@@ -1183,7 +1213,7 @@ def fetch_combine_measurables(espn_id: str, position: str) -> dict:
             return f"{h // 12}'{h % 12}\""
 
         result = {
-            "combine_speed_score":  round(speed, 1),
+            "combine_speed_score":  round(speed, 1) if speed is not None else None,
             "combine_forty":        forty,
             "combine_vertical":     vertical,
             "combine_bench":        bench,
@@ -1216,6 +1246,13 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
         name     = str(db_player.get("name", player_name)).strip()
         position = str(db_player.get("position", "Unknown") or "Unknown")
         team     = str(db_player.get("team", "Unknown") or "Unknown")
+        # A stale DB row must not beat what the caller told us: an Unknown
+        # position one-hots to position_other and tanks the prediction.
+        _unk = {"unknown", "unk", ""}
+        if position.lower() in _unk and fallback_position.lower() not in _unk:
+            position = fallback_position
+        if team.lower() in _unk and fallback_team.lower() not in _unk:
+            team = fallback_team
         jersey   = int(db_player.get("jersey", 0) or 0)
         espn_id  = str(db_player.get("espn_id") or "").strip()
 
@@ -1310,67 +1347,65 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
     return result, "default_baseline"
 
 
-_DB_POSITIONS = {"CB", "S", "DB", "FS", "SS"}
-_LB_POSITIONS = {"LB", "ILB", "OLB", "MLB"}
-_DL_POSITIONS = {"DL", "DE", "DT", "NT", "EDGE"}
-_OL_POSITIONS = {"OL", "OT", "OG", "C", "LS"}
-_KNOWN_POSITIONS = {"QB", "RB", "WR", "TE"} | _DB_POSITIONS | _LB_POSITIONS | _DL_POSITIONS | _OL_POSITIONS
-
-def position_flags(position: str) -> Dict[str, int]:
-    p = (position or "Unknown").upper()
-    return {
-        "position_qb":    int(p == "QB"),
-        "position_rb":    int(p == "RB"),
-        "position_wr":    int(p == "WR"),
-        "position_te":    int(p == "TE"),
-        "position_db":    int(p in _DB_POSITIONS),
-        "position_lb":    int(p in _LB_POSITIONS),
-        "position_dl":    int(p in _DL_POSITIONS),
-        "position_ol":    int(p in _OL_POSITIONS),
-        "position_other": int(p not in _KNOWN_POSITIONS),
-    }
+# position_flags and the position-group sets now live in dv_features.py.
 
 
 def build_success_features(player_stats: Dict[str, object]) -> pd.DataFrame:
     """Build feature vector aligned with SUCCESS_FEATURES / _BASE_FEATURES.
-    No draft_round — that is an output, not an input."""
-    name     = str(player_stats.get("name", "") or "")
+    No draft_round — that is an output, not an input.
+
+    Missing values become NaN (XGBoost/CatBoost handle them natively) instead of
+    fake defaults — an unknown 40 time is not a 50.0, an unknown season is not
+    13 games. Explicit `is None` checks so legitimate zeros are never swallowed.
+    """
     position = str(player_stats.get("position", "Unknown"))
     team     = str(player_stats.get("team", "") or "")
     flags    = position_flags(position)
-    accolades = detect_accolades(name)
+
+    def _value(key: str):
+        v = player_stats.get(key)
+        return float(v) if v is not None else float("nan")
+
+    def _counting_stat(key: str) -> float:
+        # Counting stats: absent means the category doesn't apply (0), not unknown.
+        v = player_stats.get(key)
+        return float(v) if v is not None else 0.0
+
+    games_played = _value("games_played")
 
     stats_dict = {
-        "games_played":       float(player_stats.get("games_played", 0) or 0),
-        "passing_touchdowns": float(player_stats.get("passing_touchdowns", 0) or 0),
-        "passing_yards":      float(player_stats.get("passing_yards", 0) or 0),
-        "rushing_touchdowns": float(player_stats.get("rushing_touchdowns", 0) or 0),
-        "rushing_yards":      float(player_stats.get("rushing_yards", 0) or 0),
-        "tackles":            float(player_stats.get("tackles", 0) or 0),
-        "sacks":              float(player_stats.get("sacks", 0) or 0),
-        "interceptions":      float(player_stats.get("interceptions", 0) or 0),
-        "pass_deflections":   float(player_stats.get("pass_deflections", 0) or 0),
+        "games_played":       player_stats.get("games_played"),
+        "passing_touchdowns": _counting_stat("passing_touchdowns"),
+        "passing_yards":      _counting_stat("passing_yards"),
+        "rushing_touchdowns": _counting_stat("rushing_touchdowns"),
+        "rushing_yards":      _counting_stat("rushing_yards"),
+        "tackles":            _counting_stat("tackles"),
+        "sacks":              _counting_stat("sacks"),
+        "interceptions":      _counting_stat("interceptions"),
+        "pass_deflections":   _counting_stat("pass_deflections"),
     }
 
-    production_score = float(
-        player_stats.get("production_score")
-        or compute_production_score(position, stats_dict)
+    ps = player_stats.get("production_score")
+    production_score = (
+        float(ps) if ps is not None
+        else compute_production_score(position, stats_dict)  # NaN if games unknown
     )
-    combine_speed = float(player_stats.get("combine_speed_score") or 50.0)
-    conference_tier = float(
-        player_stats.get("conference_tier")
-        or classify_college_tier(team)
-    )
-    is_award_winner = int(player_stats.get("is_award_winner") or accolades["is_award_winner"])
-    is_all_american = int(player_stats.get("is_all_american") or accolades["is_all_american"])
+
+    combine_speed = _value("combine_speed_score")
+
+    ct = player_stats.get("conference_tier")
+    if ct is not None:
+        conference_tier = float(ct)
+    elif team and team.strip().lower() not in {"", "unknown"}:
+        conference_tier = float(classify_college_tier(team))
+    else:
+        conference_tier = float("nan")
 
     row = {
         "production_score":    production_score,
-        "games_played":        stats_dict["games_played"],
+        "games_played":        games_played,
         "combine_speed_score": combine_speed,
         "conference_tier":     conference_tier,
-        "is_award_winner":     is_award_winner,
-        "is_all_american":     is_all_american,
         **flags,
     }
     return pd.DataFrame([row], columns=SUCCESS_FEATURES)
@@ -1408,490 +1443,119 @@ def proxy_success_score(position: str, stats: Dict[str, float]) -> float:
     return min(games / 17.0, 1.0) * 0.60 + 0.20
 
 
-def synthetic_player_sample(position: str) -> Dict[str, float]:
-    base = {
-        "games_played": random.randint(4, 17),
-        "passing_touchdowns": 0, "passing_yards": 0,
-        "rushing_touchdowns": 0, "rushing_yards": 0,
-        "tackles": 0, "sacks": 0.0, "interceptions": 0, "pass_deflections": 0,
-    }
-    if position == "QB":
-        base.update({
-            "passing_touchdowns": max(0, int(random.gauss(18, 10))),
-            "passing_yards":      max(0, int(random.gauss(2800, 1200))),
-            "rushing_touchdowns": max(0, int(random.gauss(2, 2))),
-            "rushing_yards":      max(0, int(random.gauss(180, 150))),
-        })
-    elif position == "RB":
-        base.update({
-            "rushing_touchdowns": max(0, int(random.gauss(7, 4))),
-            "rushing_yards":      max(0, int(random.gauss(760, 380))),
-        })
-    elif position in {"WR", "TE"}:
-        base.update({
-            "passing_touchdowns": max(0, int(random.gauss(1, 2))),
-            "passing_yards":      max(0, int(random.gauss(120, 260))),
-            "rushing_touchdowns": max(0, int(random.gauss(5, 4))),
-            "rushing_yards":      max(0, int(random.gauss(820, 420))),
-        })
-    elif position == "LB":
-        base.update({
-            "tackles":          max(0, int(random.gauss(75, 28))),
-            "sacks":            max(0.0, round(random.gauss(4.0, 3.0), 1)),
-            "interceptions":    max(0, int(random.gauss(1, 1))),
-            "pass_deflections": max(0, int(random.gauss(4, 3))),
-        })
-    elif position in {"CB", "S"}:
-        base.update({
-            "tackles":          max(0, int(random.gauss(55, 20))),
-            "sacks":            max(0.0, round(random.gauss(0.5, 0.8), 1)),
-            "interceptions":    max(0, int(random.gauss(3, 2))),
-            "pass_deflections": max(0, int(random.gauss(9, 5))),
-        })
-    elif position == "DL":
-        base.update({
-            "tackles": max(0, int(random.gauss(45, 18))),
-            "sacks":   max(0.0, round(random.gauss(6.5, 4.0), 1)),
-            "pass_deflections": max(0, int(random.gauss(2, 2))),
-        })
-    elif position == "OL":
-        base.update({"games_played": random.randint(6, 17)})
-    else:  # OTHER / K / P
-        base.update({
-            "passing_touchdowns": max(0, int(random.gauss(1, 1))),
-            "passing_yards":      max(0, int(random.gauss(90, 120))),
-            "rushing_touchdowns": max(0, int(random.gauss(3, 3))),
-            "rushing_yards":      max(0, int(random.gauss(420, 290))),
-        })
-    return base
+# ── Training removed from the serving app ────────────────────────────────────
+# All model training (real data only, temporal splits, ensemble calibration)
+# lives in scripts/train_models.py. The synthetic-row generator, heuristic
+# label sampler and in-app trainers were deleted; SEED_TRAINING_PLAYERS moved
+# to dv_features.py and the rule heuristics to dv_heuristics.py.
 
 
-def realistic_nfl_success_probability(
-    draft_round: int,
-    combine_speed: float,
-    college_tier: int,
-    production: float,
-) -> float:
+# ── Model loading (LOAD-ONLY — training lives in scripts/train_models.py) ─────
+# Artifacts per target: raw XGBoost member (.json) + CatBoost member (.cbm) +
+# ensemble calibrator (.pkl, a dict {"kind", "model", "feature_names", ...}
+# fitted on the MEAN of the two members' calibration-fold probabilities).
+# Serving must therefore apply: member probas → mean → calibrator.
+
+DV_ALLOW_MISSING_MODELS = os.environ.get("DV_ALLOW_MISSING_MODELS", "") == "1"
+
+
+def _load_serve_mode() -> str:
+    """Honest decision gate written by scripts/train_models.py.
+
+    models/metadata.json carries "serve": "ensemble" | "heuristic" — whichever
+    beat the other on the 2019-2020 holdout (AUC + Brier). When it says
+    "heuristic", /predict prefers determine_success_fallback over the ML
+    ensemble. Missing/unreadable metadata defaults to "ensemble".
     """
-    Estimate NFL success probability using factors that actually predict outcomes.
-
-    Draft round is the dominant signal (scouts already aggregate all information
-    into where a player is picked).  Combine athleticism, college competition
-    level, and production adjust the probability modestly.
-
-    Approximate empirical hit-rates by round (career starter or better):
-      Round 1 → ~68%   Round 2 → ~52%   Round 3 → ~38%
-      Round 4 → ~26%   Round 5 → ~18%   Round 6 → ~12%
-      Round 7 → ~8%    Undrafted → ~4%
-    """
-    ROUND_BASE = {1: 0.68, 2: 0.52, 3: 0.38, 4: 0.26,
-                  5: 0.18, 6: 0.12, 7: 0.08, 8: 0.04}
-    base = ROUND_BASE.get(int(draft_round), 0.04)
-
-    # Combine speed: 0–100 scale; 50 = average. Adjust ±8 pp.
-    speed_adj = (combine_speed - 50.0) / 50.0 * 0.08
-
-    # College tier: P5 (1) > G5 (2) > FCS (3). Adjust ±5 pp.
-    tier_adj = (2.0 - college_tier) / 2.0 * 0.05  # +5 for P5, 0 for G5, −5 for FCS
-
-    # Production: 0–100 composite. Adjust ±7 pp.
-    prod_adj = (production - 50.0) / 100.0 * 0.14
-
-    prob = base + speed_adj + tier_adj + prod_adj
-    return float(min(max(prob, 0.02), 0.97))
+    try:
+        with open("models/metadata.json") as fh:
+            mode = str(json.load(fh).get("serve", "ensemble")).lower()
+        return mode if mode in {"ensemble", "heuristic"} else "ensemble"
+    except Exception:
+        return "ensemble"
 
 
-# ── Real historical players — ground truth for both models ────────────────────
-# Fields: position, conference_tier (1-10), production_score (0-100),
-#         combine_speed_score (0-100), games_played, is_award_winner, is_all_american,
-#         draft_grade (0=Top50/R1-2, 1=Day2/R3-4, 2=LateRound/R5-7, 3=UDFA),
-#         nfl_success (1=Pro Bowl or 5+ yr starter, 0=bust/journeyman)
-SEED_TRAINING_PLAYERS = [
-    # ── QBs ──────────────────────────────────────────────────────────────────
-    {"position":"QB","conference_tier":1,"production_score":90,"combine_speed_score":70,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Burrow
-    {"position":"QB","conference_tier":1,"production_score":85,"combine_speed_score":74,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Trevor Lawrence
-    {"position":"QB","conference_tier":2,"production_score":88,"combine_speed_score":85,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Lamar Jackson (Louisville T2)
-    {"position":"QB","conference_tier":3,"production_score":76,"combine_speed_score":74,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":0,"nfl_success":1},  # Josh Allen (Wyoming T3)
-    {"position":"QB","conference_tier":2,"production_score":82,"combine_speed_score":78,"games_played":14,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Kyler Murray
-    {"position":"QB","conference_tier":2,"production_score":80,"combine_speed_score":67,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Jalen Hurts
-    {"position":"QB","conference_tier":1,"production_score":82,"combine_speed_score":65,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Caleb Williams
-    {"position":"QB","conference_tier":4,"production_score":72,"combine_speed_score":62,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":1},  # Brock Purdy (Iowa St, R7!)
-    {"position":"QB","conference_tier":2,"production_score":78,"combine_speed_score":72,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":0,"nfl_success":0},  # R1 QB bust
-    {"position":"QB","conference_tier":3,"production_score":68,"combine_speed_score":60,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":0},  # Day2 bust
-    {"position":"QB","conference_tier":4,"production_score":60,"combine_speed_score":55,"games_played":10,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
-    {"position":"QB","conference_tier":5,"production_score":58,"combine_speed_score":58,"games_played":10,"is_award_winner":0,"is_all_american":0,"draft_grade":3,"nfl_success":0},
-    # ── WRs ──────────────────────────────────────────────────────────────────
-    {"position":"WR","conference_tier":2,"production_score":88,"combine_speed_score":93,"games_played":14,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Justin Jefferson (LSU)
-    {"position":"WR","conference_tier":1,"production_score":85,"combine_speed_score":90,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Ja'Marr Chase
-    {"position":"WR","conference_tier":1,"production_score":86,"combine_speed_score":79,"games_played":14,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Devonta Smith
-    {"position":"WR","conference_tier":1,"production_score":80,"combine_speed_score":83,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # CeeDee Lamb
-    {"position":"WR","conference_tier":2,"production_score":78,"combine_speed_score":80,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":1},  # Amon-Ra St. Brown (USC T2)
-    {"position":"WR","conference_tier":8,"production_score":82,"combine_speed_score":96,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":1},  # Tyreek Hill (West Alabama T8)
-    {"position":"WR","conference_tier":1,"production_score":82,"combine_speed_score":87,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # A.J. Brown
-    {"position":"WR","conference_tier":2,"production_score":65,"combine_speed_score":72,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
-    {"position":"WR","conference_tier":3,"production_score":70,"combine_speed_score":68,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
-    {"position":"WR","conference_tier":4,"production_score":62,"combine_speed_score":75,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":3,"nfl_success":0},
-    # ── RBs ──────────────────────────────────────────────────────────────────
-    {"position":"RB","conference_tier":3,"production_score":90,"combine_speed_score":82,"games_played":14,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Saquon Barkley (Penn St T3)
-    {"position":"RB","conference_tier":3,"production_score":88,"combine_speed_score":88,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # McCaffrey (Stanford T3)
-    {"position":"RB","conference_tier":2,"production_score":85,"combine_speed_score":80,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Bijan Robinson
-    {"position":"RB","conference_tier":1,"production_score":80,"combine_speed_score":78,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":1},  # Jahmyr Gibbs
-    {"position":"RB","conference_tier":7,"production_score":88,"combine_speed_score":85,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Ashton Jeanty (Boise St T7)
-    {"position":"RB","conference_tier":1,"production_score":75,"combine_speed_score":75,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":0},
-    {"position":"RB","conference_tier":4,"production_score":78,"combine_speed_score":77,"games_played":13,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
-    {"position":"RB","conference_tier":5,"production_score":72,"combine_speed_score":80,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
-    # ── TEs ──────────────────────────────────────────────────────────────────
-    {"position":"TE","conference_tier":4,"production_score":80,"combine_speed_score":68,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":1,"nfl_success":1},  # Travis Kelce (Cincy T4)
-    {"position":"TE","conference_tier":2,"production_score":82,"combine_speed_score":72,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Kyle Pitts (Florida T2)
-    {"position":"TE","conference_tier":3,"production_score":78,"combine_speed_score":65,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # George Kittle (Iowa T3)
-    {"position":"TE","conference_tier":3,"production_score":75,"combine_speed_score":62,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Tyler Warren (Penn St)
-    {"position":"TE","conference_tier":2,"production_score":70,"combine_speed_score":60,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":0},
-    {"position":"TE","conference_tier":4,"production_score":60,"combine_speed_score":55,"games_played":10,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
-    # ── CBs ──────────────────────────────────────────────────────────────────
-    {"position":"CB","conference_tier":1,"production_score":78,"combine_speed_score":91,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Patrick Surtain II
-    {"position":"CB","conference_tier":4,"production_score":75,"combine_speed_score":89,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Sauce Gardner (Cincinnati T4)
-    {"position":"CB","conference_tier":1,"production_score":72,"combine_speed_score":87,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Devon Witherspoon
-    {"position":"CB","conference_tier":1,"production_score":68,"combine_speed_score":85,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":1},  # Day2 CB success
-    {"position":"CB","conference_tier":3,"production_score":65,"combine_speed_score":80,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":0},
-    {"position":"CB","conference_tier":5,"production_score":58,"combine_speed_score":78,"games_played":10,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
-    # ── Safeties ─────────────────────────────────────────────────────────────
-    {"position":"S","conference_tier":2,"production_score":80,"combine_speed_score":82,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Kyle Hamilton (ND T2)
-    {"position":"S","conference_tier":1,"production_score":75,"combine_speed_score":80,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Caleb Downs profile (Bama T1)
-    {"position":"S","conference_tier":1,"production_score":72,"combine_speed_score":78,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},
-    {"position":"S","conference_tier":2,"production_score":65,"combine_speed_score":75,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":0},
-    {"position":"S","conference_tier":4,"production_score":60,"combine_speed_score":72,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
-    # ── LBs ──────────────────────────────────────────────────────────────────
-    {"position":"LB","conference_tier":3,"production_score":82,"combine_speed_score":78,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Micah Parsons (PSU T3)
-    {"position":"LB","conference_tier":1,"production_score":85,"combine_speed_score":80,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Will Anderson (Bama T1)
-    {"position":"LB","conference_tier":1,"production_score":78,"combine_speed_score":74,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Roquan Smith (Georgia)
-    {"position":"LB","conference_tier":3,"production_score":75,"combine_speed_score":70,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":1,"nfl_success":1},
-    {"position":"LB","conference_tier":4,"production_score":65,"combine_speed_score":62,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
-    {"position":"LB","conference_tier":6,"production_score":60,"combine_speed_score":58,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":3,"nfl_success":0},
-    # ── DLs ──────────────────────────────────────────────────────────────────
-    {"position":"DL","conference_tier":1,"production_score":88,"combine_speed_score":82,"games_played":13,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Chase Young (OSU T1)
-    {"position":"DL","conference_tier":2,"production_score":85,"combine_speed_score":78,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Myles Garrett (TAMU T2)
-    {"position":"DL","conference_tier":1,"production_score":82,"combine_speed_score":80,"games_played":12,"is_award_winner":1,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # Jalen Carter (Georgia T1)
-    {"position":"DL","conference_tier":1,"production_score":80,"combine_speed_score":77,"games_played":12,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},
-    {"position":"DL","conference_tier":3,"production_score":65,"combine_speed_score":65,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
-    {"position":"DL","conference_tier":5,"production_score":58,"combine_speed_score":60,"games_played":10,"is_award_winner":0,"is_all_american":0,"draft_grade":3,"nfl_success":0},
-    # ── OLs ──────────────────────────────────────────────────────────────────
-    {"position":"OL","conference_tier":1,"production_score":55,"combine_speed_score":52,"games_played":14,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},  # elite T1 OT
-    {"position":"OL","conference_tier":2,"production_score":52,"combine_speed_score":50,"games_played":13,"is_award_winner":0,"is_all_american":1,"draft_grade":0,"nfl_success":1},
-    {"position":"OL","conference_tier":3,"production_score":45,"combine_speed_score":44,"games_played":12,"is_award_winner":0,"is_all_american":0,"draft_grade":2,"nfl_success":0},
-    {"position":"OL","conference_tier":5,"production_score":38,"combine_speed_score":40,"games_played":11,"is_award_winner":0,"is_all_american":0,"draft_grade":3,"nfl_success":0},
-]
+SERVE_MODE = _load_serve_mode()
 
 
-def _success_prob_from_college_profile(
-    production_score: float,
-    conference_tier: int,
-    combine_speed: float,
-    is_award_winner: int,
-    is_all_american: int,
-) -> float:
-    """Estimate P(NFL success) purely from college profile — NO draft round."""
-    prod_factor  = production_score / 100.0
-    tier_factor  = max(0.0, (11.0 - conference_tier) / 10.0)  # 1.0=T1 elite, 0.1=T10 FCS
-    speed_factor = combine_speed / 100.0
-    award_boost  = 0.08 if is_award_winner else 0.0
-    aa_boost     = 0.05 if is_all_american else 0.0
-    base = prod_factor * 0.45 + tier_factor * 0.30 + speed_factor * 0.25
-    return float(min(0.92, max(0.03, base + award_boost + aa_boost)))
-
-
-def _draft_grade_from_profile(
-    production_score: float,
-    conference_tier: int,
-    combine_speed: float,
-    is_award_winner: int,
-    is_all_american: int,
-) -> int:
-    """Deterministic draft grade class from college profile (used for synthetic labels)."""
-    score = (
-        production_score * 0.40
-        + max(0.0, (11.0 - conference_tier) / 10.0) * 100 * 0.30
-        + combine_speed * 0.20
-        + (is_award_winner * 8 + is_all_american * 5)
-    )
-    if score >= 78: return 0  # Top 50 (R1-2)
-    if score >= 60: return 1  # Day 2 (R3-4)
-    if score >= 42: return 2  # Late Round (R5-7)
-    return 3                   # UDFA
-
-
-def _build_training_rows(samples: int = 4000) -> Tuple[pd.DataFrame, "pd.Series"]:
-    """
-    Build training data for both models.
-
-    Priority:
-      1. Real ESPN data from collect_training_data.py (combine_outcomes.csv) if available
-      2. SEED_TRAINING_PLAYERS (real ground-truth, weighted 5x)
-      3. Synthetic samples to pad to `samples` total
-
-    Returns (X, y_success, y_draft_grade) but callers pick which y they need.
-    """
-    random.seed(42)
-    positions = ["QB", "RB", "WR", "TE", "LB", "CB", "S", "DL", "OL", "OTHER"]
-    pos_w     = [0.15, 0.14, 0.20, 0.08, 0.10, 0.10, 0.08, 0.08, 0.04, 0.03]
-
-    rows_s, rows_d = [], []   # success rows, draft-grade rows (same features, different labels)
-    labels_s, labels_d = [], []
-
-    # ── 1. Real ESPN data ───────────────────────────────────────────────────
-    real_count = 0
-    if os.path.exists(TRAINING_DATA_PATH):
-        try:
-            df_real = pd.read_csv(TRAINING_DATA_PATH)
-            for _, r in df_real.iterrows():
-                pos   = str(r.get("position") or "OTH").upper()
-                flags = position_flags(pos)
-                speed = float(r.get("combine_speed_score") or float("nan"))
-                tier  = float(r.get("conference_tier") or 5)
-                dg    = int(r.get("draft_grade", 2) or 2)
-                # production_score is not in the ESPN CSV. It stays missing (NaN,
-                # which XGBoost/CatBoost handle natively) — deriving it from the
-                # draft-grade label would leak the target into the features.
-                prod  = float("nan")
-                games = float(r.get("games_played", 13) or 13)
-                ns    = int(r.get("nfl_success", 0) or 0)
-                row = {
-                    "production_score":    prod,
-                    "games_played":        games,
-                    "combine_speed_score": round(speed, 1),
-                    "conference_tier":     tier,
-                    "is_award_winner":     0,
-                    "is_all_american":     0,
-                    **flags,
-                }
-                rows_s.append(row); labels_s.append(ns)
-                rows_d.append(row); labels_d.append(min(3, max(0, dg)))
-                real_count += 1
-            print(f"  Loaded {real_count} real ESPN training rows from {TRAINING_DATA_PATH}")
-        except Exception as exc:
-            print(f"  Real data load failed ({exc}) — using synthetic only")
-
-    # ── 2. Seed players (always included, 5× weight) ────────────────────────
-    for sp in SEED_TRAINING_PLAYERS * 5:
-        flags = position_flags(sp["position"])
-        row = {
-            "production_score":    float(sp["production_score"]),
-            "games_played":        float(sp["games_played"]),
-            "combine_speed_score": float(sp["combine_speed_score"]),
-            "conference_tier":     float(sp["conference_tier"]),
-            "is_award_winner":     int(sp["is_award_winner"]),
-            "is_all_american":     int(sp["is_all_american"]),
-            **flags,
-        }
-        rows_s.append(row); labels_s.append(sp["nfl_success"])
-        rows_d.append(row); labels_d.append(sp["draft_grade"])
-
-    # ── 3. Synthetic samples ─────────────────────────────────────────────────
-    # Higher label noise (0.12) so the model learns robust boundaries, not
-    # a thin approximation of our heuristic function.
-    needed = max(0, samples - len(rows_s))
-    for _ in range(needed):
-        position    = random.choices(positions, weights=pos_w, k=1)[0]
-        tier        = random.choices(range(1, 11), weights=[14,12,11,10,9,9,8,8,7,12], k=1)[0]
-        speed       = float(max(0, min(100, random.gauss(62, 18))))
-        production  = float(max(0, min(100, random.gauss(65, 22))))
-        is_award    = int(random.random() < 0.04)
-        is_aa       = int(random.random() < 0.08)
-        games       = random.randint(8, 16)
-
-        prob_s = _success_prob_from_college_profile(production, tier, speed, is_award, is_aa)
-        noisy_s = min(max(prob_s + random.gauss(0, 0.12), 0.01), 0.99)
-        success = 1 if random.random() < noisy_s else 0
-
-        grade_d = _draft_grade_from_profile(production, tier, speed, is_award, is_aa)
-        noisy_d = min(3, max(0, grade_d + random.choices([-1, 0, 0, 0, 1], k=1)[0]))
-
-        flags = position_flags(position)
-        row = {
-            "production_score":    round(production, 1),
-            "games_played":        float(games),
-            "combine_speed_score": round(speed, 1),
-            "conference_tier":     float(tier),
-            "is_award_winner":     is_award,
-            "is_all_american":     is_aa,
-            **flags,
-        }
-        rows_s.append(row); labels_s.append(success)
-        rows_d.append(row); labels_d.append(noisy_d)
-
-    X_s = pd.DataFrame(rows_s, columns=SUCCESS_FEATURES)
-    X_d = pd.DataFrame(rows_d, columns=DRAFT_GRADE_FEATURES)
-    return X_s, pd.Series(labels_s), X_d, pd.Series(labels_d)
-
-
-def train_success_model_from_synthetic(samples: int = 4000):
-    """
-    Train the full success model ensemble:
-      1. XGBoost  — calibrated with Platt scaling (saved as .pkl)
-      2. CatBoost — if available (saved as .cbm)
-      3. TabPFN   — if available (saved as .pkl)
-
-    Returns the primary calibrated XGBoost model.
-    """
-    global catboost_success_model, tabpfn_success_model
-
-    print("Building training data…")
-    X, y, _, _ = _build_training_rows(samples)
-
-    # Class balance ratio for scale_pos_weight
-    n_neg = int((y == 0).sum()); n_pos = int((y == 1).sum())
-    spw = round(n_neg / max(n_pos, 1), 2)
-    print(f"  Success labels: {n_pos} positive / {n_neg} negative  (scale_pos_weight={spw})")
-
-    # Train / calibration split — stratified so calibration set has both classes
-    X_train, X_cal, y_train, y_cal = train_test_split(
-        X, y, test_size=0.20, random_state=42, stratify=y)
-
-    # ── 1. XGBoost + Platt calibration ──────────────────────────────────────
-    xgb_base = xgb.XGBClassifier(
-        n_estimators=300,
-        max_depth=4,              # reduced from 5 to limit overfitting on small data
-        learning_rate=0.05,
-        subsample=0.85,
-        colsample_bytree=0.85,
-        min_child_weight=3,
-        gamma=0.1,
-        scale_pos_weight=spw,     # fix class imbalance
-        random_state=42,
-        eval_metric="logloss",
-    )
-    xgb_base.fit(X_train, y_train)
-    xgb_base.save_model(SUCCESS_MODEL_PATH)  # keep raw for legacy loading
-
-    calibrated = CalibratedClassifierCV(xgb_base, method="sigmoid", cv="prefit")
-    calibrated.fit(X_cal, y_cal)
-    joblib.dump(calibrated, SUCCESS_CALIBRATED_PATH)
-    print(f"  Saved calibrated XGBoost → {SUCCESS_CALIBRATED_PATH}")
-
-    # ── 2. CatBoost ─────────────────────────────────────────────────────────
-    if CATBOOST_AVAILABLE:
-        try:
-            cb = CatBoostClassifier(
-                iterations=300, depth=5, learning_rate=0.05,
-                eval_metric="AUC", random_seed=42, verbose=0,
-                class_weights={0: 1.0, 1: float(spw)},
-                loss_function="Logloss",
-            )
-            cb.fit(X_train, y_train)
-            cb.save_model(CATBOOST_SUCCESS_PATH)
-            catboost_success_model = cb
-            print(f"  Saved CatBoost success model → {CATBOOST_SUCCESS_PATH}")
-        except Exception as exc:
-            print(f"  CatBoost training failed: {exc}")
-
-    # ── 3. TabPFN ────────────────────────────────────────────────────────────
-    if TABPFN_AVAILABLE:
-        try:
-            # TabPFN works best with ≤10k samples; subsample if larger
-            max_tabpfn = 3000
-            if len(X_train) > max_tabpfn:
-                idx = np.random.choice(len(X_train), max_tabpfn, replace=False)
-                X_tf = X_train.iloc[idx]; y_tf = y_train.iloc[idx]
-            else:
-                X_tf = X_train; y_tf = y_train
-            tfpn = TabPFNClassifier(device="cpu", n_estimators=16)
-            tfpn.fit(X_tf.values, y_tf.values)
-            joblib.dump(tfpn, TABPFN_SUCCESS_PATH)
-            tabpfn_success_model = tfpn
-            print(f"  Saved TabPFN success model → {TABPFN_SUCCESS_PATH}")
-        except Exception as exc:
-            print(f"  TabPFN training skipped: {exc}")
-
-    return calibrated
-
-
-def train_draft_grade_model():
-    """
-    Train the draft grade ensemble:
-      1. XGBoost multiclass — calibrated (saved as .pkl)
-      2. CatBoost multiclass — if available (saved as .cbm)
-
-    Returns the primary calibrated XGBoost model.
-    """
-    global catboost_draft_grade_model
-
-    print("Building draft grade training data…")
-    _, _, X, y = _build_training_rows(4000)
-
-    print(f"  Draft grade distribution: {dict(y.value_counts().sort_index())}")
-
-    X_train, X_cal, y_train, y_cal = train_test_split(
-        X, y, test_size=0.20, random_state=42, stratify=y)
-
-    # ── 1. XGBoost multiclass + calibration ─────────────────────────────────
-    xgb_base = xgb.XGBClassifier(
-        n_estimators=300,
-        max_depth=4,
-        learning_rate=0.05,
-        subsample=0.85,
-        colsample_bytree=0.85,
-        min_child_weight=2,
-        gamma=0.1,
-        objective="multi:softprob",
-        random_state=42,
-        eval_metric="mlogloss",
-    )
-    xgb_base.fit(X_train, y_train)
-    xgb_base.save_model(DRAFT_GRADE_MODEL_PATH)
-
-    calibrated = CalibratedClassifierCV(xgb_base, method="sigmoid", cv="prefit")
-    calibrated.fit(X_cal, y_cal)
-    joblib.dump(calibrated, DRAFT_GRADE_CALIBRATED_PATH)
-    print(f"  Saved calibrated XGBoost draft grade → {DRAFT_GRADE_CALIBRATED_PATH}")
-
-    # ── 2. CatBoost multiclass ───────────────────────────────────────────────
-    if CATBOOST_AVAILABLE:
-        try:
-            cb = CatBoostClassifier(
-                iterations=300, depth=5, learning_rate=0.05,
-                random_seed=42, verbose=0,
-                loss_function="MultiClass",
-                classes_count=4,
-            )
-            cb.fit(X_train, y_train)
-            cb.save_model(CATBOOST_DRAFT_GRADE_PATH)
-            catboost_draft_grade_model = cb
-            print(f"  Saved CatBoost draft grade model → {CATBOOST_DRAFT_GRADE_PATH}")
-        except Exception as exc:
-            print(f"  CatBoost draft grade training failed: {exc}")
-
-    return calibrated
-
-
-def load_or_train_draft_grade_model() -> None:
-    global draft_grade_model, catboost_draft_grade_model
-
-    # Load calibrated pkl (preferred) or fall back to raw JSON
-    if os.path.exists(DRAFT_GRADE_CALIBRATED_PATH):
-        draft_grade_model = joblib.load(DRAFT_GRADE_CALIBRATED_PATH)
-        print("Draft grade model loaded (calibrated).")
-    elif os.path.exists(DRAFT_GRADE_MODEL_PATH):
-        m = xgb.XGBClassifier()
-        m.load_model(DRAFT_GRADE_MODEL_PATH)
-        draft_grade_model = m
-        print("Draft grade model loaded (raw XGBoost).")
-    else:
-        print("Draft grade model not found. Training ensemble…")
-        draft_grade_model = train_draft_grade_model()
+def _model_load_failure(kind: str, reason: str) -> None:
+    msg = (f"{kind} model artifacts unusable ({reason}) — run scripts/train_models.py")
+    if DV_ALLOW_MISSING_MODELS:
+        print(f"WARNING: {msg}. DV_ALLOW_MISSING_MODELS=1 — continuing with the "
+              "rule-based fallback only.")
         return
+    raise RuntimeError(msg)
 
-    # Load CatBoost companion if available
-    if CATBOOST_AVAILABLE and os.path.exists(CATBOOST_DRAFT_GRADE_PATH):
-        try:
-            cb = CatBoostClassifier()
-            cb.load_model(CATBOOST_DRAFT_GRADE_PATH)
-            catboost_draft_grade_model = cb
-            print("CatBoost draft grade model loaded.")
-        except Exception as exc:
-            print(f"CatBoost draft grade load failed: {exc}")
+
+def _load_calibrator(path: str, kind: str) -> Optional[dict]:
+    """Load an ensemble-calibrator dict written by scripts/train_models.py."""
+    cal = joblib.load(path)
+    if not (isinstance(cal, dict) and "model" in cal and "kind" in cal):
+        raise ValueError(
+            f"{path} is not an ensemble-calibrator dict (found {type(cal).__name__}); "
+            "it is probably a stale pre-retrain artifact")
+    feats = cal.get("feature_names")
+    if feats is not None and list(feats) != list(SUCCESS_FEATURES):
+        raise ValueError(f"{path} was trained on different features: {feats}")
+    return cal
+
+
+def _load_xgb_member(path: str) -> "xgb.XGBClassifier":
+    m = xgb.XGBClassifier()
+    m.load_model(path)
+    n = int(m.get_booster().num_features())
+    if n != len(SUCCESS_FEATURES):
+        raise ValueError(f"{path} expects {n} features, app builds {len(SUCCESS_FEATURES)}")
+    return m
+
+
+def load_draft_grade_models() -> None:
+    """Load the draft-grade ensemble (XGB + CatBoost members + calibrator). LOAD-ONLY."""
+    global draft_grade_model, catboost_draft_grade_model, draft_grade_calibrator
+
+    if not CATBOOST_AVAILABLE:
+        _model_load_failure("draft grade", "CatBoost library not installed")
+        return
+    missing = [p for p in (DRAFT_GRADE_MODEL_PATH, CATBOOST_DRAFT_GRADE_PATH,
+                           DRAFT_GRADE_CALIBRATED_PATH) if not os.path.exists(p)]
+    if missing:
+        _model_load_failure("draft grade", f"missing artifacts: {missing}")
+        return
+    try:
+        xgb_m = _load_xgb_member(DRAFT_GRADE_MODEL_PATH)
+        cb = CatBoostClassifier()
+        cb.load_model(CATBOOST_DRAFT_GRADE_PATH)
+        cal = _load_calibrator(DRAFT_GRADE_CALIBRATED_PATH, "draft grade")
+    except Exception as exc:
+        _model_load_failure("draft grade", str(exc))
+        return
+    draft_grade_model = xgb_m
+    catboost_draft_grade_model = cb
+    draft_grade_calibrator = cal
+    print("Draft grade ensemble loaded (XGBoost + CatBoost + calibrator).")
+
+
+def _apply_binary_calibrator(cal: dict, p: float) -> float:
+    """Map a raw ensemble-mean success probability through the fitted calibrator."""
+    p = float(min(max(p, 1e-6), 1.0 - 1e-6))
+    if cal["kind"] == "platt_logit":
+        z = math.log(p / (1.0 - p))
+        return float(cal["model"].predict_proba(np.array([[z]]))[0][1])
+    if cal["kind"] == "isotonic":
+        return float(cal["model"].predict(np.array([p]))[0])
+    raise ValueError(f"Unknown binary calibrator kind: {cal['kind']}")
+
+
+def _apply_multiclass_calibrator(cal: dict, proba: np.ndarray) -> np.ndarray:
+    """Map a raw ensemble-mean class-probability vector through the calibrator."""
+    if cal["kind"] == "multinomial_logprob":
+        logp = np.log(np.clip(proba, 1e-6, 1.0)).reshape(1, -1)
+        return cal["model"].predict_proba(logp)[0]
+    raise ValueError(f"Unknown multiclass calibrator kind: {cal['kind']}")
 
 
 def predict_draft_grade(player_stats: Dict[str, object]) -> Tuple[Optional[str], Optional[int], Optional[float]]:
-    """Ensemble draft grade: average softmax probabilities across all available models."""
+    """Ensemble draft grade: member probas → mean → calibrator (matches training)."""
     model_input  = build_success_features(player_stats)
     X_arr        = model_input.values
     proba_arrays = []
@@ -1911,47 +1575,46 @@ def predict_draft_grade(player_stats: Dict[str, object]) -> Tuple[Optional[str],
     if not proba_arrays:
         return None, None, None
 
-    avg_proba   = np.mean(proba_arrays, axis=0)
-    grade_class = int(avg_proba.argmax())
-    label       = DRAFT_GRADE_LABELS[grade_class]
-    return label, grade_class, round(float(avg_proba[grade_class]) * 100.0, 1)
+    avg_proba = np.mean(proba_arrays, axis=0)
+    # Label from the RAW ensemble mean: the multinomial calibrator sharpens
+    # probabilities but collapses the argmax away from class 1 (Day 2) —
+    # holdout macro-F1 0.40 raw vs 0.34 calibrated. Calibrated proba is still
+    # reported as the confidence number.
+    grade_class = int(np.argmax(avg_proba))
+    conf_proba  = avg_proba
+    if draft_grade_calibrator is not None:
+        try:
+            conf_proba = _apply_multiclass_calibrator(draft_grade_calibrator, avg_proba)
+        except Exception as exc:
+            print(f"Draft grade calibration failed (serving raw ensemble mean): {exc}")
+    label = DRAFT_GRADE_LABELS[grade_class]
+    return label, grade_class, round(float(conf_proba[grade_class]) * 100.0, 1)
 
 
+def load_success_models() -> None:
+    """Load the success ensemble (XGB + CatBoost members + calibrator). LOAD-ONLY."""
+    global success_model, catboost_success_model, success_calibrator
 
-def load_or_train_success_model() -> None:
-    global success_model, catboost_success_model, tabpfn_success_model
-
-    # Load calibrated pkl (preferred) or fall back to raw XGBoost JSON
-    if os.path.exists(SUCCESS_CALIBRATED_PATH):
-        success_model = joblib.load(SUCCESS_CALIBRATED_PATH)
-        print("Success model loaded (calibrated XGBoost).")
-    elif os.path.exists(SUCCESS_MODEL_PATH):
-        m = xgb.XGBClassifier()
-        m.load_model(SUCCESS_MODEL_PATH)
-        success_model = m
-        print("Success model loaded (raw XGBoost — re-train recommended).")
-    else:
-        print("Success model not found. Training ensemble…")
-        success_model = train_success_model_from_synthetic()
+    if not CATBOOST_AVAILABLE:
+        _model_load_failure("success", "CatBoost library not installed")
         return
-
-    # Load CatBoost companion
-    if CATBOOST_AVAILABLE and os.path.exists(CATBOOST_SUCCESS_PATH):
-        try:
-            cb = CatBoostClassifier()
-            cb.load_model(CATBOOST_SUCCESS_PATH)
-            catboost_success_model = cb
-            print("CatBoost success model loaded.")
-        except Exception as exc:
-            print(f"CatBoost success load failed: {exc}")
-
-    # Load TabPFN companion
-    if TABPFN_AVAILABLE and os.path.exists(TABPFN_SUCCESS_PATH):
-        try:
-            tabpfn_success_model = joblib.load(TABPFN_SUCCESS_PATH)
-            print("TabPFN success model loaded.")
-        except Exception as exc:
-            print(f"TabPFN success load failed: {exc}")
+    missing = [p for p in (SUCCESS_MODEL_PATH, CATBOOST_SUCCESS_PATH,
+                           SUCCESS_CALIBRATED_PATH) if not os.path.exists(p)]
+    if missing:
+        _model_load_failure("success", f"missing artifacts: {missing}")
+        return
+    try:
+        xgb_m = _load_xgb_member(SUCCESS_MODEL_PATH)
+        cb = CatBoostClassifier()
+        cb.load_model(CATBOOST_SUCCESS_PATH)
+        cal = _load_calibrator(SUCCESS_CALIBRATED_PATH, "success")
+    except Exception as exc:
+        _model_load_failure("success", str(exc))
+        return
+    success_model = xgb_m
+    catboost_success_model = cb
+    success_calibrator = cal
+    print("Success ensemble loaded (XGBoost + CatBoost + calibrator).")
 
 
 def predict_position_with_model(player_stats: Dict[str, object]) -> Optional[str]:
@@ -1995,8 +1658,6 @@ FEATURE_DISPLAY_NAMES = {
     "combine_speed_score":  "Combine Athleticism",
     "conference_tier":      "College Competition Level",
     "games_played":         "Games Played",
-    "is_award_winner":      "Award Winner",
-    "is_all_american":      "All-American",
     "position_qb":          "Position: QB",
     "position_rb":          "Position: RB",
     "position_wr":          "Position: WR",
@@ -2032,42 +1693,77 @@ def top_feature_importances(n: int = 4) -> list:
         return []
 
 
+def per_player_top_factors(player_stats: Dict[str, object], n: int = 5) -> list:
+    """Per-prediction feature contributions (SHAP values) for THIS player.
+
+    Uses the raw XGBoost success member's built-in TreeSHAP
+    (booster.predict(pred_contribs=True) — no extra dependencies). Keeps the
+    frontend contract of top_feature_importances (list of {feature, importance}
+    where importance is a 0-100 bar width) and adds fields additively:
+      contribution — signed SHAP value in log-odds space (+ pushes toward
+                     Success, − pushes toward No Success)
+      direction    — "positive" | "negative"
+    The bias term (last column) is skipped; features are ranked by |SHAP|.
+    Falls back to the global gain importances if SHAP fails.
+    """
+    if success_model is None:
+        return top_feature_importances(n)
+    try:
+        model_input = build_success_features(player_stats)
+        booster = success_model.get_booster()
+        dm = xgb.DMatrix(model_input, feature_names=list(model_input.columns))
+        contribs = booster.predict(dm, pred_contribs=True)[0]
+        pairs = [(f, float(c)) for f, c in zip(model_input.columns, contribs[:-1])]  # drop bias
+        total_abs = sum(abs(c) for _, c in pairs) or 1.0
+        pairs.sort(key=lambda x: abs(x[1]), reverse=True)
+        return [
+            {
+                "feature":      FEATURE_DISPLAY_NAMES.get(f, f),
+                "importance":   round(abs(c) / total_abs * 100, 1),
+                "contribution": round(c, 4),
+                "direction":    "positive" if c >= 0 else "negative",
+            }
+            for f, c in pairs[:n]
+        ]
+    except Exception as exc:
+        print(f"Per-player SHAP factors failed ({exc}) — falling back to global importances")
+        return top_feature_importances(n)
+
+
 def predict_success_with_model(player_stats: Dict[str, object]) -> Tuple[Optional[str], Optional[float], Optional[float], bool]:
-    """Ensemble prediction: average predict_proba from all available models."""
+    """Ensemble prediction: member probas → mean → calibrator (matches training)."""
     model_input = build_success_features(player_stats)
-    X_arr = model_input.values  # numpy array for CatBoost / TabPFN
+    X_arr = model_input.values  # numpy array for CatBoost
 
     probas = []
 
-    # 1. Primary: calibrated XGBoost (or raw fallback)
+    # 1. XGBoost member (raw, uncalibrated — calibration happens on the mean)
     if success_model is not None:
         try:
             probas.append(float(success_model.predict_proba(model_input)[0][1]))
         except Exception as exc:
             print(f"XGBoost success inference failed: {exc}")
 
-    # 2. CatBoost
+    # 2. CatBoost member
     if catboost_success_model is not None:
         try:
             probas.append(float(catboost_success_model.predict_proba(X_arr)[0][1]))
         except Exception as exc:
             print(f"CatBoost success inference failed: {exc}")
 
-    # 3. TabPFN
-    if tabpfn_success_model is not None:
-        try:
-            probas.append(float(tabpfn_success_model.predict_proba(X_arr)[0][1]))
-        except Exception as exc:
-            print(f"TabPFN success inference failed: {exc}")
-
     if not probas:
         return None, None, None, False
 
+    # 3. Mean of member probabilities, then the ensemble calibrator — the exact
+    #    pipeline scripts/train_models.py calibrated and evaluated.
     probability = sum(probas) / len(probas)
+    if success_calibrator is not None:
+        try:
+            probability = _apply_binary_calibrator(success_calibrator, probability)
+        except Exception as exc:
+            print(f"Success calibration failed (serving raw ensemble mean): {exc}")
     label = "Success" if probability >= 0.5 else "No Success"
     confidence = round((probability if label == "Success" else 1.0 - probability) * 100.0, 1)
-    models_used = len(probas)
-    _ = models_used  # available for logging if needed
     return label, confidence, round(probability * 100.0, 1), True
 
 
@@ -2112,6 +1808,8 @@ def cache_invalidate(key: str) -> None:
 # ── Prospect leaderboard cache ────────────────────────────────────────────────
 _PROSPECT_CACHE: list = []
 _PROSPECT_CACHE_META: dict = {}
+_PROSPECT_CACHE_MTIME: float = 0.0   # mtime of the JSON file at last successful load
+_prospect_reload_lock = threading.Lock()
 
 # ── Mock draft storage ─────────────────────────────────────────────────────────
 _MOCK_DRAFT_DATA: dict = {"picks": [], "title": "", "generated_at": None, "total": 0}
@@ -2119,6 +1817,8 @@ _MOCK_DRAFT_DATA: dict = {"picks": [], "title": "", "generated_at": None, "total
 # ── High school prospect cache ─────────────────────────────────────────────────
 _HS_PROSPECT_CACHE: list = []
 _HS_PROSPECT_CACHE_META: dict = {}
+_HS_PROSPECT_CACHE_MTIME: float = 0.0
+_hs_prospect_reload_lock = threading.Lock()
 
 _POS_GROUPS = {
     "DB": {"CB", "S", "DB", "FS", "SS"},
@@ -2130,25 +1830,49 @@ _GRADE_ORDER = {"A+": 0, "A": 1, "A-": 2, "B+": 3, "B": 4, "B-": 5, "C+": 6, "C"
 
 
 def load_prospect_cache() -> None:
-    global _PROSPECT_CACHE, _PROSPECT_CACHE_META
+    global _PROSPECT_CACHE, _PROSPECT_CACHE_META, _PROSPECT_CACHE_MTIME
     if not os.path.exists(PROSPECT_CACHE_PATH):
         print("Prospect cache not found (run build_prospect_cache.py to create it).")
         return
     try:
+        mtime = os.path.getmtime(PROSPECT_CACHE_PATH)  # capture BEFORE reading
         with open(PROSPECT_CACHE_PATH) as f:
             data = json.load(f)
+        # Atomic reference swaps — readers see either the old list or the new one
         _PROSPECT_CACHE = data.get("prospects", [])
         _PROSPECT_CACHE_META = {
             "generated_at": data.get("generated_at"),
             "total":        data.get("total", len(_PROSPECT_CACHE)),
         }
+        _PROSPECT_CACHE_MTIME = mtime
         print(f"Loaded {len(_PROSPECT_CACHE)} prospects from cache.")
     except Exception as exc:
+        # mtime NOT updated on failure (e.g. file mid-rewrite) → retried next request
         print(f"Failed to load prospect cache: {exc}")
+
+
+def _maybe_reload_prospect_cache() -> None:
+    """Hot-reload the prospect cache if the JSON file changed on disk.
+
+    Each gunicorn worker checks the file's mtime itself, so a cache rebuild
+    (or a new deploy) is picked up without restarting anything. getmtime per
+    request is a cheap stat(2).
+    """
+    try:
+        mtime = os.path.getmtime(PROSPECT_CACHE_PATH)
+    except OSError:
+        return
+    if mtime == _PROSPECT_CACHE_MTIME:
+        return
+    with _prospect_reload_lock:
+        if mtime == _PROSPECT_CACHE_MTIME:  # another thread already reloaded
+            return
+        load_prospect_cache()
 
 
 @app.get("/api/prospects")
 def api_prospects():
+    _maybe_reload_prospect_cache()
     position     = (request.args.get("position") or "").strip().upper()
     grade_filter = (request.args.get("grade") or "").strip().upper()
     query        = (request.args.get("q") or "").strip().lower()
@@ -2358,11 +2082,12 @@ def get_mock_draft():
 # ── High school prospects ──────────────────────────────────────────────────────
 
 def load_hs_prospect_cache() -> None:
-    global _HS_PROSPECT_CACHE, _HS_PROSPECT_CACHE_META
+    global _HS_PROSPECT_CACHE, _HS_PROSPECT_CACHE_META, _HS_PROSPECT_CACHE_MTIME
     if not os.path.exists(HS_PROSPECT_CACHE_PATH):
         print("HS prospect cache not found (run build_hs_prospect_cache.py to create it).")
         return
     try:
+        mtime = os.path.getmtime(HS_PROSPECT_CACHE_PATH)  # capture BEFORE reading
         with open(HS_PROSPECT_CACHE_PATH) as f:
             data = json.load(f)
         _HS_PROSPECT_CACHE = data.get("prospects", [])
@@ -2371,13 +2096,29 @@ def load_hs_prospect_cache() -> None:
             "total":        data.get("total", len(_HS_PROSPECT_CACHE)),
             "years":        data.get("years", []),
         }
+        _HS_PROSPECT_CACHE_MTIME = mtime
         print(f"Loaded {len(_HS_PROSPECT_CACHE)} HS prospects from cache.")
     except Exception as exc:
         print(f"Failed to load HS prospect cache: {exc}")
 
 
+def _maybe_reload_hs_prospect_cache() -> None:
+    """Hot-reload the HS prospect cache if the JSON file changed on disk."""
+    try:
+        mtime = os.path.getmtime(HS_PROSPECT_CACHE_PATH)
+    except OSError:
+        return
+    if mtime == _HS_PROSPECT_CACHE_MTIME:
+        return
+    with _hs_prospect_reload_lock:
+        if mtime == _HS_PROSPECT_CACHE_MTIME:
+            return
+        load_hs_prospect_cache()
+
+
 @app.get("/api/hs-prospects")
 def api_hs_prospects():
+    _maybe_reload_hs_prospect_cache()
     pos_filter   = (request.args.get("position") or "").strip().upper()
     stars_filter = request.args.get("stars", "")
     year_filter  = request.args.get("year", "")
@@ -2445,18 +2186,41 @@ def api_hs_prospects():
 # ── Prospect grade ────────────────────────────────────────────────────────────
 
 def compute_prospect_grade(success_prob: Optional[float], draft_grade_class: Optional[int]) -> str:
-    """Map (success_probability %, draft_grade_class) → letter grade A+…D."""
-    p = float(success_prob or 0)
-    d = int(draft_grade_class) if draft_grade_class is not None else 3
-    if p >= 88 and d == 0: return "A+"
-    if p >= 80 and d <= 1: return "A"
-    if p >= 72 and d <= 1: return "A-"
-    if p >= 64 and d <= 2: return "B+"
-    if p >= 54 and d <= 2: return "B"
-    if p >= 44:            return "B-"
-    if p >= 34:            return "C+"
-    if p >= 24:            return "C"
-    if p >= 15:            return "C-"
+    """Map calibrated success probability (%) → letter grade A+…D.
+
+    Thresholds are EMPIRICAL PERCENTILES of the calibrated ensemble's success
+    probability over the full 9,033-player FBS cache snapshot, scored offline
+    through this exact serving path (scripts/train_models.py artifacts,
+    2026-08-16). Mapping (percentile of the population → grade):
+        A+ ≥ 98th (top 2%)   → p ≥ 40.2
+        A  ≥ 95th            → p ≥ 36.9
+        A- ≥ 90th            → p ≥ 33.8
+        B+ ≥ 80th            → p ≥ 30.3
+        B  ≥ 70th            → p ≥ 27.1
+        B- ≥ 55th            → p ≥ 23.5
+        C+ ≥ 45th            → p ≥ 21.0   (C+/C straddle the median)
+        C  ≥ 35th            → p ≥ 18.9
+        C- ≥ 10th            → p ≥ 12.8
+        D  < 10th (bottom 10%)
+    draft_grade_class is intentionally NOT a gate anymore: the old
+    (p, class) AND-gates structurally locked whole position groups (0 of
+    1,556 OL could reach A-range). Under these percentile thresholds the same
+    snapshot grades 369 of 1,596 OL in the A range (67 A+, 127 A, 175 A-).
+    Grade caller passes class for API stability; it feeds the separate
+    draft_grade display field instead.
+    """
+    if success_prob is None:
+        return "D"  # fallback path with no calibrated probability
+    p = float(success_prob)
+    if p >= 40.2: return "A+"
+    if p >= 36.9: return "A"
+    if p >= 33.8: return "A-"
+    if p >= 30.3: return "B+"
+    if p >= 27.1: return "B"
+    if p >= 23.5: return "B-"
+    if p >= 21.0: return "C+"
+    if p >= 18.9: return "C"
+    if p >= 12.8: return "C-"
     return "D"
 
 
@@ -2467,7 +2231,7 @@ _POS_GROUP = {
     "CB": "DB", "S": "DB", "DB": "DB", "FS": "DB", "SS": "DB",
     "LB": "LB", "ILB": "LB", "OLB": "LB", "MLB": "LB",
     "DL": "DL", "DE": "DL", "DT": "DL", "EDGE": "DL",
-    "OL": "OL", "OT": "OL", "OG": "OL", "C": "OL",
+    "OL": "OL", "OT": "OL", "OG": "OL", "G": "OL", "C": "OL",
 }
 
 NAMED_HISTORICAL_COMPS = [
@@ -2510,6 +2274,33 @@ NAMED_HISTORICAL_COMPS = [
     # OLs
     {"name":"Penei Sewell","position":"OL","conference_tier":5,"production_score":55,"combine_speed_score":52,"is_award_winner":1,"is_all_american":1,"nfl_success":1,"outcome":"#7 Pick, Outland Trophy, All-Pro"},
     {"name":"Tristan Wirfs","position":"OL","conference_tier":3,"production_score":52,"combine_speed_score":60,"is_award_winner":0,"is_all_american":1,"nfl_success":1,"outcome":"#13 Pick, 2x All-Pro"},
+
+    # ── Busts / journeymen (nfl_success=0) — honest comps for low-probability
+    #    profiles. Real, well-documented outcomes; feature values are the same
+    #    hand-curated 0-100 scales as the success entries above. ──────────────
+    # QBs
+    {"name":"JaMarcus Russell","position":"QB","conference_tier":1,"production_score":78,"combine_speed_score":55,"is_award_winner":0,"is_all_american":0,"nfl_success":0,"outcome":"#1 Pick 2007 — out of the NFL by 2010"},
+    {"name":"Johnny Manziel","position":"QB","conference_tier":1,"production_score":85,"combine_speed_score":75,"is_award_winner":1,"is_all_american":1,"nfl_success":0,"outcome":"Heisman; R1 2014 — out of the NFL by 2016"},
+    {"name":"Zach Wilson","position":"QB","conference_tier":5,"production_score":80,"combine_speed_score":70,"is_award_winner":0,"is_all_american":0,"nfl_success":0,"outcome":"#2 Pick 2021 — benched, journeyman backup"},
+    # WRs
+    {"name":"John Ross","position":"WR","conference_tier":2,"production_score":78,"combine_speed_score":99,"is_award_winner":0,"is_all_american":0,"nfl_success":0,"outcome":"#9 Pick 2017 (4.22s forty) — injuries, out by 2022"},
+    {"name":"Corey Coleman","position":"WR","conference_tier":2,"production_score":82,"combine_speed_score":90,"is_award_winner":1,"is_all_american":1,"nfl_success":0,"outcome":"Biletnikoff; #15 Pick 2016 — out of the NFL by 2020"},
+    # RBs
+    {"name":"Trent Richardson","position":"RB","conference_tier":1,"production_score":90,"combine_speed_score":78,"is_award_winner":1,"is_all_american":1,"nfl_success":0,"outcome":"Doak Walker; #3 Pick 2012 — out of the NFL by 2015"},
+    {"name":"Rashaad Penny","position":"RB","conference_tier":7,"production_score":90,"combine_speed_score":80,"is_award_winner":0,"is_all_american":1,"nfl_success":0,"outcome":"#27 Pick 2018 — injury-plagued journeyman"},
+    # TEs
+    {"name":"O.J. Howard","position":"TE","conference_tier":1,"production_score":65,"combine_speed_score":80,"is_award_winner":0,"is_all_american":0,"nfl_success":0,"outcome":"#19 Pick 2017 — journeyman, never a full-time starter"},
+    # DBs
+    {"name":"Justin Gilbert","position":"CB","conference_tier":2,"production_score":70,"combine_speed_score":90,"is_award_winner":0,"is_all_american":1,"nfl_success":0,"outcome":"#8 Pick 2014 — out of the NFL by 2017"},
+    {"name":"Jeff Okudah","position":"CB","conference_tier":1,"production_score":72,"combine_speed_score":85,"is_award_winner":0,"is_all_american":1,"nfl_success":0,"outcome":"#3 Pick 2020 — injuries, journeyman"},
+    # LBs
+    {"name":"Reuben Foster","position":"LB","conference_tier":1,"production_score":80,"combine_speed_score":72,"is_award_winner":1,"is_all_american":1,"nfl_success":0,"outcome":"Butkus; #31 Pick 2017 — out of the NFL by 2020"},
+    # DLs
+    {"name":"Dion Jordan","position":"DL","conference_tier":2,"production_score":68,"combine_speed_score":85,"is_award_winner":0,"is_all_american":0,"nfl_success":0,"outcome":"#3 Pick 2013 — suspensions, journeyman"},
+    {"name":"Solomon Thomas","position":"DL","conference_tier":3,"production_score":72,"combine_speed_score":75,"is_award_winner":0,"is_all_american":1,"nfl_success":0,"outcome":"#3 Pick 2017 — rotational journeyman"},
+    # OLs
+    {"name":"Greg Robinson","position":"OL","conference_tier":1,"production_score":50,"combine_speed_score":55,"is_award_winner":0,"is_all_american":1,"nfl_success":0,"outcome":"#2 Pick 2014 — bust, out of the NFL by 2020"},
+    {"name":"Isaiah Wilson","position":"OL","conference_tier":1,"production_score":45,"combine_speed_score":45,"is_award_winner":0,"is_all_american":0,"nfl_success":0,"outcome":"R1 2020 — played 4 NFL snaps, out of the league"},
 ]
 
 
@@ -2816,12 +2607,17 @@ def predict():
         predict_position_with_model(player_data) or "Unknown"
     )
 
-    success_label, confidence, success_probability, model_used = predict_success_with_model(player_data)
+    if SERVE_MODE == "heuristic":
+        # Decision gate (models/metadata.json): the rule-based baseline beat the
+        # ensemble on the holdout, so the fallback IS the served predictor.
+        success_label, confidence, success_probability, model_used = None, None, None, False
+    else:
+        success_label, confidence, success_probability, model_used = predict_success_with_model(player_data)
 
     if not success_label:
         success_label, confidence, reasoning = determine_success_fallback(player_data, predicted_position)
     else:
-        reasoning = "XGBoost prediction from college production, athleticism, conference tier, and accolades."
+        reasoning = "Calibrated XGBoost+CatBoost ensemble prediction from college production, athleticism, and conference tier."
 
     # Draft grade + prospect grade
     draft_grade_label_str, draft_grade_class, draft_grade_prob = predict_draft_grade(player_data)
@@ -2832,10 +2628,13 @@ def predict():
     combine_speed = float(player_data.get("combine_speed_score") or 50.0)
     conference_tier = int(player_data.get("conference_tier") or classify_college_tier(
         str(player_data.get("team", "") or "")))
+    _prod_val = player_data.get("production_score")
     production = float(
-        player_data.get("production_score")
-        or compute_production_score(position, player_data)
+        _prod_val if _prod_val is not None
+        else compute_production_score(position, player_data)
     )
+    if not math.isfinite(production):
+        production = 0.0  # display only — the model saw NaN, the UI shows 0
 
     round_labels = {1: "1st", 2: "2nd", 3: "3rd", 4: "4th",
                     5: "5th", 6: "6th", 7: "7th", 8: "Undrafted"}
@@ -2919,15 +2718,19 @@ def predict():
             "physical":            physical,
             "stats":               player_data,
             "summary":             summary,
-            "top_factors":         top_feature_importances(4),
+            # Per-player SHAP contributions when the ensemble served the
+            # prediction; global gain importances otherwise (heuristic mode /
+            # fallback — per-player attributions of an unserved model would lie).
+            "top_factors":         (per_player_top_factors(player_data, 5)
+                                    if model_used else top_feature_importances(4)),
         }
     )
 
 
 initialize_player_database()
 load_position_model_artifacts()
-load_or_train_success_model()
-load_or_train_draft_grade_model()
+load_success_models()
+load_draft_grade_models()
 load_prospect_cache()
 load_mock_draft()
 load_hs_prospect_cache()
@@ -2950,4 +2753,5 @@ except Exception as exc:
 
 
 if __name__ == "__main__":
-    app.run(debug=False, use_reloader=False, port=5001)
+    # DV_PORT lets a throwaway/smoke-test instance run beside the main :5001 server
+    app.run(debug=False, use_reloader=False, port=int(os.getenv("DV_PORT", "5001")))
