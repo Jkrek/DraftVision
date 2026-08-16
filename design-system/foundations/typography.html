@@ -1,0 +1,36 @@
+<!-- @dsCard group="Foundations" name="Typography" subtitle="Outfit display scale, tabular stats" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1b; --indigo:#6366f1;
+  --t1:#eef2ff; --t2:#94a3b8; --t3:#64748b;
+  --grad:linear-gradient(135deg,#c7d2fe,#a78bfa,#f472b6);
+}
+body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--t1);margin:0;padding:36px;-webkit-font-smoothing:antialiased}
+.spec{font-size:.68rem;color:var(--t3);font-family:ui-monospace,monospace;margin:0 0 4px;letter-spacing:.04em}
+section{margin-bottom:30px}
+.display{font-size:64px;font-weight:900;letter-spacing:-2.5px;line-height:.95;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0}
+h1{font-size:39px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin:0}
+h2{font-size:25px;font-weight:700;letter-spacing:-.4px;margin:0}
+h3{font-size:18px;font-weight:600;margin:0}
+p.body{font-size:16px;color:var(--t2);line-height:1.65;margin:0;max-width:560px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--indigo);text-transform:uppercase;letter-spacing:.16em;font-size:.72rem;font-weight:700}
+.eyebrow::before{content:'';width:20px;height:2px;background:var(--indigo);border-radius:1px}
+.stat{font-size:34px;font-weight:900;letter-spacing:-1px;font-variant-numeric:tabular-nums;background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.statlabel{font-size:.72rem;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;font-weight:500}
+</style>
+</head>
+<body>
+  <section><p class="spec">Display · Outfit 900 · 64–112px · -2.5px tracking · brand gradient</p><p class="display">Draft Vision</p></section>
+  <section><p class="spec">H1 · 800 · 39px</p><h1>The 2026 board, graded by machine learning</h1></section>
+  <section><p class="spec">H2 · 700 · 25px</p><h2>Top risers this week</h2></section>
+  <section><p class="spec">H3 · 600 · 18px</p><h3>Quarterback class strength</h3></section>
+  <section><p class="spec">Body · 400 · 16px / 1.65 · text-2</p><p class="body">DraftVision grades 9,033 FBS players with a CatBoost + XGBoost ensemble, projecting draft position and pro success from production, athleticism, and context.</p></section>
+  <section><p class="spec">Eyebrow · 700 · 11.5px · caps .16em</p><span class="eyebrow">Machine-graded rankings</span></section>
+  <section><p class="spec">Stat numeral · 900 · tabular-nums</p><div class="stat">9,033</div><div class="statlabel">Players graded</div></section>
+</body>
+</html>

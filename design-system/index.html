@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DraftVision Design System</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Outfit',system-ui,sans-serif;background:#070d1b;color:#eef2ff;margin:0;padding:40px;-webkit-font-smoothing:antialiased}
+header{max-width:1280px;margin:0 auto 36px}
+h1{font-size:2rem;font-weight:900;letter-spacing:-1px;margin:0 0 6px;background:linear-gradient(135deg,#c7d2fe,#a78bfa,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
+header p{color:#64748b;margin:0;font-size:.9rem}
+h2{font-size:.75rem;text-transform:uppercase;letter-spacing:.16em;color:#6366f1;font-weight:700;max-width:1280px;margin:36px auto 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(560px,1fr));gap:20px;max-width:1280px;margin:0 auto}
+.card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden}
+.card h3{margin:0;padding:12px 16px;font-size:.85rem;font-weight:700;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center}
+.card h3 a{color:#a5b4fc;font-size:.72rem;font-weight:600;text-decoration:none}
+iframe{width:100%;height:420px;border:none;display:block;background:#070d1b}
+.wide{grid-column:1/-1}
+.wide iframe{height:640px}
+</style>
+</head>
+<body>
+<header>
+  <h1>DraftVision Design System</h1>
+  <p>Polished dark analytics · indigo/purple brand · unified grade colors · Outfit</p>
+</header>
+
+<h2>Foundations</h2>
+<div class="grid">
+  <div class="card"><h3>Colors <a href="foundations/colors.html" target="_blank">open ↗</a></h3><iframe src="foundations/colors.html"></iframe></div>
+  <div class="card"><h3>Typography <a href="foundations/typography.html" target="_blank">open ↗</a></h3><iframe src="foundations/typography.html"></iframe></div>
+</div>
+
+<h2>Components</h2>
+<div class="grid">
+  <div class="card"><h3>Buttons <a href="components/buttons.html" target="_blank">open ↗</a></h3><iframe src="components/buttons.html"></iframe></div>
+  <div class="card"><h3>Badges &amp; chips <a href="components/badges.html" target="_blank">open ↗</a></h3><iframe src="components/badges.html"></iframe></div>
+  <div class="card"><h3>Player cards <a href="components/player-card.html" target="_blank">open ↗</a></h3><iframe src="components/player-card.html"></iframe></div>
+  <div class="card"><h3>Data table <a href="components/data-table.html" target="_blank">open ↗</a></h3><iframe src="components/data-table.html"></iframe></div>
+  <div class="card"><h3>Forms &amp; inputs <a href="components/forms.html" target="_blank">open ↗</a></h3><iframe src="components/forms.html"></iframe></div>
+</div>
+
+<h2>Sections</h2>
+<div class="grid">
+  <div class="card wide"><h3>Navbar <a href="sections/navbar.html" target="_blank">open ↗</a></h3><iframe src="sections/navbar.html" style="height:220px"></iframe></div>
+  <div class="card wide"><h3>Hero <a href="sections/hero.html" target="_blank">open ↗</a></h3><iframe src="sections/hero.html"></iframe></div>
+</div>
+</body>
+</html>

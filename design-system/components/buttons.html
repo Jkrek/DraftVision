@@ -1,0 +1,55 @@
+<!-- @dsCard group="Components" name="Buttons" subtitle="Primary / secondary / ghost / danger, 3 sizes" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1b; --border:rgba(255,255,255,.14);
+  --indigo:#6366f1; --t1:#eef2ff; --t2:#94a3b8; --t3:#64748b;
+  --grad:linear-gradient(135deg,#6366f1,#a855f7);
+}
+body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--t1);margin:0;padding:32px;-webkit-font-smoothing:antialiased}
+h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.16em;color:var(--indigo);margin:26px 0 14px;font-weight:700}
+h2:first-child{margin-top:0}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:.9rem;letter-spacing:.01em;padding:13px 26px;border-radius:10px;transition:all .2s ease;text-decoration:none;white-space:nowrap}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:0 4px 20px rgba(99,102,241,.35)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(99,102,241,.5)}
+.btn-secondary{background:rgba(255,255,255,.06);color:rgba(238,242,255,.9);border:1.5px solid var(--border);font-weight:600}
+.btn-secondary:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25)}
+.btn-ghost{background:transparent;color:var(--t2);font-weight:600}
+.btn-ghost:hover{color:var(--t1);background:rgba(255,255,255,.05)}
+.btn-danger{background:rgba(239,68,68,.14);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.btn-danger:hover{background:rgba(239,68,68,.22)}
+.btn-sm{padding:8px 16px;font-size:.8rem;border-radius:8px}
+.btn-lg{padding:16px 34px;font-size:1rem;border-radius:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn:focus-visible{outline:2px solid #818cf8;outline-offset:3px}
+</style>
+</head>
+<body>
+  <h2>Variants</h2>
+  <div class="row">
+    <button class="btn btn-primary">Get started <span>→</span></button>
+    <button class="btn btn-secondary">View rankings</button>
+    <button class="btn btn-ghost">Learn more</button>
+    <button class="btn btn-danger">Clear board</button>
+  </div>
+
+  <h2>Sizes</h2>
+  <div class="row">
+    <button class="btn btn-primary btn-sm">Small</button>
+    <button class="btn btn-primary">Medium</button>
+    <button class="btn btn-primary btn-lg">Large</button>
+  </div>
+
+  <h2>States</h2>
+  <div class="row">
+    <button class="btn btn-primary" disabled>Disabled</button>
+    <button class="btn btn-secondary" disabled>Disabled</button>
+    <button class="btn btn-primary" style="outline:2px solid #818cf8;outline-offset:3px">Focused</button>
+  </div>
+</body>
+</html>

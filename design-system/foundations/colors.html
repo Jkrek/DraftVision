@@ -1,0 +1,65 @@
+<!-- @dsCard group="Foundations" name="Colors" subtitle="Palette, surfaces, grade ramp" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1b; --bg-2:#0b1426; --bg-3:#101e34;
+  --glass:rgba(255,255,255,.04); --border:rgba(255,255,255,.07);
+  --indigo:#6366f1; --purple:#a855f7; --pink:#ec4899;
+  --emerald:#10b981; --cyan:#22d3ee; --amber:#f59e0b; --red:#ef4444;
+  --t1:#eef2ff; --t2:#94a3b8; --t3:#64748b; --t4:#475569;
+  --grad:linear-gradient(135deg,#6366f1,#a855f7,#ec4899);
+}
+body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--t1);margin:0;padding:32px;-webkit-font-smoothing:antialiased}
+h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.16em;color:var(--indigo);margin:28px 0 12px;font-weight:700}
+h2:first-child{margin-top:0}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.swatch{width:108px}
+.chip{height:56px;border-radius:10px;border:1px solid var(--border)}
+.swatch b{display:block;font-size:.78rem;font-weight:600;margin-top:8px}
+.swatch span{font-size:.7rem;color:var(--t3);font-family:ui-monospace,monospace}
+.gradbar{height:56px;border-radius:10px;background:var(--grad)}
+.glassdemo{background:var(--glass);border:1px solid var(--border);backdrop-filter:blur(16px);border-radius:12px;padding:14px 18px;font-size:.82rem;color:var(--t2)}
+.gradebar{display:flex;border-radius:10px;overflow:hidden}
+.gradebar div{flex:1;padding:14px 0;text-align:center;font-weight:800;font-size:.85rem}
+</style>
+</head>
+<body>
+  <h2>Background</h2>
+  <div class="row">
+    <div class="swatch"><div class="chip" style="background:#070d1b"></div><b>bg</b><span>#070d1b</span></div>
+    <div class="swatch"><div class="chip" style="background:#0b1426"></div><b>bg-2</b><span>#0b1426</span></div>
+    <div class="swatch"><div class="chip" style="background:#101e34"></div><b>bg-3</b><span>#101e34</span></div>
+  </div>
+
+  <h2>Brand</h2>
+  <div class="row">
+    <div class="swatch"><div class="chip" style="background:#6366f1"></div><b>Indigo</b><span>#6366f1</span></div>
+    <div class="swatch"><div class="chip" style="background:#a855f7"></div><b>Purple</b><span>#a855f7</span></div>
+    <div class="swatch"><div class="chip" style="background:#ec4899"></div><b>Pink</b><span>#ec4899</span></div>
+    <div class="swatch" style="flex:1;min-width:220px"><div class="gradbar"></div><b>Brand gradient</b><span>135° indigo→purple→pink</span></div>
+  </div>
+
+  <h2>Grade ramp</h2>
+  <div class="gradebar">
+    <div style="background:rgba(16,185,129,.16);color:#34d399">A · 90+</div>
+    <div style="background:rgba(34,211,238,.14);color:#22d3ee">B · 80s</div>
+    <div style="background:rgba(245,158,11,.14);color:#fbbf24">C · 70s</div>
+    <div style="background:rgba(239,68,68,.14);color:#f87171">D · &lt;70</div>
+  </div>
+
+  <h2>Text</h2>
+  <div class="row">
+    <div class="swatch"><div class="chip" style="background:#eef2ff"></div><b>text-1</b><span>#eef2ff</span></div>
+    <div class="swatch"><div class="chip" style="background:#94a3b8"></div><b>text-2</b><span>#94a3b8</span></div>
+    <div class="swatch"><div class="chip" style="background:#64748b"></div><b>text-3</b><span>#64748b</span></div>
+    <div class="swatch"><div class="chip" style="background:#475569"></div><b>text-4</b><span>#475569</span></div>
+  </div>
+
+  <h2>Glass surface</h2>
+  <div class="glassdemo">rgba(255,255,255,.04) fill · 1px rgba(255,255,255,.07) border · blur(16px) — used for cards, panels, nav</div>
+</body>
+</html>

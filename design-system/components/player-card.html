@@ -1,0 +1,77 @@
+<!-- @dsCard group="Components" name="Player cards" subtitle="Full prospect card + compact row" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070d1b;--glass:rgba(255,255,255,.04);--border:rgba(255,255,255,.07);--indigo:#6366f1;--t1:#eef2ff;--t2:#94a3b8;--t3:#64748b}
+body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--t1);margin:0;padding:32px;-webkit-font-smoothing:antialiased;display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.card{width:330px;background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:22px;backdrop-filter:blur(16px);transition:all .2s ease}
+.card:hover{border-color:rgba(99,102,241,.45);transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,.5)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.avatar{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;color:#fff}
+.name{font-size:1.15rem;font-weight:800;letter-spacing:-.3px;margin:14px 0 2px}
+.school{font-size:.82rem;color:var(--t2)}
+.pos{padding:4px 11px;border-radius:999px;font-weight:700;font-size:.7rem;letter-spacing:.06em;background:rgba(99,102,241,.12);color:#a5b4fc;border:1px solid rgba(99,102,241,.28)}
+.gradebox{display:flex;align-items:baseline;gap:8px;margin:14px 0 18px}
+.gradenum{font-size:2.6rem;font-weight:900;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;background:linear-gradient(135deg,#34d399,#10b981);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
+.gradeletter{font-size:.85rem;font-weight:800;color:#34d399;padding:3px 9px;border-radius:7px;background:rgba(16,185,129,.13);border:1px solid rgba(16,185,129,.3)}
+.attr{margin-bottom:11px}
+.attr-head{display:flex;justify-content:space-between;font-size:.74rem;margin-bottom:5px}
+.attr-head b{color:var(--t2);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+.attr-head span{font-weight:700;font-variant-numeric:tabular-nums}
+.bar{height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#6366f1,#a855f7)}
+.card-foot{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+.proj{font-size:.72rem;font-weight:700;letter-spacing:.05em;color:#fbbf24;background:rgba(245,158,11,.13);border:1px solid rgba(245,158,11,.3);padding:5px 11px;border-radius:8px}
+.link{font-size:.82rem;font-weight:700;color:#a5b4fc;text-decoration:none}
+/* compact row */
+.rowcard{width:430px;display:flex;align-items:center;gap:14px;background:var(--glass);border:1px solid var(--border);border-radius:13px;padding:13px 16px;transition:all .2s ease}
+.rowcard:hover{border-color:rgba(99,102,241,.45);background:rgba(255,255,255,.06)}
+.rk{font-size:.95rem;font-weight:800;color:var(--t3);width:26px;font-variant-numeric:tabular-nums}
+.avatar-sm{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}
+.rowinfo{flex:1;min-width:0}
+.rowname{font-weight:700;font-size:.92rem;letter-spacing:-.2px}
+.rowmeta{font-size:.73rem;color:var(--t3)}
+.rowgrade{font-weight:800;font-size:1rem;color:#34d399;font-variant-numeric:tabular-nums}
+.trend{font-size:.72rem;font-weight:700;color:#34d399}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-top">
+      <div class="avatar">CW</div>
+      <span class="pos">QB</span>
+    </div>
+    <div class="name">Caleb Williams</div>
+    <div class="school">USC · Junior · 6'1" 215</div>
+    <div class="gradebox"><span class="gradenum">96.4</span><span class="gradeletter">A+</span></div>
+    <div class="attr"><div class="attr-head"><b>Production</b><span>94</span></div><div class="bar"><i style="width:94%"></i></div></div>
+    <div class="attr"><div class="attr-head"><b>Athleticism</b><span>89</span></div><div class="bar"><i style="width:89%"></i></div></div>
+    <div class="attr"><div class="attr-head"><b>Pro projection</b><span>92</span></div><div class="bar"><i style="width:92%"></i></div></div>
+    <div class="card-foot">
+      <span class="proj">ROUND 1 · PICK 1–3</span>
+      <a class="link" href="#">Full report →</a>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="rowcard">
+      <span class="rk">1</span><div class="avatar-sm">CW</div>
+      <div class="rowinfo"><div class="rowname">Caleb Williams</div><div class="rowmeta">QB · USC</div></div>
+      <span class="trend">▲ 1.2</span><span class="rowgrade">96.4</span>
+    </div>
+    <div class="rowcard">
+      <span class="rk">2</span><div class="avatar-sm">MH</div>
+      <div class="rowinfo"><div class="rowname">Marvin Harrison Jr.</div><div class="rowmeta">WR · Ohio State</div></div>
+      <span class="trend">▲ 0.4</span><span class="rowgrade">95.1</span>
+    </div>
+    <div class="rowcard">
+      <span class="rk">3</span><div class="avatar-sm">JA</div>
+      <div class="rowinfo"><div class="rowname">Jared Verse</div><div class="rowmeta">EDGE · Florida State</div></div>
+      <span class="trend" style="color:#f87171">▼ 0.8</span><span class="rowgrade" style="color:#22d3ee">89.9</span>
+    </div>
+  </div>
+</body>
+</html>

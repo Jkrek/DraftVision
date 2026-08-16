@@ -317,7 +317,12 @@ export default function Leaderboard() {
                     style={{ width: `${fillPct.toFixed(1)}%`, animationDelay: `${(i % PAGE_SIZE * 0.025).toFixed(3)}s` }}
                   />
                   <span className="lb-rank lb-c-rank">{i + 1}</span>
-                  <span className="lb-name lb-c-name"><span>{p.name}</span></span>
+                  <span className="lb-name lb-c-name">
+                    <span>{p.name}</span>
+                    {p.data_source && p.data_source !== 'espn_live' && (
+                      <span className="lb-est" title="No verified season stats — profile is estimated">EST</span>
+                    )}
+                  </span>
                   <span className="lb-pos lb-c-pos">{(p.position || '?').toUpperCase()}</span>
                   <span className="lb-school lb-c-school">{p.team || '—'}</span>
                   <span className="lb-proj lb-c-proj">{DRAFT_SHORT[p.draft_grade] || p.draft_grade || '—'}</span>

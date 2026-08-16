@@ -57,7 +57,6 @@ MOCK_DRAFT_PATH            = "mock_draft.json"
 HS_PROSPECT_CACHE_PATH     = "training_data/hs_prospect_cache.json"
 CFBD_API_KEY               = os.environ.get("CFBD_API_KEY", "")
 CFBD_BASE_URL              = "https://api.collegefootballdata.com"
-PLAYER_DATA_PATH     = "nfl_players.csv"
 PLAYER_DB_PATH       = "players.db"
 ESPN_CFB_TEAMS_URL        = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams"
 ESPN_CFB_TEAM_ROSTER_URL  = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/{team_id}/roster"
@@ -104,71 +103,86 @@ POWER5_SCHOOLS = {
     "oregon state", "washington state", "cal poly",
 }
 
-# NFL franchise keywords — players stored with these team names are active pros
-# who came from college; default their tier to P5 (1) since reaching the NFL
-# almost always implies a major-program background.
-NFL_FRANCHISE_KEYWORDS = {
-    "chiefs", "bills", "bengals", "ravens", "browns", "steelers", "texans",
-    "colts", "jaguars", "titans", "broncos", "raiders", "chargers", "dolphins",
-    "patriots", "jets", "giants", "eagles", "cowboys", "commanders", "bears",
-    "lions", "packers", "vikings", "falcons", "panthers", "saints", "buccaneers",
-    "cardinals", "rams", "seahawks", "49ers",
+# NFL franchise full names — a record stored with one of these teams is an
+# active pro, not a college program. Matched exactly, never by substring:
+# mascot keywords ("Bears", "Cardinals") collide with Baylor, Louisville,
+# Brown, Columbia and dozens of other college programs.
+NFL_FRANCHISE_NAMES = {
+    "arizona cardinals", "atlanta falcons", "baltimore ravens", "buffalo bills",
+    "carolina panthers", "chicago bears", "cincinnati bengals", "cleveland browns",
+    "dallas cowboys", "denver broncos", "detroit lions", "green bay packers",
+    "houston texans", "indianapolis colts", "jacksonville jaguars",
+    "kansas city chiefs", "las vegas raiders", "los angeles chargers",
+    "los angeles rams", "miami dolphins", "minnesota vikings",
+    "new england patriots", "new orleans saints", "new york giants",
+    "new york jets", "philadelphia eagles", "pittsburgh steelers",
+    "san francisco 49ers", "seattle seahawks", "tampa bay buccaneers",
+    "tennessee titans", "washington commanders",
 }
 
 
-def classify_college_tier(team: str) -> int:
-    """10-tier conference classification. 1=SEC/OSU elite, 10=FCS lower.
-
-    NFL franchise names → tier 1 (they came from somewhere major).
-    """
+def _normalize_team(team: str) -> str:
     t = (team or "").lower().strip()
+    for ch in ("’", "'", "."):
+        t = t.replace(ch, "")
+    return t.replace("é", "e")  # San José State
 
-    for kw in NFL_FRANCHISE_KEYWORDS:
-        if kw in t: return 1
 
-    _T1 = {"alabama","ohio state","georgia","clemson","lsu","michigan"}
-    _T2 = {"texas","oklahoma","florida","penn state","notre dame","florida state",
-           "tennessee","texas a&m","usc","oregon","miami","auburn","washington"}
-    _T3 = {"north carolina","virginia tech","pittsburgh","wisconsin","iowa",
-           "michigan state","nebraska","oklahoma state","baylor","tcu","arkansas",
-           "ole miss","mississippi state","south carolina","stanford","utah",
-           "arizona state","colorado","georgia tech"}
-    _T4 = {"west virginia","kansas state","iowa state","texas tech","kentucky",
-           "vanderbilt","missouri","arizona","cal","oregon state","washington state",
-           "indiana","purdue","illinois","minnesota","maryland","rutgers",
-           "louisville","virginia","nc state","duke","wake forest","syracuse",
-           "boston college","cincinnati","ucf"}
-    _T5 = {"ucla","northwestern","navy","army","air force","liberty","byu",
-           "western kentucky","louisiana tech"}
-    _T6 = {"memphis","houston","smu","tulane","east carolina","south florida",
-           "temple","connecticut","tulsa","rice","utep","uab"}
-    _T7 = {"boise state","fresno state","hawaii","san diego state","wyoming",
-           "utah state","nevada","colorado state","new mexico","san jose state"}
-    _T8 = {"appalachian state","coastal carolina","marshall","utsa","troy",
-           "louisiana","james madison","buffalo","kent state","ohio",
-           "western michigan","central michigan","eastern michigan",
-           "northern illinois","ball state","toledo"}
-    _T9 = {"north dakota state","montana","south dakota state","furman",
-           "villanova","richmond","delaware","sacramento state","central arkansas"}
+def is_nfl_franchise(team: str) -> bool:
+    return _normalize_team(team) in NFL_FRANCHISE_NAMES
 
-    for kw in _T1:
-        if kw in t: return 1
-    for kw in _T2:
-        if kw in t: return 2
-    for kw in _T3:
-        if kw in t: return 3
-    for kw in _T4:
-        if kw in t: return 4
-    for kw in _T5:
-        if kw in t: return 5
-    for kw in _T6:
-        if kw in t: return 6
-    for kw in _T7:
-        if kw in t: return 7
-    for kw in _T8:
-        if kw in t: return 8
-    for kw in _T9:
-        if kw in t: return 9
+
+# School → tier, matched against ESPN display names ("Michigan State Spartans")
+# by longest prefix on a word boundary, so "michigan state" wins over "michigan"
+# and mascots never participate in matching.
+_TIER_SCHOOLS = {
+    1: {"alabama", "ohio state", "georgia", "clemson", "lsu", "michigan"},
+    2: {"texas", "oklahoma", "florida", "penn state", "notre dame", "florida state",
+        "tennessee", "texas a&m", "usc", "oregon", "miami", "auburn", "washington"},
+    3: {"north carolina", "virginia tech", "pittsburgh", "wisconsin", "iowa",
+        "michigan state", "nebraska", "oklahoma state", "baylor", "tcu", "arkansas",
+        "ole miss", "mississippi state", "south carolina", "stanford", "utah",
+        "arizona state", "colorado", "georgia tech"},
+    4: {"west virginia", "kansas state", "iowa state", "texas tech", "kentucky",
+        "vanderbilt", "missouri", "arizona", "cal", "california", "oregon state",
+        "washington state", "indiana", "purdue", "illinois", "minnesota",
+        "maryland", "rutgers", "louisville", "virginia", "nc state", "duke",
+        "wake forest", "syracuse", "boston college", "cincinnati", "ucf"},
+    5: {"ucla", "northwestern", "navy", "army", "air force", "liberty", "byu",
+        "western kentucky", "louisiana tech"},
+    6: {"memphis", "houston", "smu", "tulane", "east carolina", "south florida",
+        "temple", "connecticut", "uconn", "tulsa", "rice", "utep", "uab"},
+    7: {"boise state", "fresno state", "hawaii", "san diego state", "wyoming",
+        "utah state", "nevada", "colorado state", "new mexico", "san jose state"},
+    8: {"appalachian state", "app state", "coastal carolina", "marshall", "utsa",
+        "troy", "louisiana", "james madison", "buffalo", "kent state", "ohio",
+        "miami (oh)", "western michigan", "central michigan", "eastern michigan",
+        "northern illinois", "ball state", "toledo"},
+    9: {"north dakota state", "montana", "south dakota state", "furman",
+        "villanova", "richmond", "delaware", "sacramento state",
+        "central arkansas", "cal poly"},
+}
+
+_SCHOOL_TIERS: Dict[str, int] = {
+    school: tier for tier, schools in _TIER_SCHOOLS.items() for school in schools
+}
+_SCHOOL_KEYS = sorted(_SCHOOL_TIERS, key=len, reverse=True)
+
+
+def classify_college_tier(team: str) -> int:
+    """10-tier conference classification. 1=SEC/OSU elite, 10=FCS lower/unknown.
+
+    Exact NFL franchise names → tier 1 (an NFL record implies a major-program
+    background). School names match by longest word-boundary prefix.
+    """
+    t = _normalize_team(team)
+    if not t:
+        return 10
+    if t in NFL_FRANCHISE_NAMES:
+        return 1
+    for key in _SCHOOL_KEYS:
+        if t == key or t.startswith(key + " "):
+            return _SCHOOL_TIERS[key]
     return 10
 
 
@@ -362,8 +376,13 @@ CORS(app, resources={r"/*": {"origins": allowed_origins}})
 
 @app.before_request
 def enforce_canonical_origin():
-    """Redirect production traffic to the configured canonical host and HTTPS."""
-    if request.method == "OPTIONS":
+    """Redirect production traffic to the configured canonical host and HTTPS.
+
+    Only active when CANONICAL_HOST is configured, and only ever redirects TO
+    that host. X-Forwarded-Host is attacker-controlled — echoing it into a
+    redirect target is an open redirect.
+    """
+    if request.method == "OPTIONS" or not CANONICAL_HOST:
         return None
 
     forwarded_host = request.headers.get("X-Forwarded-Host", request.host or "")
@@ -374,14 +393,13 @@ def enforce_canonical_origin():
     forwarded_proto = request.headers.get("X-Forwarded-Proto", request.scheme or "http")
     scheme = forwarded_proto.split(",")[0].strip().lower()
 
-    target_host = CANONICAL_HOST or host
     target_scheme = "https" if FORCE_HTTPS else scheme
 
-    if host == target_host and scheme == target_scheme:
+    if host == CANONICAL_HOST and scheme == target_scheme:
         return None
 
     query = request.query_string.decode("utf-8") if request.query_string else ""
-    destination = f"{target_scheme}://{target_host}{request.path}"
+    destination = f"{target_scheme}://{CANONICAL_HOST}{request.path}"
     if query:
         destination = f"{destination}?{query}"
     return redirect(destination, code=308)
@@ -477,43 +495,6 @@ def load_position_model_artifacts() -> None:
         print("Position model artifacts not found.")
 
 
-def load_player_lookup(csv_path: str = PLAYER_DATA_PATH) -> Dict[str, Dict[str, str]]:
-    if not os.path.exists(csv_path):
-        return {}
-
-    try:
-        df = pd.read_csv(csv_path)
-    except Exception as exc:
-        print(f"Failed to read {csv_path}: {exc}")
-        return {}
-
-    lookup: Dict[str, Dict[str, str]] = {}
-    possible_name_columns = ["displayName", "fullName", "shortName"]
-
-    for _, row in df.iterrows():
-        position = str(row.get("position") or "Unknown")
-        team = str(row.get("team") or "Unknown")
-        jersey = row.get("jersey")
-
-        for col in possible_name_columns:
-            value = row.get(col)
-            if isinstance(value, str) and value.strip():
-                key = normalize_name(value)
-                if key and key not in lookup:
-                    lookup[key] = {
-                        "name": value.strip(),
-                        "position": position,
-                        "team": team,
-                        "jersey": str(jersey) if jersey is not None else "0",
-                    }
-
-    print(f"Loaded {len(lookup)} player lookup entries from {csv_path}.")
-    return lookup
-
-
-PLAYER_LOOKUP = load_player_lookup()
-
-
 def initialize_player_database() -> None:
     ph = _placeholder()
     conn = _get_conn()
@@ -561,27 +542,12 @@ def initialize_player_database() -> None:
     cursor.execute("SELECT COUNT(*) FROM players")
     existing_count = cursor.fetchone()[0]
     if existing_count == 0:
-        staged = []
-        if PLAYER_LOOKUP:
-            seen = set()
-            for item in PLAYER_LOOKUP.values():
-                name = item.get("name", "").strip()
-                if not name or normalize_name(name) in seen:
-                    continue
-                seen.add(normalize_name(name))
-                jersey_str = item.get("jersey", "0") if isinstance(item, dict) else "0"
-                try:
-                    jersey = int(jersey_str or 0)
-                except ValueError:
-                    jersey = 0
-                staged.append((name, item.get("position", "Unknown"), item.get("team", "Unknown"), jersey, "csv_seed", None))
-        else:
-            staged = [
-                (p["name"], p["position"], p["team"], p["jersey"],
-                 "nfl_draft_2025" if p.get("espn_id") else "nfl_seed",
-                 p.get("espn_id"))
-                for p in SEED_PLAYERS
-            ]
+        staged = [
+            (p["name"], p["position"], p["team"], p["jersey"],
+             "nfl_draft_2025" if p.get("espn_id") else "nfl_seed",
+             p.get("espn_id"))
+            for p in SEED_PLAYERS
+        ]
 
         if USE_POSTGRES:
             cursor.executemany(
@@ -1313,6 +1279,7 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
         # No real ESPN stats — try combine measurables anyway
         result = generate_estimated_profile(name=name, position=position, team=team, jersey=jersey)
         if espn_id:
+            ath_info = _espn_resolve_athlete_info(espn_id)
             combine_data = fetch_combine_measurables(espn_id, position)
             if combine_data:
                 for key in ("combine_speed_score","combine_forty","combine_vertical",
@@ -1331,29 +1298,7 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
                 result["physical_is_real"] = True
         return result, source
 
-    # 2) Fallback to local CSV metadata.
-    player_meta = PLAYER_LOOKUP.get(normalized)
-    if player_meta:
-        try:
-            jersey = int(player_meta.get("jersey", "0") or 0)
-        except ValueError:
-            jersey = 0
-        result = generate_estimated_profile(
-            name=player_meta["name"],
-            position=player_meta["position"],
-            team=player_meta["team"],
-            jersey=jersey,
-        )
-        upsert_player_record(
-            result["name"],
-            result["position"],
-            result["team"],
-            int(result["jersey"]),
-            source="csv_fallback",
-        )
-        return result, "csv_fallback"
-
-    # 3) Last fallback: generic baseline, using caller-supplied position/team if known.
+    # 2) Last fallback: generic baseline, using caller-supplied position/team if known.
     result = generate_estimated_profile(name=player_name.strip(), position=fallback_position, team=fallback_team)
     upsert_player_record(
         result["name"],
@@ -1700,15 +1645,17 @@ def _build_training_rows(samples: int = 4000) -> Tuple[pd.DataFrame, "pd.Series"
             for _, r in df_real.iterrows():
                 pos   = str(r.get("position") or "OTH").upper()
                 flags = position_flags(pos)
-                speed = float(r.get("combine_speed_score") or 50)
+                speed = float(r.get("combine_speed_score") or float("nan"))
                 tier  = float(r.get("conference_tier") or 5)
-                # production_score not in ESPN CSV → estimate from draft_grade
                 dg    = int(r.get("draft_grade", 2) or 2)
-                prod  = max(0.0, min(100.0, 80.0 - dg * 12.0 + random.gauss(0, 8)))
+                # production_score is not in the ESPN CSV. It stays missing (NaN,
+                # which XGBoost/CatBoost handle natively) — deriving it from the
+                # draft-grade label would leak the target into the features.
+                prod  = float("nan")
                 games = float(r.get("games_played", 13) or 13)
                 ns    = int(r.get("nfl_success", 0) or 0)
                 row = {
-                    "production_score":    round(prod, 1),
+                    "production_score":    prod,
                     "games_played":        games,
                     "combine_speed_score": round(speed, 1),
                     "conference_tier":     tier,
@@ -2067,7 +2014,11 @@ def top_feature_importances(n: int = 4) -> list:
     if success_model is None:
         return []
     try:
-        importances = success_model.get_booster().get_score(importance_type="gain")
+        model = success_model
+        if hasattr(model, "calibrated_classifiers_"):
+            # CalibratedClassifierCV has no get_booster(); unwrap the fitted XGBoost
+            model = model.calibrated_classifiers_[0].estimator
+        importances = model.get_booster().get_score(importance_type="gain")
         sorted_feats = sorted(importances.items(), key=lambda x: x[1], reverse=True)
         total = sum(v for _, v in sorted_feats) or 1.0
         return [
@@ -2691,7 +2642,6 @@ def health_check():
             "position_model_loaded": position_model is not None,
             "success_model_loaded": success_model is not None,
             "encoder_loaded": label_encoders is not None,
-            "player_lookup_size": len(PLAYER_LOOKUP),
             "player_db_size": player_database_count(),
             "college_prospect_count": player_database_count_by_source("college_prospect"),
         }
@@ -2891,7 +2841,7 @@ def predict():
                     5: "5th", 6: "6th", 7: "7th", 8: "Undrafted"}
 
     stored_team = str(player_data.get("team", "") or "")
-    is_nfl_player = any(kw in stored_team.lower() for kw in NFL_FRANCHISE_KEYWORDS)
+    is_nfl_player = is_nfl_franchise(stored_team)
     if is_nfl_player:
         tier_label = "Power 5 (NFL Pro)"
     elif conference_tier == 1:

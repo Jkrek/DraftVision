@@ -1,0 +1,65 @@
+<!-- @dsCard group="Components" name="Badges & chips" subtitle="Grade badges, position chips, trends, projections" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070d1b;--indigo:#6366f1;--t1:#eef2ff;--t2:#94a3b8;--t3:#64748b}
+body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--t1);margin:0;padding:32px;-webkit-font-smoothing:antialiased}
+h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.16em;color:var(--indigo);margin:26px 0 14px;font-weight:700}
+h2:first-child{margin-top:0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grade{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:9px;font-weight:800;font-size:.9rem;font-variant-numeric:tabular-nums;border:1px solid}
+.g-a{background:rgba(16,185,129,.13);color:#34d399;border-color:rgba(16,185,129,.3)}
+.g-b{background:rgba(34,211,238,.11);color:#22d3ee;border-color:rgba(34,211,238,.28)}
+.g-c{background:rgba(245,158,11,.12);color:#fbbf24;border-color:rgba(245,158,11,.28)}
+.g-d{background:rgba(239,68,68,.12);color:#f87171;border-color:rgba(239,68,68,.28)}
+.grade small{font-weight:700;font-size:.68rem;opacity:.75}
+.pos{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-weight:700;font-size:.72rem;letter-spacing:.06em;background:rgba(99,102,241,.12);color:#a5b4fc;border:1px solid rgba(99,102,241,.28)}
+.pos i{width:6px;height:6px;border-radius:50%;background:currentColor;font-style:normal}
+.trend{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-weight:700;font-size:.75rem;font-variant-numeric:tabular-nums}
+.up{background:rgba(16,185,129,.12);color:#34d399}
+.down{background:rgba(239,68,68,.12);color:#f87171}
+.flat{background:rgba(148,163,184,.1);color:#94a3b8}
+.proj{display:inline-flex;padding:5px 12px;border-radius:8px;font-weight:700;font-size:.75rem;letter-spacing:.05em;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2)}
+.proj.rd1{background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(249,115,22,.14));color:#fbbf24;border-color:rgba(245,158,11,.35)}
+.live{display:inline-flex;align-items:center;gap:7px;padding:5px 13px;border-radius:999px;background:rgba(99,102,241,.13);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.live i{width:6px;height:6px;border-radius:50%;background:#6366f1;box-shadow:0 0 6px #6366f1;font-style:normal}
+</style>
+</head>
+<body>
+  <h2>Grade badges</h2>
+  <div class="row">
+    <span class="grade g-a">96.4 <small>A+</small></span>
+    <span class="grade g-a">91.2 <small>A−</small></span>
+    <span class="grade g-b">84.7 <small>B</small></span>
+    <span class="grade g-c">76.3 <small>C+</small></span>
+    <span class="grade g-d">61.8 <small>D</small></span>
+  </div>
+
+  <h2>Position chips</h2>
+  <div class="row">
+    <span class="pos"><i></i>QB</span><span class="pos"><i></i>RB</span><span class="pos"><i></i>WR</span>
+    <span class="pos"><i></i>TE</span><span class="pos"><i></i>EDGE</span><span class="pos"><i></i>CB</span>
+  </div>
+
+  <h2>Trend</h2>
+  <div class="row">
+    <span class="trend up">▲ 2.3</span>
+    <span class="trend down">▼ 1.1</span>
+    <span class="trend flat">— 0.0</span>
+  </div>
+
+  <h2>Draft projection</h2>
+  <div class="row">
+    <span class="proj rd1">ROUND 1</span>
+    <span class="proj">ROUND 3</span>
+    <span class="proj">DAY 3</span>
+    <span class="proj">UDFA</span>
+  </div>
+
+  <h2>Status pill</h2>
+  <div class="row"><span class="live"><i></i>2026 class · live grades</span></div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!-- @dsCard group="Components" name="Data table" subtitle="Leaderboard table — replaces AG Grid alpine-dark" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070d1b;--glass:rgba(255,255,255,.04);--border:rgba(255,255,255,.07);--indigo:#6366f1;--t1:#eef2ff;--t2:#94a3b8;--t3:#64748b}
+body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--t1);margin:0;padding:32px;-webkit-font-smoothing:antialiased}
+.panel{background:rgba(13,21,40,.9);border:1px solid var(--border);border-radius:16px;overflow:hidden;max-width:760px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+.toolbar h3{margin:0;font-size:1rem;font-weight:800;letter-spacing:-.3px}
+.toolbar span{font-size:.75rem;color:var(--t3)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th{text-align:left;padding:11px 20px;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);font-weight:700;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);white-space:nowrap}
+th.sorted{color:#a5b4fc}
+th.sorted::after{content:' ↓'}
+td{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:rgba(99,102,241,.06)}
+.rk{color:var(--t3);font-weight:700;font-variant-numeric:tabular-nums}
+.player{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.2px}
+.av{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:800;color:#fff;flex-shrink:0}
+.pos{padding:3px 9px;border-radius:999px;font-weight:700;font-size:.68rem;background:rgba(99,102,241,.12);color:#a5b4fc}
+.school{color:var(--t2)}
+.grade{font-weight:800;font-variant-numeric:tabular-nums;padding:4px 10px;border-radius:7px;display:inline-block}
+.g-a{background:rgba(16,185,129,.13);color:#34d399}
+.g-b{background:rgba(34,211,238,.11);color:#22d3ee}
+.g-c{background:rgba(245,158,11,.12);color:#fbbf24}
+.up{color:#34d399;font-weight:700;font-size:.78rem}
+.down{color:#f87171;font-weight:700;font-size:.78rem}
+</style>
+</head>
+<body>
+  <div class="panel">
+    <div class="toolbar"><h3>2026 Big Board</h3><span>9,033 players · updated Aug 9</span></div>
+    <table>
+      <thead><tr><th>Rk</th><th>Player</th><th>Pos</th><th>School</th><th class="sorted">Grade</th><th>Trend</th></tr></thead>
+      <tbody>
+        <tr><td class="rk">1</td><td><span class="player"><span class="av">CW</span>Caleb Williams</span></td><td><span class="pos">QB</span></td><td class="school">USC</td><td><span class="grade g-a">96.4</span></td><td class="up">▲ 1.2</td></tr>
+        <tr><td class="rk">2</td><td><span class="player"><span class="av">MH</span>Marvin Harrison Jr.</span></td><td><span class="pos">WR</span></td><td class="school">Ohio State</td><td><span class="grade g-a">95.1</span></td><td class="up">▲ 0.4</td></tr>
+        <tr><td class="rk">3</td><td><span class="player"><span class="av">JV</span>Jared Verse</span></td><td><span class="pos">EDGE</span></td><td class="school">Florida State</td><td><span class="grade g-b">89.9</span></td><td class="down">▼ 0.8</td></tr>
+        <tr><td class="rk">4</td><td><span class="player"><span class="av">BB</span>Brock Bowers</span></td><td><span class="pos">TE</span></td><td class="school">Georgia</td><td><span class="grade g-b">88.2</span></td><td class="up">▲ 2.1</td></tr>
+        <tr><td class="rk">5</td><td><span class="player"><span class="av">DM</span>Dante Moore</span></td><td><span class="pos">QB</span></td><td class="school">Oregon</td><td><span class="grade g-c">79.6</span></td><td class="down">▼ 0.2</td></tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

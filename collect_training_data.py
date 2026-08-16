@@ -78,9 +78,11 @@ def classify_tier(school: str) -> int:
         if kw in s: return 9
     return 10
 
-def forty_to_speed(position: str, forty: float) -> float:
+def forty_to_speed(position: str, forty: float):
+    # None (blank in the CSV) when no 40 time exists — a fake league-average
+    # 50.0 would be indistinguishable from a real median runner downstream.
     if not forty or forty <= 0:
-        return 50.0
+        return None
     p = (position or "").upper()
     benchmarks = {
         "QB":(4.30,5.10),"RB":(4.20,4.80),"WR":(4.20,4.70),
@@ -148,16 +150,16 @@ def fetch_nfl_career(espn_id: str) -> dict:
     active = str(ath.get("status", {}).get("type", "")).lower() == "active" if isinstance(ath.get("status"), dict) else False
     return {"experience": exp, "pro_bowls": pro_bowls, "active": active}
 
-def nfl_success_label(career: dict, draft_round: int) -> int:
+def nfl_success_label(career: dict) -> int:
     """
     1 = NFL success (starter/star), 0 = bust/journeyman.
-    Success criteria: Pro Bowl OR 5+ years experience OR (4+ years AND round 1-2).
+    Success criteria: Pro Bowl OR 5+ years experience. Draft round is
+    deliberately NOT part of the label — it's what the models predict,
+    and using it here leaks the target into training.
     """
     if career["pro_bowls"] >= 1:
         return 1
     if career["experience"] >= 5:
-        return 1
-    if career["experience"] >= 4 and draft_round <= 2:
         return 1
     return 0
 
@@ -191,6 +193,8 @@ def main():
 
             combine  = fetch_combine_data(espn_id)
             career   = fetch_nfl_career(espn_id)
+            if not combine and not career.get("experience") and not career.get("pro_bowls"):
+                errors += 1
             tier     = classify_tier(college)
             speed    = forty_to_speed(position, combine.get("forty", 0))
 
@@ -200,12 +204,12 @@ def main():
                 "position":          position,
                 "college":           college,
                 "conference_tier":   tier,
-                "combine_speed_score": round(speed, 1),
+                "combine_speed_score": round(speed, 1) if speed is not None else "",
                 "combine_forty":     combine.get("forty", 0),
                 "combine_vertical":  combine.get("vertical", 0),
                 "draft_round":       rnd,
                 "draft_grade":       draft_grade_label(rnd),
-                "nfl_success":       nfl_success_label(career, rnd),
+                "nfl_success":       nfl_success_label(career),
                 "experience":        career["experience"],
                 "pro_bowls":         career["pro_bowls"],
             })

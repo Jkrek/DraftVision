@@ -99,7 +99,12 @@ export default function Services() {
               className={`stars-row${rank <= 3 && !search ? ' stars-row--top' : ''}`}
             >
               <div className="col-rank">{rank}</div>
-              <div className="col-player">{p.name}</div>
+              <div className="col-player">
+                {p.name}
+                {p.data_source && p.data_source !== 'espn_live' && (
+                  <span className="col-est" title="No verified season stats — profile is estimated">EST</span>
+                )}
+              </div>
               <div className="col-pos">{p.position || '—'}</div>
               <div className="col-school">{p.team || '—'}</div>
               <div className="col-proj">{p.draft_grade || '—'}</div>

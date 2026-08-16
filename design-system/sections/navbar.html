@@ -1,0 +1,48 @@
+<!-- @dsCard group="Sections" name="Navbar" subtitle="Sticky glass nav with active underline + CTA" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070d1b;--t1:#eef2ff;--t2:#94a3b8}
+body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--t1);margin:0;-webkit-font-smoothing:antialiased}
+.navbar{height:64px;display:flex;justify-content:center;align-items:center;background:rgba(7,13,27,.82);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06)}
+.inner{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:1320px;padding:0 1.5rem;gap:2rem}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 4px 12px rgba(99,102,241,.4)}
+.wordmark{font-size:1.15rem;font-weight:800;letter-spacing:-.4px;background:linear-gradient(135deg,#c7d2fe,#a5b4fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.menu{display:flex;list-style:none;margin:0;padding:0;flex:1}
+.menu a{display:flex;align-items:center;height:64px;padding:0 .9rem;text-decoration:none;color:rgba(148,163,184,.85);font-size:.87rem;font-weight:500;position:relative;transition:color .15s}
+.menu a::after{content:'';position:absolute;bottom:0;left:.9rem;right:.9rem;height:2px;border-radius:2px 2px 0 0;background:linear-gradient(90deg,#6366f1,#a855f7);transform:scaleX(0);transition:transform .2s}
+.menu a:hover{color:#eef2ff}
+.menu a:hover::after,.menu a.active::after{transform:scaleX(1)}
+.menu a.active{color:#eef2ff}
+.right{display:flex;align-items:center;gap:.75rem}
+.ghost{color:var(--t2);font-size:.85rem;font-weight:600;text-decoration:none}
+.ghost:hover{color:#eef2ff}
+.cta{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;font-size:.83rem;font-weight:700;text-decoration:none;transition:all .2s}
+.cta:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.4)}
+.page{height:120px;background:linear-gradient(180deg,#0b1426,#070d1b)}
+</style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="inner">
+      <a class="logo" href="#"><span class="mark">🏈</span><span class="wordmark">DraftVision</span></a>
+      <ul class="menu">
+        <li><a class="active" href="#">Home</a></li>
+        <li><a href="#">College Stars</a></li>
+        <li><a href="#">HS Prospects</a></li>
+        <li><a href="#">Mock Draft</a></li>
+        <li><a href="#">Leaderboard</a></li>
+      </ul>
+      <div class="right">
+        <a class="ghost" href="#">Sign in</a>
+        <a class="cta" href="#">Get started</a>
+      </div>
+    </div>
+  </nav>
+  <div class="page"></div>
+</body>
+</html>

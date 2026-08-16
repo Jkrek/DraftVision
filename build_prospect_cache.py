@@ -30,6 +30,22 @@ ESPN_CFB_TEAM_ROSTER_URL = "https://site.api.espn.com/apis/site/v2/sports/footba
 
 GRADE_ORDER = {"A+": 0, "A": 1, "A-": 2, "B+": 3, "B": 4, "B-": 5, "C+": 6, "C": 7, "C-": 8, "D": 9}
 
+# A roster player whose /predict resolution comes back with an NFL team collided
+# with a same-named pro in the lookup DB — the stats/grade belong to the pro,
+# so the row is dropped rather than cached under the wrong identity.
+NFL_FRANCHISE_NAMES = {
+    "arizona cardinals", "atlanta falcons", "baltimore ravens", "buffalo bills",
+    "carolina panthers", "chicago bears", "cincinnati bengals", "cleveland browns",
+    "dallas cowboys", "denver broncos", "detroit lions", "green bay packers",
+    "houston texans", "indianapolis colts", "jacksonville jaguars",
+    "kansas city chiefs", "las vegas raiders", "los angeles chargers",
+    "los angeles rams", "miami dolphins", "minnesota vikings",
+    "new england patriots", "new orleans saints", "new york giants",
+    "new york jets", "philadelphia eagles", "pittsburgh steelers",
+    "san francisco 49ers", "seattle seahawks", "tampa bay buccaneers",
+    "tennessee titans", "washington commanders",
+}
+
 # Only include FBS-level conferences (groups=80 gets all FBS)
 # Conference tier <= 6 means P4/G5 up to mid-majors; skip FCS (tiers 9-10)
 MAX_CONFERENCE_TIER = 8
@@ -126,10 +142,13 @@ def call_predict(player, api_url, timeout=15):
             return None
         d = r.json()
         stats = d.get("stats") or {}
+        team = str(stats.get("team") or player["team"])
+        if team.lower().strip() in NFL_FRANCHISE_NAMES:
+            return None
         return {
             "name":               d.get("resolved_name") or player["name"],
             "position":           d.get("predicted_position") or player["position"],
-            "team":               stats.get("team") or player["team"],
+            "team":               team,
             "grade":              d.get("prospect_grade") or "C",
             "success_probability": d.get("success_probability") or 0,
             "draft_grade":        d.get("draft_grade") or "",
@@ -137,8 +156,12 @@ def call_predict(player, api_url, timeout=15):
             "conference_tier":    stats.get("conference_tier") or 5,
             "production_score":   round(float(stats.get("production_score") or 0), 1),
             "combine_speed_score": round(float(stats.get("combine_speed_score") or 50), 1),
+            "games_played":       int(float(stats.get("games_played") or 0)),
             "is_award_winner":    int(stats.get("is_award_winner") or 0),
             "is_all_american":    int(stats.get("is_all_american") or 0),
+            # "espn_live" = graded from real ESPN season stats; anything else
+            # means the stat line was estimated — surfaced as a UI badge.
+            "data_source":        d.get("data_source") or "unknown",
         }
     except Exception as e:
         return None

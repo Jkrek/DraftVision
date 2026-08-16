@@ -123,6 +123,17 @@
 .stars-row .col-player {
   color: var(--color-neutral-100);
 }
+
+/* provenance badge: profile estimated, no verified season stats */
+.col-est {
+  margin-left: 8px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--color-neutral-700);
+  color: var(--color-neutral-500);
+}
 .col-pos {
   flex: 0 0 58px;
 }
