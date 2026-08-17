@@ -34,8 +34,8 @@ In Railway → your service → **Variables**, add:
 |----------|-------|
 | `SECRET_KEY` | a long random string (e.g., `openssl rand -hex 32`) |
 | `FLASK_ENV` | `production` |
-| `FRONTEND_ORIGIN` | `https://jkrek.com,https://www.jkrek.com` |
-| `CANONICAL_HOST` | `jkrek.com` |
+| `FRONTEND_ORIGIN` | `https://draft.jkrek.com` |
+| `CANONICAL_HOST` | `draft.jkrek.com` |
 | `FORCE_HTTPS` | `true` |
 | `AUTO_SYNC_COLLEGE_PROSPECTS` | `false` (set to `true` on first deploy to seed data) |
 
@@ -69,20 +69,20 @@ or the browser's self-assigned `X-DV-Anon` uuid only.
 ## Step 5 — Connect your domain
 
 1. Railway project → **Settings** → **Domains** → **Add Custom Domain**
-2. Add both domains:
-   - `jkrek.com`
-   - `www.jkrek.com`
-3. Railway gives you DNS targets to add at your registrar:
-   - Add the apex/root record for `@` exactly as Railway shows
-   - Add the `www` record exactly as Railway shows (usually a `CNAME` to your Railway hostname)
+2. Add the domain:
+   - `draft.jkrek.com`  (the apex `jkrek.com` belongs to JKClips)
+3. Railway shows a CNAME target. In Cloudflare (jkrek.com's DNS), EDIT the
+   existing `draft` record — it currently points at a stale
+   `ghs.googlehosted.com` — to a CNAME of the Railway hostname. Set it to
+   "DNS only" (grey cloud) until the certificate is issued, then proxying
+   can be re-enabled if desired.
 4. In Railway variables, set:
-   - `FRONTEND_ORIGIN=https://jkrek.com,https://www.jkrek.com`
-   - `CANONICAL_HOST=jkrek.com`
+   - `FRONTEND_ORIGIN=https://draft.jkrek.com`
+   - `CANONICAL_HOST=draft.jkrek.com`
    - `FORCE_HTTPS=true`
 5. Wait for DNS propagation and SSL issuance
-6. Verify both URLs redirect correctly:
-   - `http://jkrek.com` → `https://jkrek.com`
-   - `https://www.jkrek.com` → `https://jkrek.com`
+6. Verify:
+   - `http://draft.jkrek.com` → `https://draft.jkrek.com`
 
 ## Step 6 — First deploy
 
@@ -90,7 +90,7 @@ or the browser's self-assigned `X-DV-Anon` uuid only.
 2. Watch build logs in Railway dashboard
 3. Hit `/health` on your domain to confirm the app is running:
    ```
-   https://jkrek.com/health
+   https://draft.jkrek.com/health
    ```
 
 ## Subsequent deploys
@@ -130,7 +130,7 @@ season via GitHub Actions (`.github/workflows/refresh-board.yml`):
 - **Schedule:** Tuesdays 09:00 UTC, August through January (cron `0 9 * 8-12,1 2`).
   It can also be run on demand from the Actions tab (`workflow_dispatch`).
 - **What it does:** the job runs `scripts/refresh_board.sh` against the live API
-  (repository variable `BOARD_API_URL`, e.g. `https://jkrek.com`). The script
+  (repository variable `BOARD_API_URL`, e.g. `https://draft.jkrek.com`). The script
   invokes `build_prospect_cache.py`, which:
   1. rebuilds `training_data/prospect_cache.json` (every FBS player re-graded),
   2. snapshots the slim board to `training_data/board_history/board_<YYYY-MM-DD>.json`,
