@@ -2270,38 +2270,38 @@ def compute_prospect_grade(success_prob: Optional[float], draft_grade_class: Opt
     """Map calibrated success probability (%) → letter grade A+…D.
 
     Thresholds are EMPIRICAL PERCENTILES of the calibrated ensemble's success
-    probability over the full 9,033-player FBS cache snapshot, scored offline
-    through this exact serving path (scripts/train_models.py artifacts,
-    2026-08-16). Mapping (percentile of the population → grade):
-        A+ ≥ 98th (top 2%)   → p ≥ 40.2
-        A  ≥ 95th            → p ≥ 36.9
-        A- ≥ 90th            → p ≥ 33.8
-        B+ ≥ 80th            → p ≥ 30.3
-        B  ≥ 70th            → p ≥ 27.1
-        B- ≥ 55th            → p ≥ 23.5
-        C+ ≥ 45th            → p ≥ 21.0   (C+/C straddle the median)
-        C  ≥ 35th            → p ≥ 18.9
-        C- ≥ 10th            → p ≥ 12.8
+    probability over the LIVE 7,123-player FBS board (rebuilt 2026-08-16 with
+    real ESPN stats, corrected tiers, and real games_played — the offline
+    old-snapshot calibration ran ~30 pts lower because it lacked those inputs).
+    Recompute these cutoffs whenever the board is rebuilt after a model or
+    feature change: sorted success_probability, value at each percentile below.
+        A+ ≥ 98th (top 2%)   → p ≥ 83.7
+        A  ≥ 95th            → p ≥ 78.3
+        A- ≥ 90th            → p ≥ 70.1
+        B+ ≥ 80th            → p ≥ 52.7
+        B  ≥ 70th            → p ≥ 38.5
+        B- ≥ 55th            → p ≥ 26.8
+        C+ ≥ 45th            → p ≥ 22.4   (C+/C straddle the median)
+        C  ≥ 35th            → p ≥ 18.7
+        C- ≥ 10th            → p ≥ 8.3
         D  < 10th (bottom 10%)
     draft_grade_class is intentionally NOT a gate anymore: the old
     (p, class) AND-gates structurally locked whole position groups (0 of
-    1,556 OL could reach A-range). Under these percentile thresholds the same
-    snapshot grades 369 of 1,596 OL in the A range (67 A+, 127 A, 175 A-).
-    Grade caller passes class for API stability; it feeds the separate
-    draft_grade display field instead.
+    1,556 OL could reach A-range). Grade caller passes class for API
+    stability; it feeds the separate draft_grade display field instead.
     """
     if success_prob is None:
         return "D"  # fallback path with no calibrated probability
     p = float(success_prob)
-    if p >= 40.2: return "A+"
-    if p >= 36.9: return "A"
-    if p >= 33.8: return "A-"
-    if p >= 30.3: return "B+"
-    if p >= 27.1: return "B"
-    if p >= 23.5: return "B-"
-    if p >= 21.0: return "C+"
-    if p >= 18.9: return "C"
-    if p >= 12.8: return "C-"
+    if p >= 83.7: return "A+"
+    if p >= 78.3: return "A"
+    if p >= 70.1: return "A-"
+    if p >= 52.7: return "B+"
+    if p >= 38.5: return "B"
+    if p >= 26.8: return "B-"
+    if p >= 22.4: return "C+"
+    if p >= 18.7: return "C"
+    if p >= 8.3:  return "C-"
     return "D"
 
 
