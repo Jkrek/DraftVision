@@ -165,6 +165,7 @@ def call_predict(player, api_url, timeout=15):
                 "name":     player["name"],
                 "position": player.get("position", "Unknown"),
                 "team":     player.get("team", "Unknown"),
+                "espn_id":  player.get("espn_id", ""),
             },
             timeout=timeout,
         )

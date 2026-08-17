@@ -1237,16 +1237,30 @@ def fetch_combine_measurables(espn_id: str, position: str) -> dict:
         return {}
 
 
-def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fallback_team: str = "Unknown") -> Tuple[Optional[Dict[str, object]], str]:
+def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fallback_team: str = "Unknown",
+                      espn_id_hint: str = "") -> Tuple[Optional[Dict[str, object]], str]:
     normalized = normalize_name(player_name)
+    espn_id_hint = str(espn_id_hint or "").strip()
 
-    # 1) Resolve from local database first.
+    # 1) Resolve from local database first — or from a caller-supplied ESPN
+    #    athlete id (the cache builder knows every roster player's id, which
+    #    unlocks real season stats for players the DB has never seen).
     db_player = get_player_by_exact_name(player_name)
-    if db_player:
-        source   = str(db_player.get("source", "db_lookup") or "db_lookup")
-        name     = str(db_player.get("name", player_name)).strip()
-        position = str(db_player.get("position", "Unknown") or "Unknown")
-        team     = str(db_player.get("team", "Unknown") or "Unknown")
+    if db_player or espn_id_hint:
+        if db_player:
+            source   = str(db_player.get("source", "db_lookup") or "db_lookup")
+            name     = str(db_player.get("name", player_name)).strip()
+            position = str(db_player.get("position", "Unknown") or "Unknown")
+            team     = str(db_player.get("team", "Unknown") or "Unknown")
+            jersey   = int(db_player.get("jersey", 0) or 0)
+            espn_id  = str(db_player.get("espn_id") or "").strip() or espn_id_hint
+        else:
+            source   = "roster_hint"
+            name     = player_name
+            position = fallback_position
+            team     = fallback_team
+            jersey   = 0
+            espn_id  = espn_id_hint
         # A stale DB row must not beat what the caller told us: an Unknown
         # position one-hots to position_other and tanks the prediction.
         _unk = {"unknown", "unk", ""}
@@ -1254,8 +1268,6 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
             position = fallback_position
         if team.lower() in _unk and fallback_team.lower() not in _unk:
             team = fallback_team
-        jersey   = int(db_player.get("jersey", 0) or 0)
-        espn_id  = str(db_player.get("espn_id") or "").strip()
 
         # Try to get real season stats from ESPN when we have an athlete ID
         real_stats = fetch_real_espn_stats(espn_id, position, name)
@@ -2676,8 +2688,10 @@ def predict():
     # Optional roster hints — used as fallback when ESPN can't resolve the player
     fallback_position = str(payload.get("position") or "Unknown").strip().upper() or "Unknown"
     fallback_team = str(payload.get("team") or "Unknown").strip() or "Unknown"
+    espn_id_hint = str(payload.get("espn_id") or "").strip()[:20]
 
-    player_data, data_source = fetch_player_data(player_name, fallback_position, fallback_team)
+    player_data, data_source = fetch_player_data(player_name, fallback_position, fallback_team,
+                                                 espn_id_hint=espn_id_hint)
     if not player_data:
         return jsonify({"error": "Unable to resolve player data."}), 404
 
