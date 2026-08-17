@@ -35,7 +35,7 @@ jobs:
           BOARD_API_URL: ${{ vars.BOARD_API_URL }}
         run: |
           if [ -z "${BOARD_API_URL}" ]; then
-            echo "ERROR: repository variable BOARD_API_URL is not set (e.g. https://jkrek.com)."
+            echo "ERROR: repository variable BOARD_API_URL is not set (e.g. https://draft.jkrek.com)."
             exit 1
           fi
           bash scripts/refresh_board.sh

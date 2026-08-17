@@ -10,7 +10,7 @@ Usage:
     python build_prospect_cache.py
 
     # Against production:
-    python build_prospect_cache.py --api-url https://jkrek.com
+    python build_prospect_cache.py --api-url https://draft.jkrek.com
 
     # Limit to fewer teams (faster, for testing):
     python build_prospect_cache.py --max-teams 20
