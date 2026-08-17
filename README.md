@@ -55,3 +55,11 @@ See `DEPLOY.md` for the Docker/Fly.io deployment and `DEMO_GUIDE.md` for a full 
 DraftVision was built as a Computer Science Senior Design project at the University of Cincinnati. It combines applied machine learning (feature engineering, model calibration, ensembling), live data integration, and full-stack web development in a single deployed product.
 
 *Data from ESPN and the College Football Data API. Not affiliated with the NFL, NFLPA, or any team.*
+
+## Auth setup (optional)
+
+1. Create an Auth0 **Single Page Application** in your Auth0 dashboard.
+2. Set Allowed Callback URLs, Allowed Logout URLs, and Allowed Web Origins to your site URL (e.g. `http://localhost:3000`).
+3. Set `REACT_APP_AUTH0_DOMAIN`, `REACT_APP_AUTH0_CLIENT_ID`, and (optional) `REACT_APP_AUTH0_AUDIENCE` — see `.env.example`.
+4. Optional: create an Auth0 API and set its identifier as the audience; the backend then verifies tokens via `AUTH0_DOMAIN` + `AUTH0_AUDIENCE`.
+5. With no Auth0 vars set, the app runs fully logged-out — the sign-in button simply hides.

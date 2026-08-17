@@ -1,0 +1,55 @@
+name: Refresh prospect board
+
+on:
+  schedule:
+    # Tuesdays 09:00 UTC during the CFB season (Aug–Jan)
+    - cron: "0 9 * 8-12,1 2"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-board
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Rebuild board cache, history snapshot, and movers
+        env:
+          BOARD_API_URL: ${{ vars.BOARD_API_URL }}
+        run: |
+          if [ -z "${BOARD_API_URL}" ]; then
+            echo "ERROR: repository variable BOARD_API_URL is not set (e.g. https://jkrek.com)."
+            exit 1
+          fi
+          bash scripts/refresh_board.sh
+
+      - name: Commit refreshed board back to main
+        run: |
+          git config user.name  "draftvision-board-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add training_data/prospect_cache.json \
+                  training_data/board_history \
+                  training_data/board_movers.json
+          if git diff --cached --quiet; then
+            echo "Board unchanged — nothing to commit."
+          else
+            git commit -m "chore(board): weekly prospect board refresh [board-bot]"
+            git push origin main
+          fi

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CardItem from './CardItem';
+import { anonFetch } from '../lib/api';
 import './Cards.css';
 
 /*
@@ -41,7 +42,7 @@ function Cards() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/prospects?limit=6')
+    anonFetch('/api/prospects?limit=6')
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('bad status'))))
       .then((data) => {
         if (cancelled) return;

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { anonFetch } from '../../lib/api';
 import './services.css';
 
 const PAGE_SIZE = 100;
@@ -7,6 +8,16 @@ function formatProb(value) {
   const n = typeof value === 'number' ? value : parseFloat(value);
   if (isNaN(n)) return null;
   return n.toFixed(1);
+}
+
+// Optional "trend": {"delta_prob", "delta_rank"} on /api/prospects rows —
+// null when absent, malformed, or flat (no movement to show).
+function trendOf(p) {
+  const t = p && p.trend;
+  if (!t || typeof t !== 'object') return null;
+  const delta = Number(t.delta_prob);
+  if (!Number.isFinite(delta) || delta === 0) return null;
+  return delta;
 }
 
 // "2026-08-14T03:12:00Z" -> "Aug 14"; null on anything unparseable.
@@ -26,7 +37,7 @@ export default function Services() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
-    fetch('/api/prospects?limit=5000')
+    anonFetch('/api/prospects?limit=5000')
       .then(r => r.json())
       .then(d => {
         setProspects(Array.isArray(d.prospects) ? d.prospects : []);
@@ -105,8 +116,9 @@ export default function Services() {
         )}
 
         {!loading && visible.map((p, i) => {
-          const rank = i + 1;
-          const prob = formatProb(p.success_probability);
+          const rank  = i + 1;
+          const prob  = formatProb(p.success_probability);
+          const delta = trendOf(p);
           return (
             <div
               key={`${p.name}-${p.team}-${i}`}
@@ -136,6 +148,11 @@ export default function Services() {
               </div>
               <div className="col-prob">
                 {prob === null ? '—' : (<>{prob}<span className="col-prob-unit">%</span></>)}
+                {delta !== null && (
+                  <span className={`col-trend ${delta > 0 ? 'up' : 'down'}`}>
+                    {delta > 0 ? '▲' : '▼'} {Math.abs(delta).toFixed(1)}
+                  </span>
+                )}
               </div>
             </div>
           );

@@ -19,6 +19,7 @@ Usage:
 import argparse
 import json
 import os
+import re
 import time
 import requests
 from datetime import datetime, timezone
@@ -44,7 +45,10 @@ def projected_draft_class(class_abbr, season_year):
         return None
     return season_year + (4 - years) + 1
 
-OUTPUT_FILE = "training_data/prospect_cache.json"
+OUTPUT_FILE  = "training_data/prospect_cache.json"
+HISTORY_DIR  = "training_data/board_history"
+MOVERS_FILE  = "training_data/board_movers.json"
+MOVERS_TOP_N = 15
 
 ESPN_CFB_TEAMS_URL      = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams"
 ESPN_CFB_TEAM_ROSTER_URL = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/{team_id}/roster"
@@ -199,6 +203,163 @@ def call_predict(player, api_url, timeout=15):
         return None
 
 
+# ── Board history snapshots + movers ──────────────────────────────────────────
+
+def _snapshot_date_from_iso(iso_str, fallback_path=None):
+    """YYYY-MM-DD from an ISO timestamp; falls back to file mtime, then now."""
+    try:
+        return datetime.fromisoformat(str(iso_str).replace("Z", "+00:00")).date().isoformat()
+    except (ValueError, TypeError):
+        if fallback_path and os.path.exists(fallback_path):
+            return datetime.fromtimestamp(
+                os.path.getmtime(fallback_path), tz=timezone.utc).date().isoformat()
+        return datetime.now(timezone.utc).date().isoformat()
+
+
+def slim_board(prospects):
+    """Slim per-player rows; rank = 1-based index in the grade-sorted list."""
+    return [
+        {
+            "name":                p.get("name"),
+            "team":                p.get("team"),
+            "position":            p.get("position"),
+            "grade":               p.get("grade"),
+            "success_probability": p.get("success_probability") or 0,
+            "rank":                rank,
+        }
+        for rank, p in enumerate(prospects, start=1)
+    ]
+
+
+def write_snapshot(prospects, generated_at, date_str):
+    """Write training_data/board_history/board_<YYYY-MM-DD>.json."""
+    os.makedirs(HISTORY_DIR, exist_ok=True)
+    path = os.path.join(HISTORY_DIR, f"board_{date_str}.json")
+    with open(path, "w") as f:
+        json.dump({"generated_at": generated_at, "players": slim_board(prospects)},
+                  f, separators=(",", ":"))
+    return path
+
+
+def load_latest_snapshot():
+    """Return the most recent snapshot dict (by date in filename), or None."""
+    if not os.path.isdir(HISTORY_DIR):
+        return None
+    dated = []
+    for fn in os.listdir(HISTORY_DIR):
+        m = re.fullmatch(r"board_(\d{4}-\d{2}-\d{2})\.json", fn)
+        if m:
+            dated.append((m.group(1), fn))
+    if not dated:
+        return None
+    dated.sort()
+    latest = dated[-1][1]
+    try:
+        with open(os.path.join(HISTORY_DIR, latest)) as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"  Warning: could not read prior snapshot {latest}: {e}")
+        return None
+
+
+def bootstrap_history_from_existing_cache():
+    """One-time migration: history starts empty, so if an OLD cache already
+    exists at OUTPUT_FILE, snapshot it (dated from its generated_at) BEFORE it
+    gets overwritten — the very first refreshed board then has deltas."""
+    if os.path.isdir(HISTORY_DIR) and any(
+            re.fullmatch(r"board_\d{4}-\d{2}-\d{2}\.json", fn)
+            for fn in os.listdir(HISTORY_DIR)):
+        return  # history already seeded
+    if not os.path.exists(OUTPUT_FILE):
+        return
+    try:
+        with open(OUTPUT_FILE) as f:
+            old = json.load(f)
+    except Exception as e:
+        print(f"Bootstrap skipped: existing cache unreadable ({e})")
+        return
+    prospects = old.get("prospects") or []
+    if not prospects:
+        return
+    generated_at = old.get("generated_at") or ""
+    date_str = _snapshot_date_from_iso(generated_at, OUTPUT_FILE)
+    path = write_snapshot(prospects, generated_at, date_str)
+    print(f"Bootstrapped board history from existing cache → {path}")
+
+
+def compute_movers(prospects, prior, generated_at):
+    """Deltas vs the prior snapshot, shaped for the /api/movers contract.
+
+    Players are matched by name+team (case-insensitive); players absent from
+    the prior snapshot get no delta. delta_rank = prior_rank - new_rank, so
+    positive means the player climbed the board.
+    """
+    movers = {"generated_at": generated_at, "since": None,
+              "count": 0, "risers": [], "fallers": []}
+    prior_players = (prior or {}).get("players") or []
+    if not prior_players:
+        return movers
+
+    prev = {
+        ((q.get("name") or "").strip().lower(), (q.get("team") or "").strip().lower()): q
+        for q in prior_players
+    }
+    all_deltas = []  # every matched player — merged into /api/prospects rows
+    scored     = []  # rows shaped for risers/fallers
+    for rank, p in enumerate(prospects, start=1):
+        key = ((p.get("name") or "").strip().lower(), (p.get("team") or "").strip().lower())
+        q = prev.get(key)
+        if not q:
+            continue
+        delta_prob = round(float(p.get("success_probability") or 0)
+                           - float(q.get("success_probability") or 0), 2)
+        delta_rank = int(q.get("rank") or rank) - rank
+        all_deltas.append({"name": p.get("name"), "team": p.get("team"),
+                           "delta_prob": delta_prob, "delta_rank": delta_rank})
+        if delta_prob != 0:
+            scored.append({
+                "name":                p.get("name"),
+                "team":                p.get("team"),
+                "position":            p.get("position"),
+                "grade":               p.get("grade"),
+                "success_probability": p.get("success_probability") or 0,
+                "delta_prob":          delta_prob,
+                "delta_rank":          delta_rank,
+                "espn_team_id":        p.get("espn_team_id") or "",
+            })
+
+    risers  = sorted((m for m in scored if m["delta_prob"] > 0),
+                     key=lambda m: -m["delta_prob"])[:MOVERS_TOP_N]
+    fallers = sorted((m for m in scored if m["delta_prob"] < 0),
+                     key=lambda m: m["delta_prob"])[:MOVERS_TOP_N]
+    movers.update({
+        "since":   (prior or {}).get("generated_at") or None,
+        "count":   len(risers) + len(fallers),
+        "risers":  risers,
+        "fallers": fallers,
+        # Superset of the /api/movers contract: full per-player deltas, used
+        # server-side to merge "trend" into /api/prospects rows. The endpoint
+        # itself serves only the contract keys above.
+        "all_deltas": all_deltas,
+    })
+    return movers
+
+
+def write_board_history(all_prospects, generated_at):
+    """Snapshot today's board and write board_movers.json vs the prior one."""
+    prior = load_latest_snapshot()  # read BEFORE writing today's snapshot —
+    # a same-day rerun then computes deltas against the previous run instead
+    # of diffing the file against itself.
+    date_str  = _snapshot_date_from_iso(generated_at)
+    snap_path = write_snapshot(all_prospects, generated_at, date_str)
+    movers    = compute_movers(all_prospects, prior, generated_at)
+    with open(MOVERS_FILE, "w") as f:
+        json.dump(movers, f, separators=(",", ":"))
+    print(f"  Snapshot: {snap_path}")
+    print(f"  Movers:   {MOVERS_FILE} "
+          f"({movers['count']} movers since {movers['since'] or 'n/a — first snapshot'})")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Build prospect prediction cache.")
     parser.add_argument("--api-url",   default="http://localhost:5001",
@@ -210,6 +371,10 @@ def main():
     args = parser.parse_args()
 
     os.makedirs("training_data", exist_ok=True)
+
+    # One-time migration: seed board history from the pre-existing cache BEFORE
+    # this run overwrites it, so the first refreshed board already has deltas.
+    bootstrap_history_from_existing_cache()
 
     print(f"Using API: {args.api_url}")
     print(f"Output:    {OUTPUT_FILE}\n")
@@ -275,6 +440,10 @@ def main():
         json.dump(cache, f, separators=(",", ":"))
 
     print(f"\n✓ Saved {len(all_prospects)} prospects to {OUTPUT_FILE}")
+
+    # Snapshot today's board and compute movers vs the most recent prior snapshot
+    write_board_history(all_prospects, cache["generated_at"])
+
     print(f"  Errors: {errors}")
     grade_counts = {}
     for p in all_prospects:

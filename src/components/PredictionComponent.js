@@ -2,6 +2,7 @@ import React, {
   useCallback, useEffect, useRef, useState,
 } from 'react';
 import { useLocation } from 'react-router-dom';
+import { anonFetch } from '../lib/api';
 import './PredictionComponent.css';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -37,7 +38,7 @@ export default function PredictionComponent() {
   const loadInit = useCallback(async () => {
     setLoadingPlayers(true);
     try {
-      const res  = await fetch(apiUrl('/init'));
+      const res  = await anonFetch(apiUrl('/init'));
       const data = await res.json();
       setAllPlayers(Array.isArray(data.players) ? data.players : []);
       setTeams(Array.isArray(data.teams) ? data.teams : []);
@@ -55,7 +56,7 @@ export default function PredictionComponent() {
     if (val.length < 2) { setAcResults([]); setAcOpen(false); return; }
     acTimer.current = setTimeout(async () => {
       try {
-        const res  = await fetch(apiUrl(`/search?q=${encodeURIComponent(val)}`));
+        const res  = await anonFetch(apiUrl(`/search?q=${encodeURIComponent(val)}`));
         const data = await res.json();
         setAcResults(Array.isArray(data.players) ? data.players : []);
         setAcOpen(true);
@@ -79,7 +80,7 @@ export default function PredictionComponent() {
     setAcOpen(false);
     setAcQuery('');
     try {
-      const res  = await fetch(apiUrl('/predict'), {
+      const res  = await anonFetch(apiUrl('/predict'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: player.name }),
@@ -107,7 +108,7 @@ export default function PredictionComponent() {
   const handleSync = useCallback(async () => {
     setSyncing(true); setSyncMsg('');
     try {
-      const res  = await fetch(apiUrl('/sync/college-prospects'), {
+      const res  = await anonFetch(apiUrl('/sync/college-prospects'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ max_teams: 250, max_players: 5000 }),
       });

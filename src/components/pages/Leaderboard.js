@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { anonFetch } from '../../lib/api';
 import './Leaderboard.css';
 
 const PAGE_SIZE = 100;
@@ -39,6 +40,16 @@ function posMatchesTab(pos, tab) {
 
 const clampPct = (v) => Math.max(0, Math.min(100, Number(v) || 0));
 
+// Optional "trend": {"delta_prob", "delta_rank"} on /api/prospects rows —
+// null when absent, malformed, or flat (no movement to show).
+function trendOf(p) {
+  const t = p && p.trend;
+  if (!t || typeof t !== 'object') return null;
+  const delta = Number(t.delta_prob);
+  if (!Number.isFinite(delta) || delta === 0) return null;
+  return { delta, deltaRank: Number.isFinite(Number(t.delta_rank)) ? Number(t.delta_rank) : null };
+}
+
 // "2026-08-14T03:12:00Z" -> "Aug 14"; null on anything unparseable.
 function formatBoardDate(iso) {
   if (!iso) return null;
@@ -65,7 +76,7 @@ export default function Leaderboard() {
 
   useEffect(() => {
     setLoading(true);
-    fetch('/api/prospects?limit=2000')
+    anonFetch('/api/prospects?limit=2000')
       .then(r => r.json())
       .then(data => {
         setProspects(Array.isArray(data.prospects) ? data.prospects : []);
@@ -325,10 +336,11 @@ export default function Leaderboard() {
               )}
             </div>
           ) : shown.map((p, i) => {
-            const id   = `${p.name}-${i}`;
-            const open = expanded === id;
-            const top  = i < 3;
-            const sp   = p.success_probability || 0;
+            const id    = `${p.name}-${i}`;
+            const open  = expanded === id;
+            const top   = i < 3;
+            const sp    = p.success_probability || 0;
+            const trend = trendOf(p);
             const fillPct = maxProb > minProb
               ? 6 + 94 * ((sp - minProb) / (maxProb - minProb))
               : 50;
@@ -385,7 +397,14 @@ export default function Leaderboard() {
                   <span className="lb-school lb-c-school">{p.team || '—'}</span>
                   <span className="lb-proj lb-c-proj">{DRAFT_SHORT[p.draft_grade] || p.draft_grade || '—'}</span>
                   <span className="lb-grade lb-c-grade"><span>{p.grade || '—'}</span></span>
-                  <span className="lb-prob lb-c-prob">{p.success_probability != null ? sp.toFixed(1) : '—'}</span>
+                  <span className="lb-prob lb-c-prob">
+                    {p.success_probability != null ? sp.toFixed(1) : '—'}
+                    {trend && (
+                      <span className={`lb-trend ${trend.delta > 0 ? 'up' : 'down'}`}>
+                        {trend.delta > 0 ? '▲' : '▼'} {Math.abs(trend.delta).toFixed(1)}
+                      </span>
+                    )}
+                  </span>
                   <span className={`lb-chev lb-c-chev${open ? ' open' : ''}`} aria-hidden="true">›</span>
                 </div>
 

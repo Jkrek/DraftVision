@@ -62,6 +62,7 @@ TRAINING_DATA_PATH         = "training_data/combine_outcomes.csv"
 PROSPECT_CACHE_PATH        = "training_data/prospect_cache.json"
 MOCK_DRAFT_PATH            = "mock_draft.json"
 HS_PROSPECT_CACHE_PATH     = "training_data/hs_prospect_cache.json"
+BOARD_MOVERS_PATH          = "training_data/board_movers.json"
 CFBD_API_KEY               = os.environ.get("CFBD_API_KEY", "")
 CFBD_BASE_URL              = "https://api.collegefootballdata.com"
 PLAYER_DB_PATH       = "players.db"
@@ -1811,6 +1812,12 @@ _PROSPECT_CACHE_META: dict = {}
 _PROSPECT_CACHE_MTIME: float = 0.0   # mtime of the JSON file at last successful load
 _prospect_reload_lock = threading.Lock()
 
+# ── Board movers / trend cache (written by build_prospect_cache.py) ───────────
+_BOARD_MOVERS: dict = {}          # raw board_movers.json contents
+_BOARD_TRENDS: dict = {}          # (name_lower, team_lower) -> {"delta_prob","delta_rank"}
+_BOARD_MOVERS_MTIME: float = 0.0  # mtime of the JSON file at last successful load
+_board_movers_reload_lock = threading.Lock()
+
 # ── Mock draft storage ─────────────────────────────────────────────────────────
 _MOCK_DRAFT_DATA: dict = {"picks": [], "title": "", "generated_at": None, "total": 0}
 
@@ -1873,6 +1880,7 @@ def _maybe_reload_prospect_cache() -> None:
 @app.get("/api/prospects")
 def api_prospects():
     _maybe_reload_prospect_cache()
+    _maybe_reload_board_movers()  # keeps per-row "trend" in sync with movers file
     position     = (request.args.get("position") or "").strip().upper()
     grade_filter = (request.args.get("grade") or "").strip().upper()
     query        = (request.args.get("q") or "").strip().lower()
@@ -1924,12 +1932,85 @@ def api_prospects():
     total     = len(results)
     paginated = results[offset: offset + limit]
 
+    # Merge per-player trend (delta vs prior board snapshot) into the rows we
+    # actually return. Rows are shallow-copied so the cached dicts stay pristine
+    # when board_movers.json changes or disappears.
+    if _BOARD_TRENDS:
+        merged = []
+        for p in paginated:
+            trend = _BOARD_TRENDS.get((
+                (p.get("name") or "").strip().lower(),
+                (p.get("team") or "").strip().lower(),
+            ))
+            merged.append({**p, "trend": trend} if trend else p)
+        paginated = merged
+
     return jsonify({
         "total":     total,
         "offset":    offset,
         "limit":     limit,
         "meta":      _PROSPECT_CACHE_META,
         "prospects": paginated,
+    })
+
+
+# ── Board movers (weekly risers/fallers vs the prior board snapshot) ──────────
+
+def load_board_movers() -> None:
+    global _BOARD_MOVERS, _BOARD_TRENDS, _BOARD_MOVERS_MTIME
+    if not os.path.exists(BOARD_MOVERS_PATH):
+        return
+    try:
+        mtime = os.path.getmtime(BOARD_MOVERS_PATH)  # capture BEFORE reading
+        with open(BOARD_MOVERS_PATH) as f:
+            data = json.load(f)
+        # "all_deltas" is the builder's superset of the risers/fallers lists:
+        # every player matched to the prior snapshot, keyed here by name+team
+        # so /api/prospects can merge a "trend" object into each row.
+        trends = {}
+        for row in data.get("all_deltas") or []:
+            key = ((row.get("name") or "").strip().lower(),
+                   (row.get("team") or "").strip().lower())
+            trends[key] = {"delta_prob": row.get("delta_prob", 0),
+                           "delta_rank": row.get("delta_rank", 0)}
+        # Atomic reference swaps — readers see either the old dicts or the new
+        _BOARD_MOVERS = data
+        _BOARD_TRENDS = trends
+        _BOARD_MOVERS_MTIME = mtime
+        print(f"Loaded board movers ({data.get('count', 0)} movers, "
+              f"{len(trends)} player trends).")
+    except Exception as exc:
+        # mtime NOT updated on failure (e.g. file mid-rewrite) → retried next request
+        print(f"Failed to load board movers: {exc}")
+
+
+def _maybe_reload_board_movers() -> None:
+    """Hot-reload movers/trends if board_movers.json changed on disk (same
+    mtime pattern as the prospect cache)."""
+    try:
+        mtime = os.path.getmtime(BOARD_MOVERS_PATH)
+    except OSError:
+        return
+    if mtime == _BOARD_MOVERS_MTIME:
+        return
+    with _board_movers_reload_lock:
+        if mtime == _BOARD_MOVERS_MTIME:  # another thread already reloaded
+            return
+        load_board_movers()
+
+
+@app.get("/api/movers")
+def api_movers():
+    _maybe_reload_board_movers()
+    data = _BOARD_MOVERS
+    # Missing/empty file → valid empty shape (200), per the API contract
+    return jsonify({
+        "generated_at": data.get("generated_at")
+                        or __import__("datetime").datetime.utcnow().isoformat() + "Z",
+        "since":        data.get("since"),
+        "count":        data.get("count", 0),
+        "risers":       data.get("risers", []),
+        "fallers":      data.get("fallers", []),
     })
 
 
@@ -2732,8 +2813,22 @@ load_position_model_artifacts()
 load_success_models()
 load_draft_grade_models()
 load_prospect_cache()
+load_board_movers()
 load_mock_draft()
 load_hs_prospect_cache()
+
+# ── Usage analytics + optional Auth0 login (dv_analytics.py) ──────────────────
+# Registers before/after_request logging hooks, the /api/analytics/summary
+# endpoint (guarded by ANALYTICS_KEY), and — when AUTH0_DOMAIN/AUTH0_AUDIENCE
+# are set — Bearer-token verification that attaches g.user_sub.
+import dv_analytics
+
+dv_analytics.init_app(
+    app,
+    get_conn=_get_conn,
+    placeholder=_placeholder,
+    use_postgres=USE_POSTGRES,
+)
 
 AUTO_SYNC_COLLEGE_PROSPECTS = os.getenv("AUTO_SYNC_COLLEGE_PROSPECTS", "true").lower() == "true"
 if AUTO_SYNC_COLLEGE_PROSPECTS and player_database_count_by_source("college_prospect") == 0:
@@ -2753,5 +2848,6 @@ except Exception as exc:
 
 
 if __name__ == "__main__":
-    # DV_PORT lets a throwaway/smoke-test instance run beside the main :5001 server
-    app.run(debug=False, use_reloader=False, port=int(os.getenv("DV_PORT", "5001")))
+    # DV_PORT/PORT let a throwaway/smoke-test instance run beside the main :5001 server
+    app.run(debug=False, use_reloader=False,
+            port=int(os.getenv("DV_PORT") or os.getenv("PORT") or "5001"))

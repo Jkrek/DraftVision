@@ -198,6 +198,20 @@
   margin-left: 2px;
 }
 
+/* trend chip — Δ success probability since last board; same desaturated
+   tones as the ticker (no stoplight colors). Absent when no history. */
+.col-trend {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.col-trend.up   { color: color-mix(in srgb, #7dd3a8 62%, var(--color-neutral-300)); }
+.col-trend.down { color: color-mix(in srgb, #d3837d 62%, var(--color-neutral-300)); }
+
 /* — states + load more — */
 .stars-state {
   padding: 48px 22px;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { anonFetch } from '../../lib/api';
 import '../../App.css';
 import './MockDraft.css';
 import { nflLogoUrl } from '../nflTeams';
@@ -24,7 +25,7 @@ export default function MockDraft() {
 
   // Load existing draft on mount
   useEffect(() => {
-    fetch('/api/mock-draft')
+    anonFetch('/api/mock-draft')
       .then(r => r.json())
       .then(data => {
         setPicks(Array.isArray(data.picks) ? data.picks : []);
@@ -52,7 +53,7 @@ export default function MockDraft() {
       });
 
       const mediaType = file.type || 'image/png';
-      const res  = await fetch('/api/mock-draft/upload', {
+      const res  = await anonFetch('/api/mock-draft/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_b64: b64, media_type: mediaType, title: 'JKrek\'s Mock Draft' }),
@@ -61,7 +62,7 @@ export default function MockDraft() {
       if (!res.ok) throw new Error(data.error || 'Upload failed');
 
       // Reload the draft
-      const fresh = await fetch('/api/mock-draft').then(r => r.json());
+      const fresh = await anonFetch('/api/mock-draft').then(r => r.json());
       setPicks(Array.isArray(fresh.picks) ? fresh.picks : []);
       setTitle(fresh.title || '');
       setMeta({ generated_at: fresh.generated_at, total: fresh.total });

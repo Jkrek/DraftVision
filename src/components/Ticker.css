@@ -1,5 +1,8 @@
 /* ── Board movers ticker — Nocturne ─────────────────────────────────────────── */
 .ticker {
+  /* Trend tones — desaturated toward the neutral ramp; no stoplight colors. */
+  --trend-up:   color-mix(in srgb, #7dd3a8 62%, var(--color-neutral-300));
+  --trend-down: color-mix(in srgb, #d3837d 62%, var(--color-neutral-300));
   display: flex;
   align-items: stretch;
   background: var(--color-neutral-900);
@@ -79,6 +82,15 @@
   color: var(--color-accent-200);
   font-variant-numeric: tabular-nums;
 }
+
+.ticker-delta {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ticker-delta.up   { color: var(--trend-up); }
+.ticker-delta.down { color: var(--trend-down); }
 
 @media (prefers-reduced-motion: no-preference) {
   .ticker-dot {

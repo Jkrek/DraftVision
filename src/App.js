@@ -15,6 +15,7 @@ import PredictionComponent from './components/PredictionComponent';
 import Leaderboard from './components/pages/Leaderboard';
 import MockDraft from './components/pages/MockDraft';
 import HSProspects from './components/pages/HSProspects';
+import Insights from './components/pages/Insights';
 
 function App() {
   return (
@@ -31,6 +32,8 @@ function App() {
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/mock-draft" element={<MockDraft />} />
           <Route path="/hs-prospects" element={<HSProspects />} />
+          {/* private owner dashboard — intentionally not linked from the nav */}
+          <Route path="/insights" element={<Insights />} />
         </Routes>
         <Footer />
       </Auth0ProviderWithHistory>

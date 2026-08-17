@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { anonFetch } from '../lib/api';
 import './HeroSection.css';
 
 /* Static fallback so the "Live model output" card never looks broken. */
@@ -59,7 +60,7 @@ function HeroSection() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/prospects?limit=2')
+    anonFetch('/api/prospects?limit=2')
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('bad status'))))
       .then((data) => {
         if (cancelled) return;

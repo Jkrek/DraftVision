@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { anonFetch } from '../../lib/api';
 import '../../App.css';
 
 const POSITION_COLORS = {
@@ -13,7 +14,7 @@ export default function Products() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    fetch('/api/prospects?limit=5000')
+    anonFetch('/api/prospects?limit=5000')
       .then(r => r.json())
       .then(d => setProspects(Array.isArray(d.prospects) ? d.prospects : []))
       .catch(() => setProspects([]))

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { anonFetch } from '../../lib/api';
 import './HSProspects.css';
 
 const POSITION_TABS = ['ALL', 'QB', 'RB', 'WR', 'TE', 'DB', 'LB', 'DL', 'OL'];
@@ -45,7 +46,7 @@ export default function HSProspects() {
 
   useEffect(() => {
     setLoading(true);
-    fetch('/api/hs-prospects?limit=2000')
+    anonFetch('/api/hs-prospects?limit=2000')
       .then(r => r.json())
       .then(data => {
         setProspects(Array.isArray(data.prospects) ? data.prospects : []);

@@ -41,6 +41,31 @@ In Railway → your service → **Variables**, add:
 
 `DATABASE_URL` and `PORT` are set automatically by Railway.
 
+### Optional — auth + analytics (dv_analytics.py)
+
+All three are optional; each feature stays dormant until its variable is set.
+
+| Variable | Value |
+|----------|-------|
+| `AUTH0_DOMAIN` | your Auth0 tenant domain, e.g. `dev-xyz123.us.auth0.com` (no `https://`) |
+| `AUTH0_AUDIENCE` | the API identifier configured in Auth0, e.g. `https://api.jkrek.com` |
+| `ANALYTICS_KEY` | a long random string (e.g., `openssl rand -hex 32`) |
+
+- **`AUTH0_DOMAIN` + `AUTH0_AUDIENCE`** (both required together): enables
+  verification of `Authorization: Bearer` tokens from the frontend's
+  Auth0Provider. Valid tokens upsert a `users` row (sub/email/name, tier
+  defaults to `free`) and tie usage events to the signed-in user. Unset =
+  everyone is anonymous; the app never 401s public routes either way. These
+  must match the frontend's `REACT_APP_AUTH0_*` values.
+- **`ANALYTICS_KEY`**: unlocks `GET /api/analytics/summary` (pass it as
+  `?key=...` or the `X-Analytics-Key` header) returning DAU/WAU/MAU,
+  returning visitors, signups, top routes, and a 30-day daily series. While
+  unset (or on a wrong key) the endpoint answers 404, so it is invisible in
+  prod until configured.
+
+No raw IPs or user agents are stored — visitors are counted by Auth0 `sub`
+or the browser's self-assigned `X-DV-Anon` uuid only.
+
 ## Step 5 — Connect your domain
 
 1. Railway project → **Settings** → **Domains** → **Add Custom Domain**
@@ -96,3 +121,36 @@ Or set `AUTO_SYNC_COLLEGE_PROSPECTS=true` for the first boot, then flip it back 
 | `players` table missing | Postgres migration runs automatically on startup via `initialize_player_database()` |
 | ESPN stats not loading | Stats are cached for 1 hour; check Railway logs for fetch errors |
 | Slow first load | Cold start on Railway free tier takes ~20s; paid tier eliminates this |
+
+## Weekly board refresh (risers / fallers)
+
+The prospect board refreshes itself once a week during the college football
+season via GitHub Actions (`.github/workflows/refresh-board.yml`):
+
+- **Schedule:** Tuesdays 09:00 UTC, August through January (cron `0 9 * 8-12,1 2`).
+  It can also be run on demand from the Actions tab (`workflow_dispatch`).
+- **What it does:** the job runs `scripts/refresh_board.sh` against the live API
+  (repository variable `BOARD_API_URL`, e.g. `https://jkrek.com`). The script
+  invokes `build_prospect_cache.py`, which:
+  1. rebuilds `training_data/prospect_cache.json` (every FBS player re-graded),
+  2. snapshots the slim board to `training_data/board_history/board_<YYYY-MM-DD>.json`,
+  3. diffs against the most recent prior snapshot and writes
+     `training_data/board_movers.json` (top-15 risers/fallers plus per-player
+     deltas, served by `GET /api/movers` and merged into `/api/prospects` rows
+     as an optional `trend` field).
+- **Publishing:** the workflow commits the refreshed cache, the new history
+  snapshot, and `board_movers.json` back to `main`. Railway auto-deploys on
+  every push to `main`, and the freshly deployed image ships the new JSON, so
+  the site picks the refresh up automatically.
+- **No-redeploy path:** the Flask app also hot-reloads these files on mtime —
+  each request to `/api/prospects` / `/api/movers` stats the JSON and reloads
+  it if it changed on disk. So a cache uploaded manually to a running instance
+  (e.g. via the Railway shell) takes effect immediately, no restart needed.
+- **Local refresh:** start the API (`python XGBOost.py`), then run
+  `scripts/refresh_board.sh` (defaults to `http://localhost:5001`; override
+  with `BOARD_API_URL`).
+- **First run:** history starts empty, so `build_prospect_cache.py` bootstraps
+  it by snapshotting the pre-existing `prospect_cache.json` (dated from its
+  `generated_at`) before overwriting it — the first refreshed board therefore
+  already has deltas. Until a refresh has run, `/api/movers` returns a valid
+  empty payload (`"since": null`, empty `risers`/`fallers`).

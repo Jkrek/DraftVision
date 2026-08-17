@@ -413,6 +413,20 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* trend chip — Δ success probability since last board; same desaturated
+   tones as the ticker (no stoplight colors). Absent when no history. */
+.lb-trend {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.lb-trend.up   { color: color-mix(in srgb, #7dd3a8 62%, var(--color-neutral-300)); }
+.lb-trend.down { color: color-mix(in srgb, #d3837d 62%, var(--color-neutral-300)); }
+
 .lb-chev {
   position: relative;
   font-size: 20px;

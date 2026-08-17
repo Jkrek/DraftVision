@@ -1,0 +1,2852 @@
+[
+  {
+    "label": "base13|flat|2010+",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other"
+    ],
+    "method": "flat",
+    "history": false,
+    "recency": false,
+    "n_train": 2975,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4093,
+      "macro_f1": 0.4022,
+      "per_class_recall": [
+        0.4375,
+        0.3077,
+        0.4356,
+        0.4375
+      ],
+      "confusion_matrix": [
+        [
+          56,
+          38,
+          25,
+          9
+        ],
+        [
+          40,
+          48,
+          41,
+          27
+        ],
+        [
+          36,
+          45,
+          98,
+          46
+        ],
+        [
+          22,
+          45,
+          59,
+          98
+        ]
+      ]
+    },
+    "calibrated": {
+      "accuracy": 0.4065,
+      "macro_f1": 0.3423,
+      "per_class_recall": [
+        0.5156,
+        0.0128,
+        0.4,
+        0.625
+      ],
+      "confusion_matrix": [
+        [
+          66,
+          9,
+          23,
+          30
+        ],
+        [
+          50,
+          2,
+          33,
+          71
+        ],
+        [
+          44,
+          2,
+          90,
+          89
+        ],
+        [
+          28,
+          1,
+          55,
+          140
+        ]
+      ]
+    }
+  },
+  {
+    "label": "base13|ordinal|2010+",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other"
+    ],
+    "method": "ordinal",
+    "history": false,
+    "recency": false,
+    "n_train": 2975,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4038,
+      "macro_f1": 0.3555,
+      "per_class_recall": [
+        0.6328,
+        0.0513,
+        0.3822,
+        0.5402
+      ],
+      "confusion_matrix": [
+        [
+          81,
+          5,
+          22,
+          20
+        ],
+        [
+          68,
+          8,
+          31,
+          49
+        ],
+        [
+          61,
+          4,
+          86,
+          74
+        ],
+        [
+          50,
+          7,
+          46,
+          121
+        ]
+      ]
+    }
+  },
+  {
+    "label": "base13|regression|2010+",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other"
+    ],
+    "method": "regression",
+    "history": false,
+    "recency": false,
+    "n_train": 2975,
+    "n_cal": 379,
+    "n_test": 733,
+    "thresholds": [
+      1.3999999999999995,
+      1.5499999999999994,
+      1.9999999999999996
+    ],
+    "raw": {
+      "accuracy": 0.4229,
+      "macro_f1": 0.3931,
+      "per_class_recall": [
+        0.5781,
+        0.1282,
+        0.5689,
+        0.3929
+      ],
+      "confusion_matrix": [
+        [
+          74,
+          9,
+          38,
+          7
+        ],
+        [
+          53,
+          20,
+          62,
+          21
+        ],
+        [
+          41,
+          14,
+          128,
+          42
+        ],
+        [
+          30,
+          18,
+          88,
+          88
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw|flat|2010+",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle"
+    ],
+    "method": "flat",
+    "history": false,
+    "recency": false,
+    "n_train": 2975,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4434,
+      "macro_f1": 0.4295,
+      "per_class_recall": [
+        0.4922,
+        0.3333,
+        0.32,
+        0.6161
+      ],
+      "confusion_matrix": [
+        [
+          63,
+          38,
+          11,
+          16
+        ],
+        [
+          41,
+          52,
+          27,
+          36
+        ],
+        [
+          39,
+          52,
+          72,
+          62
+        ],
+        [
+          25,
+          42,
+          19,
+          138
+        ]
+      ]
+    },
+    "calibrated": {
+      "accuracy": 0.4447,
+      "macro_f1": 0.3556,
+      "per_class_recall": [
+        0.625,
+        0.0,
+        0.2844,
+        0.8125
+      ],
+      "confusion_matrix": [
+        [
+          80,
+          0,
+          10,
+          38
+        ],
+        [
+          60,
+          0,
+          23,
+          73
+        ],
+        [
+          51,
+          0,
+          64,
+          110
+        ],
+        [
+          30,
+          0,
+          12,
+          182
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw|ordinal|2010+",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle"
+    ],
+    "method": "ordinal",
+    "history": false,
+    "recency": false,
+    "n_train": 2975,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.427,
+      "macro_f1": 0.3603,
+      "per_class_recall": [
+        0.7344,
+        0.0385,
+        0.2489,
+        0.7009
+      ],
+      "confusion_matrix": [
+        [
+          94,
+          5,
+          7,
+          22
+        ],
+        [
+          81,
+          6,
+          11,
+          58
+        ],
+        [
+          71,
+          8,
+          56,
+          90
+        ],
+        [
+          58,
+          5,
+          4,
+          157
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw|regression|2010+",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle"
+    ],
+    "method": "regression",
+    "history": false,
+    "recency": false,
+    "n_train": 2975,
+    "n_cal": 379,
+    "n_test": 733,
+    "thresholds": [
+      1.1499999999999997,
+      1.2499999999999996,
+      2.0499999999999994
+    ],
+    "raw": {
+      "accuracy": 0.4379,
+      "macro_f1": 0.3951,
+      "per_class_recall": [
+        0.4375,
+        0.0769,
+        0.6844,
+        0.442
+      ],
+      "confusion_matrix": [
+        [
+          56,
+          6,
+          63,
+          3
+        ],
+        [
+          26,
+          12,
+          100,
+          18
+        ],
+        [
+          21,
+          7,
+          154,
+          43
+        ],
+        [
+          8,
+          5,
+          112,
+          99
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_norm|flat|2010+",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in_z",
+      "weight_lb_z",
+      "vertical_z",
+      "bench_z",
+      "broad_in_z",
+      "cone_z",
+      "shuttle_z"
+    ],
+    "method": "flat",
+    "history": false,
+    "recency": false,
+    "n_train": 2975,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4393,
+      "macro_f1": 0.427,
+      "per_class_recall": [
+        0.4531,
+        0.3526,
+        0.3333,
+        0.5982
+      ],
+      "confusion_matrix": [
+        [
+          58,
+          40,
+          13,
+          17
+        ],
+        [
+          39,
+          55,
+          24,
+          38
+        ],
+        [
+          33,
+          55,
+          75,
+          62
+        ],
+        [
+          23,
+          44,
+          23,
+          134
+        ]
+      ]
+    },
+    "calibrated": {
+      "accuracy": 0.4434,
+      "macro_f1": 0.3557,
+      "per_class_recall": [
+        0.5938,
+        0.0,
+        0.2978,
+        0.8125
+      ],
+      "confusion_matrix": [
+        [
+          76,
+          0,
+          9,
+          43
+        ],
+        [
+          61,
+          0,
+          17,
+          78
+        ],
+        [
+          43,
+          0,
+          67,
+          115
+        ],
+        [
+          29,
+          0,
+          13,
+          182
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_norm|ordinal|2010+",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in_z",
+      "weight_lb_z",
+      "vertical_z",
+      "bench_z",
+      "broad_in_z",
+      "cone_z",
+      "shuttle_z"
+    ],
+    "method": "ordinal",
+    "history": false,
+    "recency": false,
+    "n_train": 2975,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4379,
+      "macro_f1": 0.3738,
+      "per_class_recall": [
+        0.6875,
+        0.0513,
+        0.2533,
+        0.75
+      ],
+      "confusion_matrix": [
+        [
+          88,
+          8,
+          2,
+          30
+        ],
+        [
+          76,
+          8,
+          7,
+          65
+        ],
+        [
+          57,
+          20,
+          57,
+          91
+        ],
+        [
+          42,
+          8,
+          6,
+          168
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_norm|regression|2010+",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in_z",
+      "weight_lb_z",
+      "vertical_z",
+      "bench_z",
+      "broad_in_z",
+      "cone_z",
+      "shuttle_z"
+    ],
+    "method": "regression",
+    "history": false,
+    "recency": false,
+    "n_train": 2975,
+    "n_cal": 379,
+    "n_test": 733,
+    "thresholds": [
+      1.2499999999999996,
+      1.3499999999999996,
+      2.1499999999999995
+    ],
+    "raw": {
+      "accuracy": 0.4216,
+      "macro_f1": 0.3757,
+      "per_class_recall": [
+        0.4688,
+        0.0641,
+        0.68,
+        0.3839
+      ],
+      "confusion_matrix": [
+        [
+          60,
+          11,
+          55,
+          2
+        ],
+        [
+          36,
+          10,
+          96,
+          14
+        ],
+        [
+          32,
+          7,
+          153,
+          33
+        ],
+        [
+          13,
+          7,
+          118,
+          86
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw+age|flat|2010+",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle",
+      "age"
+    ],
+    "method": "flat",
+    "history": false,
+    "recency": false,
+    "n_train": 2975,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.6562,
+      "macro_f1": 0.6262,
+      "per_class_recall": [
+        0.6562,
+        0.3718,
+        0.5111,
+        1.0
+      ],
+      "confusion_matrix": [
+        [
+          84,
+          29,
+          15,
+          0
+        ],
+        [
+          46,
+          58,
+          52,
+          0
+        ],
+        [
+          33,
+          77,
+          115,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          224
+        ]
+      ]
+    },
+    "calibrated": {
+      "accuracy": 0.6835,
+      "macro_f1": 0.6015,
+      "per_class_recall": [
+        0.625,
+        0.1026,
+        0.8044,
+        1.0
+      ],
+      "confusion_matrix": [
+        [
+          80,
+          12,
+          36,
+          0
+        ],
+        [
+          39,
+          16,
+          101,
+          0
+        ],
+        [
+          30,
+          14,
+          181,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          224
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw+age|ordinal|2010+",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle",
+      "age"
+    ],
+    "method": "ordinal",
+    "history": false,
+    "recency": false,
+    "n_train": 2975,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.6357,
+      "macro_f1": 0.5694,
+      "per_class_recall": [
+        0.8516,
+        0.109,
+        0.5156,
+        1.0
+      ],
+      "confusion_matrix": [
+        [
+          109,
+          9,
+          10,
+          0
+        ],
+        [
+          84,
+          17,
+          55,
+          0
+        ],
+        [
+          78,
+          31,
+          116,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          224
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw+age|regression|2010+",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle",
+      "age"
+    ],
+    "method": "regression",
+    "history": false,
+    "recency": false,
+    "n_train": 2975,
+    "n_cal": 379,
+    "n_test": 733,
+    "thresholds": [
+      0.8999999999999997,
+      0.9999999999999996,
+      2.0999999999999996
+    ],
+    "raw": {
+      "accuracy": 0.6726,
+      "macro_f1": 0.5789,
+      "per_class_recall": [
+        0.5625,
+        0.0705,
+        0.8267,
+        1.0
+      ],
+      "confusion_matrix": [
+        [
+          72,
+          12,
+          44,
+          0
+        ],
+        [
+          42,
+          11,
+          103,
+          0
+        ],
+        [
+          27,
+          11,
+          186,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          224
+        ]
+      ]
+    }
+  },
+  {
+    "label": "base13|flat|hist",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other"
+    ],
+    "method": "flat",
+    "history": true,
+    "recency": false,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.3956,
+      "macro_f1": 0.3849,
+      "per_class_recall": [
+        0.4844,
+        0.2372,
+        0.4356,
+        0.4152
+      ],
+      "confusion_matrix": [
+        [
+          62,
+          27,
+          28,
+          11
+        ],
+        [
+          49,
+          37,
+          41,
+          29
+        ],
+        [
+          43,
+          40,
+          98,
+          44
+        ],
+        [
+          32,
+          38,
+          61,
+          93
+        ]
+      ]
+    },
+    "calibrated": {
+      "accuracy": 0.4011,
+      "macro_f1": 0.342,
+      "per_class_recall": [
+        0.4688,
+        0.0321,
+        0.3689,
+        0.6518
+      ],
+      "confusion_matrix": [
+        [
+          60,
+          14,
+          24,
+          30
+        ],
+        [
+          49,
+          5,
+          32,
+          70
+        ],
+        [
+          44,
+          6,
+          83,
+          92
+        ],
+        [
+          24,
+          4,
+          50,
+          146
+        ]
+      ]
+    }
+  },
+  {
+    "label": "base13|flat|hist-w",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other"
+    ],
+    "method": "flat",
+    "history": true,
+    "recency": true,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4011,
+      "macro_f1": 0.3914,
+      "per_class_recall": [
+        0.4531,
+        0.2692,
+        0.44,
+        0.4241
+      ],
+      "confusion_matrix": [
+        [
+          58,
+          31,
+          26,
+          13
+        ],
+        [
+          44,
+          42,
+          41,
+          29
+        ],
+        [
+          42,
+          40,
+          99,
+          44
+        ],
+        [
+          28,
+          41,
+          60,
+          95
+        ]
+      ]
+    },
+    "calibrated": {
+      "accuracy": 0.4093,
+      "macro_f1": 0.3522,
+      "per_class_recall": [
+        0.4922,
+        0.0385,
+        0.3689,
+        0.6607
+      ],
+      "confusion_matrix": [
+        [
+          63,
+          15,
+          22,
+          28
+        ],
+        [
+          46,
+          6,
+          32,
+          72
+        ],
+        [
+          42,
+          6,
+          83,
+          94
+        ],
+        [
+          22,
+          4,
+          50,
+          148
+        ]
+      ]
+    }
+  },
+  {
+    "label": "base13|ordinal|hist",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other"
+    ],
+    "method": "ordinal",
+    "history": true,
+    "recency": false,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4011,
+      "macro_f1": 0.3456,
+      "per_class_recall": [
+        0.6797,
+        0.0256,
+        0.3644,
+        0.5402
+      ],
+      "confusion_matrix": [
+        [
+          87,
+          4,
+          20,
+          17
+        ],
+        [
+          74,
+          4,
+          30,
+          48
+        ],
+        [
+          65,
+          5,
+          82,
+          73
+        ],
+        [
+          52,
+          5,
+          46,
+          121
+        ]
+      ]
+    }
+  },
+  {
+    "label": "base13|ordinal|hist-w",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other"
+    ],
+    "method": "ordinal",
+    "history": true,
+    "recency": true,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4011,
+      "macro_f1": 0.3429,
+      "per_class_recall": [
+        0.6875,
+        0.0192,
+        0.3511,
+        0.5536
+      ],
+      "confusion_matrix": [
+        [
+          88,
+          4,
+          20,
+          16
+        ],
+        [
+          73,
+          3,
+          30,
+          50
+        ],
+        [
+          64,
+          3,
+          79,
+          79
+        ],
+        [
+          50,
+          6,
+          44,
+          124
+        ]
+      ]
+    }
+  },
+  {
+    "label": "base13|regression|hist",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other"
+    ],
+    "method": "regression",
+    "history": true,
+    "recency": false,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "thresholds": [
+      1.2499999999999996,
+      1.3999999999999995,
+      1.9499999999999993
+    ],
+    "raw": {
+      "accuracy": 0.4229,
+      "macro_f1": 0.3922,
+      "per_class_recall": [
+        0.4453,
+        0.1282,
+        0.6089,
+        0.4286
+      ],
+      "confusion_matrix": [
+        [
+          57,
+          13,
+          54,
+          4
+        ],
+        [
+          32,
+          20,
+          80,
+          24
+        ],
+        [
+          28,
+          15,
+          137,
+          45
+        ],
+        [
+          18,
+          9,
+          101,
+          96
+        ]
+      ]
+    }
+  },
+  {
+    "label": "base13|regression|hist-w",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other"
+    ],
+    "method": "regression",
+    "history": true,
+    "recency": true,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "thresholds": [
+      1.2499999999999996,
+      1.2999999999999996,
+      1.9499999999999993
+    ],
+    "raw": {
+      "accuracy": 0.4202,
+      "macro_f1": 0.3598,
+      "per_class_recall": [
+        0.4531,
+        0.0192,
+        0.6578,
+        0.442
+      ],
+      "confusion_matrix": [
+        [
+          58,
+          2,
+          63,
+          5
+        ],
+        [
+          36,
+          3,
+          95,
+          22
+        ],
+        [
+          28,
+          5,
+          148,
+          44
+        ],
+        [
+          16,
+          4,
+          105,
+          99
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw|flat|hist",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle"
+    ],
+    "method": "flat",
+    "history": true,
+    "recency": false,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4352,
+      "macro_f1": 0.4186,
+      "per_class_recall": [
+        0.5703,
+        0.2564,
+        0.3022,
+        0.6161
+      ],
+      "confusion_matrix": [
+        [
+          73,
+          36,
+          4,
+          15
+        ],
+        [
+          58,
+          40,
+          12,
+          46
+        ],
+        [
+          48,
+          47,
+          68,
+          62
+        ],
+        [
+          34,
+          45,
+          7,
+          138
+        ]
+      ]
+    },
+    "calibrated": {
+      "accuracy": 0.442,
+      "macro_f1": 0.3611,
+      "per_class_recall": [
+        0.5625,
+        0.0064,
+        0.3289,
+        0.7902
+      ],
+      "confusion_matrix": [
+        [
+          72,
+          3,
+          13,
+          40
+        ],
+        [
+          46,
+          1,
+          26,
+          83
+        ],
+        [
+          41,
+          0,
+          74,
+          110
+        ],
+        [
+          26,
+          1,
+          20,
+          177
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw|flat|hist-w",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle"
+    ],
+    "method": "flat",
+    "history": true,
+    "recency": true,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4366,
+      "macro_f1": 0.422,
+      "per_class_recall": [
+        0.5391,
+        0.3013,
+        0.2933,
+        0.6161
+      ],
+      "confusion_matrix": [
+        [
+          69,
+          41,
+          4,
+          14
+        ],
+        [
+          55,
+          47,
+          10,
+          44
+        ],
+        [
+          45,
+          49,
+          66,
+          65
+        ],
+        [
+          30,
+          47,
+          9,
+          138
+        ]
+      ]
+    },
+    "calibrated": {
+      "accuracy": 0.4475,
+      "macro_f1": 0.3673,
+      "per_class_recall": [
+        0.5703,
+        0.0128,
+        0.32,
+        0.808
+      ],
+      "confusion_matrix": [
+        [
+          73,
+          2,
+          14,
+          39
+        ],
+        [
+          50,
+          2,
+          29,
+          75
+        ],
+        [
+          36,
+          2,
+          72,
+          115
+        ],
+        [
+          24,
+          3,
+          16,
+          181
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw|ordinal|hist",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle"
+    ],
+    "method": "ordinal",
+    "history": true,
+    "recency": false,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4379,
+      "macro_f1": 0.3662,
+      "per_class_recall": [
+        0.7969,
+        0.0321,
+        0.2444,
+        0.7098
+      ],
+      "confusion_matrix": [
+        [
+          102,
+          3,
+          1,
+          22
+        ],
+        [
+          83,
+          5,
+          7,
+          61
+        ],
+        [
+          72,
+          3,
+          55,
+          95
+        ],
+        [
+          58,
+          5,
+          2,
+          159
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw|ordinal|hist-w",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle"
+    ],
+    "method": "ordinal",
+    "history": true,
+    "recency": true,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4284,
+      "macro_f1": 0.3602,
+      "per_class_recall": [
+        0.7188,
+        0.0385,
+        0.2444,
+        0.7188
+      ],
+      "confusion_matrix": [
+        [
+          92,
+          4,
+          2,
+          30
+        ],
+        [
+          83,
+          6,
+          6,
+          61
+        ],
+        [
+          66,
+          7,
+          55,
+          97
+        ],
+        [
+          56,
+          4,
+          3,
+          161
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw|regression|hist",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle"
+    ],
+    "method": "regression",
+    "history": true,
+    "recency": false,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "thresholds": [
+      1.3499999999999996,
+      1.3999999999999995,
+      1.9499999999999993
+    ],
+    "raw": {
+      "accuracy": 0.4284,
+      "macro_f1": 0.3656,
+      "per_class_recall": [
+        0.5391,
+        0.0128,
+        0.5822,
+        0.5
+      ],
+      "confusion_matrix": [
+        [
+          69,
+          4,
+          45,
+          10
+        ],
+        [
+          50,
+          2,
+          76,
+          28
+        ],
+        [
+          40,
+          2,
+          131,
+          52
+        ],
+        [
+          22,
+          5,
+          85,
+          112
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw|regression|hist-w",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle"
+    ],
+    "method": "regression",
+    "history": true,
+    "recency": true,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "thresholds": [
+      1.1999999999999997,
+      1.3499999999999996,
+      1.9999999999999996
+    ],
+    "raw": {
+      "accuracy": 0.4543,
+      "macro_f1": 0.4222,
+      "per_class_recall": [
+        0.5078,
+        0.1218,
+        0.6133,
+        0.4955
+      ],
+      "confusion_matrix": [
+        [
+          65,
+          4,
+          55,
+          4
+        ],
+        [
+          33,
+          19,
+          81,
+          23
+        ],
+        [
+          30,
+          13,
+          138,
+          44
+        ],
+        [
+          11,
+          11,
+          91,
+          111
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_norm|flat|hist",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in_z",
+      "weight_lb_z",
+      "vertical_z",
+      "bench_z",
+      "broad_in_z",
+      "cone_z",
+      "shuttle_z"
+    ],
+    "method": "flat",
+    "history": true,
+    "recency": false,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4502,
+      "macro_f1": 0.4354,
+      "per_class_recall": [
+        0.5234,
+        0.3269,
+        0.3111,
+        0.6339
+      ],
+      "confusion_matrix": [
+        [
+          67,
+          36,
+          6,
+          19
+        ],
+        [
+          50,
+          51,
+          12,
+          43
+        ],
+        [
+          42,
+          53,
+          70,
+          60
+        ],
+        [
+          27,
+          46,
+          9,
+          142
+        ]
+      ]
+    },
+    "calibrated": {
+      "accuracy": 0.4502,
+      "macro_f1": 0.3673,
+      "per_class_recall": [
+        0.5938,
+        0.0064,
+        0.3244,
+        0.8036
+      ],
+      "confusion_matrix": [
+        [
+          76,
+          1,
+          8,
+          43
+        ],
+        [
+          58,
+          1,
+          20,
+          77
+        ],
+        [
+          42,
+          0,
+          73,
+          110
+        ],
+        [
+          25,
+          3,
+          16,
+          180
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_norm|flat|hist-w",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in_z",
+      "weight_lb_z",
+      "vertical_z",
+      "bench_z",
+      "broad_in_z",
+      "cone_z",
+      "shuttle_z"
+    ],
+    "method": "flat",
+    "history": true,
+    "recency": true,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4434,
+      "macro_f1": 0.4297,
+      "per_class_recall": [
+        0.5391,
+        0.3205,
+        0.3022,
+        0.6161
+      ],
+      "confusion_matrix": [
+        [
+          69,
+          35,
+          5,
+          19
+        ],
+        [
+          52,
+          50,
+          13,
+          41
+        ],
+        [
+          39,
+          54,
+          68,
+          64
+        ],
+        [
+          28,
+          46,
+          12,
+          138
+        ]
+      ]
+    },
+    "calibrated": {
+      "accuracy": 0.4461,
+      "macro_f1": 0.3712,
+      "per_class_recall": [
+        0.5781,
+        0.0256,
+        0.3111,
+        0.7991
+      ],
+      "confusion_matrix": [
+        [
+          74,
+          3,
+          9,
+          42
+        ],
+        [
+          55,
+          4,
+          20,
+          77
+        ],
+        [
+          39,
+          3,
+          70,
+          113
+        ],
+        [
+          24,
+          5,
+          16,
+          179
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_norm|ordinal|hist",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in_z",
+      "weight_lb_z",
+      "vertical_z",
+      "bench_z",
+      "broad_in_z",
+      "cone_z",
+      "shuttle_z"
+    ],
+    "method": "ordinal",
+    "history": true,
+    "recency": false,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4461,
+      "macro_f1": 0.3792,
+      "per_class_recall": [
+        0.75,
+        0.0513,
+        0.2578,
+        0.7366
+      ],
+      "confusion_matrix": [
+        [
+          96,
+          5,
+          1,
+          26
+        ],
+        [
+          81,
+          8,
+          6,
+          61
+        ],
+        [
+          72,
+          4,
+          58,
+          91
+        ],
+        [
+          52,
+          5,
+          2,
+          165
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_norm|ordinal|hist-w",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in_z",
+      "weight_lb_z",
+      "vertical_z",
+      "bench_z",
+      "broad_in_z",
+      "cone_z",
+      "shuttle_z"
+    ],
+    "method": "ordinal",
+    "history": true,
+    "recency": true,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.4407,
+      "macro_f1": 0.3744,
+      "per_class_recall": [
+        0.7422,
+        0.0449,
+        0.2622,
+        0.7232
+      ],
+      "confusion_matrix": [
+        [
+          95,
+          5,
+          2,
+          26
+        ],
+        [
+          84,
+          7,
+          6,
+          59
+        ],
+        [
+          63,
+          5,
+          59,
+          98
+        ],
+        [
+          50,
+          8,
+          4,
+          162
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_norm|regression|hist",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in_z",
+      "weight_lb_z",
+      "vertical_z",
+      "bench_z",
+      "broad_in_z",
+      "cone_z",
+      "shuttle_z"
+    ],
+    "method": "regression",
+    "history": true,
+    "recency": false,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "thresholds": [
+      1.2499999999999996,
+      1.7499999999999996,
+      2.0499999999999994
+    ],
+    "raw": {
+      "accuracy": 0.4175,
+      "macro_f1": 0.4191,
+      "per_class_recall": [
+        0.4922,
+        0.3846,
+        0.3467,
+        0.4688
+      ],
+      "confusion_matrix": [
+        [
+          63,
+          38,
+          20,
+          7
+        ],
+        [
+          39,
+          60,
+          35,
+          22
+        ],
+        [
+          30,
+          69,
+          78,
+          48
+        ],
+        [
+          15,
+          56,
+          48,
+          105
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_norm|regression|hist-w",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in_z",
+      "weight_lb_z",
+      "vertical_z",
+      "bench_z",
+      "broad_in_z",
+      "cone_z",
+      "shuttle_z"
+    ],
+    "method": "regression",
+    "history": true,
+    "recency": true,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "thresholds": [
+      1.1999999999999997,
+      1.3499999999999996,
+      2.1999999999999993
+    ],
+    "raw": {
+      "accuracy": 0.4161,
+      "macro_f1": 0.3734,
+      "per_class_recall": [
+        0.4688,
+        0.0769,
+        0.6889,
+        0.3482
+      ],
+      "confusion_matrix": [
+        [
+          60,
+          11,
+          56,
+          1
+        ],
+        [
+          36,
+          12,
+          96,
+          12
+        ],
+        [
+          30,
+          9,
+          155,
+          31
+        ],
+        [
+          14,
+          8,
+          124,
+          78
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw+age|flat|hist",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle",
+      "age"
+    ],
+    "method": "flat",
+    "history": true,
+    "recency": false,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.663,
+      "macro_f1": 0.6333,
+      "per_class_recall": [
+        0.7344,
+        0.3974,
+        0.4711,
+        1.0
+      ],
+      "confusion_matrix": [
+        [
+          94,
+          28,
+          6,
+          0
+        ],
+        [
+          63,
+          62,
+          31,
+          0
+        ],
+        [
+          45,
+          74,
+          106,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          224
+        ]
+      ]
+    },
+    "calibrated": {
+      "accuracy": 0.678,
+      "macro_f1": 0.6041,
+      "per_class_recall": [
+        0.5859,
+        0.1346,
+        0.7867,
+        1.0
+      ],
+      "confusion_matrix": [
+        [
+          75,
+          21,
+          32,
+          0
+        ],
+        [
+          40,
+          21,
+          95,
+          0
+        ],
+        [
+          27,
+          21,
+          177,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          224
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw+age|flat|hist-w",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle",
+      "age"
+    ],
+    "method": "flat",
+    "history": true,
+    "recency": true,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.6576,
+      "macro_f1": 0.6278,
+      "per_class_recall": [
+        0.7031,
+        0.4038,
+        0.4667,
+        1.0
+      ],
+      "confusion_matrix": [
+        [
+          90,
+          29,
+          9,
+          0
+        ],
+        [
+          57,
+          63,
+          36,
+          0
+        ],
+        [
+          48,
+          72,
+          105,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          224
+        ]
+      ]
+    },
+    "calibrated": {
+      "accuracy": 0.6889,
+      "macro_f1": 0.6115,
+      "per_class_recall": [
+        0.6172,
+        0.1218,
+        0.8133,
+        1.0
+      ],
+      "confusion_matrix": [
+        [
+          79,
+          17,
+          32,
+          0
+        ],
+        [
+          38,
+          19,
+          99,
+          0
+        ],
+        [
+          25,
+          17,
+          183,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          224
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw+age|ordinal|hist",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle",
+      "age"
+    ],
+    "method": "ordinal",
+    "history": true,
+    "recency": false,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.6398,
+      "macro_f1": 0.5687,
+      "per_class_recall": [
+        0.8984,
+        0.0962,
+        0.5111,
+        1.0
+      ],
+      "confusion_matrix": [
+        [
+          115,
+          7,
+          6,
+          0
+        ],
+        [
+          100,
+          15,
+          41,
+          0
+        ],
+        [
+          95,
+          15,
+          115,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          224
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw+age|ordinal|hist-w",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle",
+      "age"
+    ],
+    "method": "ordinal",
+    "history": true,
+    "recency": true,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "raw": {
+      "accuracy": 0.6344,
+      "macro_f1": 0.5639,
+      "per_class_recall": [
+        0.9062,
+        0.0962,
+        0.4889,
+        1.0
+      ],
+      "confusion_matrix": [
+        [
+          116,
+          5,
+          7,
+          0
+        ],
+        [
+          99,
+          15,
+          42,
+          0
+        ],
+        [
+          95,
+          20,
+          110,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          224
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw+age|regression|hist",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle",
+      "age"
+    ],
+    "method": "regression",
+    "history": true,
+    "recency": false,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "thresholds": [
+      0.7999999999999998,
+      0.8499999999999996,
+      2.1499999999999995
+    ],
+    "raw": {
+      "accuracy": 0.6835,
+      "macro_f1": 0.5887,
+      "per_class_recall": [
+        0.5469,
+        0.0769,
+        0.8667,
+        1.0
+      ],
+      "confusion_matrix": [
+        [
+          70,
+          9,
+          49,
+          0
+        ],
+        [
+          35,
+          12,
+          109,
+          0
+        ],
+        [
+          19,
+          9,
+          195,
+          2
+        ],
+        [
+          0,
+          0,
+          0,
+          224
+        ]
+      ]
+    }
+  },
+  {
+    "label": "+meas_raw+age|regression|hist-w",
+    "features": [
+      "production_score",
+      "games_played",
+      "combine_speed_score",
+      "conference_tier",
+      "position_qb",
+      "position_rb",
+      "position_wr",
+      "position_te",
+      "position_db",
+      "position_lb",
+      "position_dl",
+      "position_ol",
+      "position_other",
+      "height_in",
+      "weight_lb",
+      "vertical",
+      "bench",
+      "broad_in",
+      "cone",
+      "shuttle",
+      "age"
+    ],
+    "method": "regression",
+    "history": true,
+    "recency": true,
+    "n_train": 6657,
+    "n_cal": 379,
+    "n_test": 733,
+    "thresholds": [
+      0.8999999999999997,
+      0.9499999999999997,
+      2.1999999999999993
+    ],
+    "raw": {
+      "accuracy": 0.6712,
+      "macro_f1": 0.5626,
+      "per_class_recall": [
+        0.6484,
+        0.0192,
+        0.8089,
+        1.0
+      ],
+      "confusion_matrix": [
+        [
+          83,
+          4,
+          41,
+          0
+        ],
+        [
+          54,
+          3,
+          99,
+          0
+        ],
+        [
+          36,
+          6,
+          182,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          224
+        ]
+      ]
+    }
+  }
+]
