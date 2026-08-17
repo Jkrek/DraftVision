@@ -185,9 +185,14 @@ def call_predict(player, api_url, timeout=15):
             "draft_grade":        d.get("draft_grade") or "",
             "draft_grade_class":  d.get("draft_grade_class"),
             "conference_tier":    stats.get("conference_tier") or 5,
-            "production_score":   round(float(stats.get("production_score") or 0), 1),
-            "combine_speed_score": round(float(stats.get("combine_speed_score") or 50), 1),
-            "games_played":       int(float(stats.get("games_played") or 0)),
+            # None (not 0/50) when the server graded on missing data — the UI
+            # skips the bar instead of drawing a fake league-average one.
+            "production_score":   (round(float(stats["production_score"]), 1)
+                                   if stats.get("production_score") is not None else None),
+            "combine_speed_score": (round(float(stats["combine_speed_score"]), 1)
+                                    if stats.get("combine_speed_score") is not None else None),
+            "games_played":       (int(float(stats["games_played"]))
+                                   if stats.get("games_played") is not None else None),
             # ESPN NCAA team id -> logo at a.espncdn.com/i/teamlogos/ncaa/500/{id}.png
             "espn_team_id":       player.get("team_id") or "",
             "class_year":         player.get("class_year") or "",

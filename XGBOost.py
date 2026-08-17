@@ -1346,7 +1346,7 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
                 result["height_score"]   = round(height_to_score(position, ath_info["height_inches"]), 1)
                 result["weight_score"]   = round(weight_to_score(position, ath_info.get("weight_lbs", 0)), 1)
                 result["physical_is_real"] = True
-        return result, source
+        return _neutralize_fabricated(result), source
 
     # 2) Last fallback: generic baseline, using caller-supplied position/team if known.
     result = generate_estimated_profile(name=player_name.strip(), position=fallback_position, team=fallback_team)
@@ -1357,7 +1357,23 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
         int(result["jersey"]),
         source="default_baseline",
     )
-    return result, "default_baseline"
+    return _neutralize_fabricated(result), "default_baseline"
+
+
+def _neutralize_fabricated(profile: Dict[str, object]) -> Dict[str, object]:
+    """No verified season stats -> the model must see MISSING, not invented.
+
+    generate_estimated_profile fabricates a full stat line from a name hash;
+    fed to the ensemble it produced inflated 90%+ grades for unknown players
+    at tier-1 schools, out-ranking verified stars. NaN routes them through the
+    NaN-native model path so they grade on position/tier priors instead.
+    Real combine data (physical_is_real / a real forty) is kept.
+    """
+    profile["production_score"] = float("nan")
+    profile["games_played"]     = float("nan")
+    if not (profile.get("physical_is_real") or profile.get("combine_forty")):
+        profile["combine_speed_score"] = float("nan")
+    return profile
 
 
 # position_flags and the position-group sets now live in dv_features.py.
@@ -2282,20 +2298,22 @@ def compute_prospect_grade(success_prob: Optional[float], draft_grade_class: Opt
     """Map calibrated success probability (%) → letter grade A+…D.
 
     Thresholds are EMPIRICAL PERCENTILES of the calibrated ensemble's success
-    probability over the LIVE 7,123-player FBS board (rebuilt 2026-08-16 with
-    real ESPN stats, corrected tiers, and real games_played — the offline
-    old-snapshot calibration ran ~30 pts lower because it lacked those inputs).
-    Recompute these cutoffs whenever the board is rebuilt after a model or
-    feature change: sorted success_probability, value at each percentile below.
-        A+ ≥ 98th (top 2%)   → p ≥ 83.7
-        A  ≥ 95th            → p ≥ 78.3
-        A- ≥ 90th            → p ≥ 70.1
-        B+ ≥ 80th            → p ≥ 52.7
-        B  ≥ 70th            → p ≥ 38.5
-        B- ≥ 55th            → p ≥ 26.8
-        C+ ≥ 45th            → p ≥ 22.4   (C+/C straddle the median)
-        C  ≥ 35th            → p ≥ 18.7
-        C- ≥ 10th            → p ≥ 8.3
+    probability over the LIVE 8,150-player FBS board (2026-08-17: ESPN
+    athlete-id passthrough gives 42% verified-stat coverage; players WITHOUT
+    verified stats feed the model NaN and grade on position/tier priors,
+    landing 11-25% — they no longer outrank verified stars on fabricated
+    numbers). Recompute these cutoffs whenever the board is rebuilt after a
+    model or feature change: sorted success_probability, value at each
+    percentile below.
+        A+ ≥ 98th (top 2%)   → p ≥ 52.2
+        A  ≥ 95th            → p ≥ 30.6
+        A- ≥ 90th            → p ≥ 24.4
+        B+ ≥ 80th            → p ≥ 20.7
+        B  ≥ 70th            → p ≥ 19.8
+        B- ≥ 55th            → p ≥ 18.4
+        C+ ≥ 45th            → p ≥ 17.0   (C+/C straddle the median)
+        C  ≥ 35th            → p ≥ 14.8
+        C- ≥ 10th            → p ≥ 9.8
         D  < 10th (bottom 10%)
     draft_grade_class is intentionally NOT a gate anymore: the old
     (p, class) AND-gates structurally locked whole position groups (0 of
@@ -2305,15 +2323,15 @@ def compute_prospect_grade(success_prob: Optional[float], draft_grade_class: Opt
     if success_prob is None:
         return "D"  # fallback path with no calibrated probability
     p = float(success_prob)
-    if p >= 83.7: return "A+"
-    if p >= 78.3: return "A"
-    if p >= 70.1: return "A-"
-    if p >= 52.7: return "B+"
-    if p >= 38.5: return "B"
-    if p >= 26.8: return "B-"
-    if p >= 22.4: return "C+"
-    if p >= 18.7: return "C"
-    if p >= 8.3:  return "C-"
+    if p >= 52.2: return "A+"
+    if p >= 30.6: return "A"
+    if p >= 24.4: return "A-"
+    if p >= 20.7: return "B+"
+    if p >= 19.8: return "B"
+    if p >= 18.4: return "B-"
+    if p >= 17.0: return "C+"
+    if p >= 14.8: return "C"
+    if p >= 9.8:  return "C-"
     return "D"
 
 
@@ -2721,6 +2739,8 @@ def predict():
     position = str(player_data.get("position", "Unknown"))
     draft_round = int(player_data.get("draft_round") or 8)
     combine_speed = float(player_data.get("combine_speed_score") or 50.0)
+    if not math.isfinite(combine_speed):
+        combine_speed = 0.0  # display only — the model saw NaN
     conference_tier = int(player_data.get("conference_tier") or classify_college_tier(
         str(player_data.get("team", "") or "")))
     _prod_val = player_data.get("production_score")
@@ -2792,7 +2812,7 @@ def predict():
         "is_real":         bool(player_data.get("physical_is_real", False)),
     }
 
-    return jsonify(
+    return jsonify(_json_safe(
         {
             "requested_name":      player_name,
             "resolved_name":       str(player_data.get("name", player_name)),
@@ -2819,7 +2839,21 @@ def predict():
             "top_factors":         (per_player_top_factors(player_data, 5)
                                     if model_used else top_feature_importances(4)),
         }
-    )
+    ))
+
+
+def _json_safe(obj):
+    """NaN/Inf are invalid in strict JSON (browsers reject them) — map to None.
+
+    Needed because the response embeds the raw profile dict, whose numeric
+    fields are NaN for players with no verified stats."""
+    if isinstance(obj, dict):
+        return {k: _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_json_safe(v) for v in obj]
+    if isinstance(obj, float) and not math.isfinite(obj):
+        return None
+    return obj
 
 
 initialize_player_database()
