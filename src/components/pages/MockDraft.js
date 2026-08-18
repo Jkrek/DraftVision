@@ -27,8 +27,12 @@ import {
 
 /* v2: picks carry delta/tag/via, results carry orderLen — old v1 saves
    are simply ignored rather than loaded into the new shape. */
-const STORE_KEY = 'dv_mock_sim_v2';
-const SCHEMA_V = 2;
+const STORE_KEY = 'dv_mock_sim_v3';
+const SCHEMA_V = 3;
+
+/* Draft classes with proper eligibility bucketing: rows carry draft_class
+   (2027 = current seniors/juniors … 2030 = true freshmen). */
+const DRAFT_YEARS = [2027, 2028, 2029, 2030];
 
 const HERO_IMG = process.env.PUBLIC_URL + '/images/CFB Content/lamar.png';
 
@@ -148,6 +152,7 @@ export default function MockDraft() {
   const [copied, setCopied] = useState(null);
 
   // setup
+  const [draftYear, setDraftYear]   = useState(2027);
   const [rounds, setRounds]         = useState(1);
   const [userTeam, setUserTeam]     = useState(null);
   const [controlAll, setControlAll] = useState(false);
@@ -162,13 +167,16 @@ export default function MockDraft() {
   // completed result being displayed (from a finished sim or localStorage)
   const [view, setView] = useState(null);
 
-  /* ── Player pool: the '27 big board when it exists (owner order first,
-     model-ranked rest after), else /api/prospects board-sorted. ── */
+  /* ── Player pool for the selected class: that year's big board when it
+     exists (owner order first, model-ranked rest after), else the
+     server-filtered eligible class board-sorted. ── */
   useEffect(() => {
     let alive = true;
+    setPoolRows(null);
+    setBoardPowered(false);
     (async () => {
       try {
-        const r = await anonFetch('/api/big-board?class=2027');
+        const r = await anonFetch(`/api/big-board?class=${draftYear}`);
         if (r.ok) {
           const data = await r.json();
           if (data && Array.isArray(data.board) && data.board.length) {
@@ -184,15 +192,15 @@ export default function MockDraft() {
         /* 404 / network — fall back to the model board */
       }
       try {
-        const r = await anonFetch('/api/prospects?limit=2000');
+        const r = await anonFetch(`/api/prospects?draft_class=${draftYear}&limit=2000`);
         const data = await r.json();
-        if (alive) setPoolRows(buildPool(data.prospects));
+        if (alive) setPoolRows(buildPool(data.prospects, draftYear));
       } catch {
         if (alive) setPoolRows([]);
       }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [draftYear]);
 
   /* ── Start / restart ── */
   const startDraft = useCallback((cfg) => {
@@ -235,6 +243,7 @@ export default function MockDraft() {
     if (phase !== 'live' || !sim || !isDone(sim)) return;
     const result = {
       v: SCHEMA_V,
+      year: draftYear,
       rounds: sim.rounds,
       userTeam: sim.userTeam,
       orderLen: sim.order.length,
@@ -245,7 +254,7 @@ export default function MockDraft() {
     persistResult(result);
     setSimming(null);
     setPhase('done');
-  }, [sim, phase]);
+  }, [sim, phase, draftYear]);
 
   /* ── User pick ── */
   const draftPlayer = useCallback((poolIdx) => {
@@ -404,11 +413,15 @@ export default function MockDraft() {
           <div className="eyebrow">Mock draft</div>
           <h1 className="mock-title">Mock Draft Simulator</h1>
           <p className="mock-sub">
-            Run a 2027 NFL mock against the DraftVision board — CPU picks weigh
-            success probability, grade, and positional need.
+            Run a {draftYear} NFL mock against the DraftVision board — CPU
+            picks weigh success probability, grade, and positional need.
+            {draftYear >= 2029 &&
+              ' Pools for this class are projected eligibility — early declares shift classes.'}
           </p>
           {boardPowered && (
-            <span className="mock-board-badge">Powered by the ’27 Big Board</span>
+            <span className="mock-board-badge">
+              Powered by the ’{String(draftYear).slice(2)} Big Board
+            </span>
           )}
           {phase === 'live' && sim && (
             <p className="mock-meta">
@@ -431,7 +444,7 @@ export default function MockDraft() {
         {phase === 'prompt' && saved && (
           <div className="sim-resume">
             <p className="sim-resume-text">
-              You finished a {saved.rounds}-round mock
+              You finished a {saved.rounds}-round {saved.year || 2027} mock
               {saved.userTeam && saved.userTeam !== CONTROL_ALL && ` as the ${saved.userTeam}`}
               {saved.completedAt && ` on ${new Date(saved.completedAt).toLocaleDateString()}`}.
             </p>
@@ -452,6 +465,28 @@ export default function MockDraft() {
         {/* ── Setup panel ── */}
         {phase === 'setup' && (
           <div className="sim-setup">
+            <div className="sim-setup-row">
+              <span className="sim-label">Class</span>
+              <div className="sim-seg">
+                {DRAFT_YEARS.map((y) => (
+                  <button
+                    key={y}
+                    className={`sim-seg-btn${draftYear === y ? ' active' : ''}`}
+                    onClick={() => setDraftYear(y)}
+                  >
+                    ’{String(y).slice(2)}
+                  </button>
+                ))}
+              </div>
+              {poolRows === null && (
+                <span className="sim-hint">loading class pool…</span>
+              )}
+              {poolRows && (
+                <span className="sim-hint">
+                  {poolRows.length.toLocaleString()} eligible players
+                </span>
+              )}
+            </div>
             <div className="sim-setup-row">
               <span className="sim-label">Rounds</span>
               <div className="sim-seg">

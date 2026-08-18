@@ -89,11 +89,12 @@ function withRanks(pool) {
   return pool.map((p, i) => Object.assign({}, p, { boardRank: i + 1 }));
 }
 
-/* /api/prospects rows → draftable pool: draft_class 2027 when the field
-   exists (fallback: everyone), best board order first. */
-export function buildPool(rows) {
+/* /api/prospects rows → draftable pool for a draft class: only players
+   projected eligible that year (fallback: everyone if the field is
+   missing from an old cache), best board order first. */
+export function buildPool(rows, draftClass = 2027) {
   const list = Array.isArray(rows) ? rows : [];
-  const cls = list.filter((p) => Number(p.draft_class) === 2027);
+  const cls = list.filter((p) => Number(p.draft_class) === Number(draftClass));
   const pool = (cls.length >= ROUND_PICKS ? cls : list).slice();
   pool.sort(boardSort);
   return withRanks(pool);
