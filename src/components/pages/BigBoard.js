@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { anonFetch } from '../../lib/api';
 import './BigBoard.css';
 
@@ -17,6 +17,21 @@ const GRADE_ORDER = { 'A+': 0, 'A': 1, 'A-': 2, 'B+': 3, 'B': 4, 'B-': 5, 'C+': 
 
 const keyOf = (p) => `${p.name}|${p.team || ''}`;
 const mirrorKey = (year) => `dv_big_board_${year}`;
+const myBoardKey = (year) => `dv_my_board_${year}`;
+
+const VIEWS = [
+  { id: 'jared', label: 'Jared’s Board' },
+  { id: 'my', label: 'My Board' },
+  { id: 'model', label: 'Model' },
+];
+
+// "Malachi Toney|Miami" -> "malachi-toney-miami" (player-page slug).
+const slugOf = (p) =>
+  `${p.name || ''}-${p.team || ''}`
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/^-+|-+$/g, '');
 
 // Same default ordering the leaderboard uses — "model ranked".
 function modelSort(list) {
@@ -53,6 +68,27 @@ function writeMirror(year, keys) {
   }
 }
 
+// Visitor's personal board — "Name|Team" keys in localStorage, per class.
+function readMyBoard(year) {
+  try {
+    const raw = localStorage.getItem(myBoardKey(year));
+    const arr = raw ? JSON.parse(raw) : null;
+    return Array.isArray(arr)
+      ? arr.filter((k, i) => typeof k === 'string' && arr.indexOf(k) === i)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeMyBoard(year, keys) {
+  try {
+    localStorage.setItem(myBoardKey(year), JSON.stringify(keys));
+  } catch {
+    /* private mode etc. — best-effort */
+  }
+}
+
 function BoardRow({ p, rank, curated, onOpen }) {
   const sp = p.success_probability;
   return (
@@ -77,7 +113,13 @@ function BoardRow({ p, rank, curated, onOpen }) {
             onError={(e) => { e.target.style.display = 'none'; }}
           />
         )}
-        <span>{p.name}</span>
+        <Link
+          className="bb-name-link"
+          to={`/player/${slugOf(p)}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {p.name}
+        </Link>
         {p.data_source && p.data_source !== 'espn_live' && (
           <span className="bb-est" title="No verified season stats — profile is estimated">EST</span>
         )}
@@ -94,6 +136,7 @@ export default function BigBoard() {
   const navigate = useNavigate();
 
   const [classTab, setClassTab] = useState(CLASSES[0]);
+  const [view, setView] = useState('jared'); // 'jared' | 'my' | 'model'
   const [data, setData] = useState(null); // {board, rest, missing, updatedAt, fallback}
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -107,6 +150,15 @@ export default function BigBoard() {
   const [saveError, setSaveError] = useState(null);
   const [keyPrompt, setKeyPrompt] = useState({ open: false, restore: false });
   const [keyInput, setKeyInput] = useState('');
+
+  // Visitor's personal board — always-editable, browser-local, no admin key.
+  const [myKeys, setMyKeys] = useState(() => readMyBoard(CLASSES[0]));
+  const [mySearch, setMySearch] = useState('');
+
+  useEffect(() => {
+    setMyKeys(readMyBoard(classTab));
+    setMySearch('');
+  }, [classTab]);
 
   useEffect(() => {
     let alive = true;
@@ -164,6 +216,40 @@ export default function BigBoard() {
     return out;
   }, [board, rest]);
 
+  const poolByKey = useMemo(() => {
+    const m = new Map();
+    pool.forEach((p) => m.set(keyOf(p), p));
+    return m;
+  }, [pool]);
+
+  // Pure model ordering over the whole class (board + rest merged).
+  const modelRanking = useMemo(() => modelSort(pool), [pool]);
+
+  // My-board keys resolved to prospects; keys that don't resolve (e.g. a
+  // player left the class pool) still render from the stored "Name|Team".
+  const myBoard = useMemo(
+    () => myKeys.map((k) => poolByKey.get(k) ||
+      { name: k.split('|')[0], team: k.split('|')[1] || '', unresolved: true }),
+    [myKeys, poolByKey],
+  );
+  const myKeySet = useMemo(() => new Set(myKeys), [myKeys]);
+
+  // Top-10 agreement between the visitor's board, Jared's board and the model.
+  const compare = useMemo(() => {
+    if (myKeys.length === 0) return null;
+    const mySet = new Set(myKeys.slice(0, 10));
+    const count = (list) =>
+      list.slice(0, 10).map(keyOf).filter((k) => mySet.has(k)).length;
+    return {
+      jared: board.length > 0
+        ? { hit: count(board), n: Math.min(10, mySet.size, board.length) }
+        : null,
+      model: modelRanking.length > 0
+        ? { hit: count(modelRanking), n: Math.min(10, mySet.size, modelRanking.length) }
+        : null,
+    };
+  }, [myKeys, board, modelRanking]);
+
   const editing = draft !== null;
   const draftKeys = useMemo(() => new Set((draft || []).map(keyOf)), [draft]);
   const dirty =
@@ -183,6 +269,55 @@ export default function BigBoard() {
     }
     return list.slice(0, 40);
   }, [editing, pool, search]);
+
+  const myPoolResults = useMemo(() => {
+    if (view !== 'my' || editing) return [];
+    const q = mySearch.trim().toLowerCase();
+    let list = pool;
+    if (q) {
+      list = list.filter((p) =>
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.position || '').toLowerCase().includes(q) ||
+        (p.team || '').toLowerCase().includes(q),
+      );
+    }
+    return list.slice(0, 40);
+  }, [view, editing, pool, mySearch]);
+
+  /* ── My-board mutations — persisted to localStorage on every change ── */
+
+  const updateMy = useCallback((fn) => {
+    setMyKeys((keys) => {
+      const next = fn(keys);
+      if (next !== keys) writeMyBoard(classTab, next);
+      return next;
+    });
+  }, [classTab]);
+
+  const myMoveTo = useCallback((from, to) => {
+    updateMy((keys) => {
+      const bounded = Math.max(0, Math.min(keys.length - 1, to));
+      if (bounded === from) return keys;
+      const next = [...keys];
+      const [k] = next.splice(from, 1);
+      next.splice(bounded, 0, k);
+      return next;
+    });
+  }, [updateMy]);
+
+  const myRemoveAt = useCallback((idx) => {
+    updateMy((keys) => keys.filter((_, i) => i !== idx));
+  }, [updateMy]);
+
+  const myAdd = useCallback((p) => {
+    updateMy((keys) => (keys.includes(keyOf(p)) ? keys : [...keys, keyOf(p)]));
+  }, [updateMy]);
+
+  const myCommitRank = useCallback((idx, raw) => {
+    const n = parseInt(raw, 10);
+    if (!Number.isFinite(n) || n === idx + 1) return;
+    myMoveTo(idx, n - 1);
+  }, [myMoveTo]);
 
   /* ── Editor entry / key gate ── */
 
@@ -327,12 +462,23 @@ export default function BigBoard() {
     setClassTab(year);
   }, [classTab, dirty]);
 
+  const selectView = useCallback((v) => {
+    if (v === view) return;
+    setView(v);
+    setPage(0);
+  }, [view]);
+
   const openReport = useCallback((p) => {
     navigate(`/predict?name=${encodeURIComponent(p.name)}`);
   }, [navigate]);
 
   const shownRest = useMemo(() => rest.slice(0, (page + 1) * PAGE_SIZE), [rest, page]);
   const hasMore = shownRest.length < rest.length;
+  const shownModel = useMemo(
+    () => modelRanking.slice(0, (page + 1) * PAGE_SIZE),
+    [modelRanking, page],
+  );
+  const modelHasMore = shownModel.length < modelRanking.length;
   const updatedDate = formatDate(data && data.updatedAt);
   const localMirror = readMirror(classTab);
 
@@ -379,7 +525,22 @@ export default function BigBoard() {
               </button>
             ))}
           </div>
-          {!editing && !loading && !error && (
+          {!editing && (
+            <div className="bb-seg" role="group" aria-label="Board view">
+              {VIEWS.map((v) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  className={`bb-seg-btn${view === v.id ? ' active' : ''}`}
+                  aria-pressed={view === v.id}
+                  onClick={() => selectView(v.id)}
+                >
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {!editing && !loading && !error && view === 'jared' && (
             <button type="button" className="bb-edit-toggle" onClick={() => requestEdit(false)}>
               Edit board
             </button>
@@ -390,6 +551,23 @@ export default function BigBoard() {
           <p className="bb-note">
             Live board service unavailable — showing the model&rsquo;s ranking for the ’{classTab.slice(2)} class.
           </p>
+        )}
+
+        {/* ── Top-10 agreement strip — shown once the visitor has a board ── */}
+        {!editing && !loading && !error && compare && (
+          <div className="bb-compare" aria-label="Top-10 agreement">
+            <span className="bb-compare-label">Top-10 overlap</span>
+            {compare.jared && (
+              <span className="bb-compare-chip">
+                You and Jared agree on <strong>{compare.jared.hit} of {compare.jared.n}</strong>
+              </span>
+            )}
+            {compare.model && (
+              <span className="bb-compare-chip">
+                You and the model agree on <strong>{compare.model.hit} of {compare.model.n}</strong>
+              </span>
+            )}
+          </div>
         )}
 
         {/* ── Admin key gate ── */}
@@ -534,6 +712,136 @@ export default function BigBoard() {
                 </button>
               </div>
             </div>
+          </>
+
+        ) : view === 'my' ? (
+
+          /* ── ── My Board — visitor's own, always-on editor ── ── */
+          <>
+            <div className="bb-sec-head">
+              <h2 className="bb-sec-title">My Board</h2>
+              <span className="bb-sec-meta">{myBoard.length} ranked · saved in your browser</span>
+            </div>
+
+            <p className="bb-note">
+              Your board lives in this browser only (no account, no admin key) — edits save automatically.
+            </p>
+
+            <div className="bb-table">
+              {myBoard.length === 0 ? (
+                <div className="bb-state">Your board is empty — search the pool below and add players.</div>
+              ) : myBoard.map((p, i) => (
+                <div className="bb-edit-row" key={myKeys[i]}>
+                  <input
+                    key={`${myKeys[i]}-${i}`}
+                    className="bb-rank-input"
+                    type="number"
+                    min="1"
+                    max={myBoard.length}
+                    defaultValue={i + 1}
+                    aria-label={`Rank for ${p.name}`}
+                    onBlur={(e) => myCommitRank(i, e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                  />
+                  <span className="bb-name bb-c-name">
+                    {p.espn_team_id && (
+                      <img
+                        className="bb-team-logo"
+                        src={`https://a.espncdn.com/i/teamlogos/ncaa/500/${p.espn_team_id}.png`}
+                        alt=""
+                        loading="lazy"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    )}
+                    <Link className="bb-name-link" to={`/player/${slugOf(p)}`}>{p.name}</Link>
+                  </span>
+                  <span className="bb-pos bb-c-pos">{(p.position || '?').toUpperCase()}</span>
+                  <span className="bb-school bb-c-school">{p.team || '—'}</span>
+                  <span className="bb-grade bb-c-grade"><span>{p.grade || '—'}</span></span>
+                  <span className="bb-edit-ctls">
+                    <button type="button" className="bb-ctl" disabled={i === 0} onClick={() => myMoveTo(i, i - 1)} aria-label={`Move ${p.name} up`}>↑</button>
+                    <button type="button" className="bb-ctl" disabled={i === myBoard.length - 1} onClick={() => myMoveTo(i, i + 1)} aria-label={`Move ${p.name} down`}>↓</button>
+                    <button type="button" className="bb-ctl bb-ctl-remove" onClick={() => myRemoveAt(i)} aria-label={`Remove ${p.name} from your board`}>✕</button>
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="bb-divider"><span>Add from the ’{classTab.slice(2)} pool</span></div>
+
+            <input
+              className="bb-search"
+              type="search"
+              value={mySearch}
+              onChange={(e) => setMySearch(e.target.value)}
+              placeholder="Search player, position or school"
+              aria-label="Search the class pool"
+            />
+
+            <div className="bb-table">
+              {myPoolResults.length === 0 ? (
+                <div className="bb-state">No players match.</div>
+              ) : myPoolResults.map((p) => {
+                const onBoard = myKeySet.has(keyOf(p));
+                return (
+                  <div className="bb-edit-row" key={`mypool-${keyOf(p)}`}>
+                    <span className="bb-name bb-c-name">
+                      {p.espn_team_id && (
+                        <img
+                          className="bb-team-logo"
+                          src={`https://a.espncdn.com/i/teamlogos/ncaa/500/${p.espn_team_id}.png`}
+                          alt=""
+                          loading="lazy"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                      )}
+                      <Link className="bb-name-link" to={`/player/${slugOf(p)}`}>{p.name}</Link>
+                    </span>
+                    <span className="bb-pos bb-c-pos">{(p.position || '?').toUpperCase()}</span>
+                    <span className="bb-school bb-c-school">{p.team || '—'}</span>
+                    <span className="bb-grade bb-c-grade"><span>{p.grade || '—'}</span></span>
+                    <button
+                      type="button"
+                      className="bb-btn bb-add"
+                      disabled={onBoard}
+                      onClick={() => myAdd(p)}
+                    >
+                      {onBoard ? 'On board' : 'Add'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+
+        ) : view === 'model' ? (
+
+          /* ── ── Pure model ranking — board + rest merged, model-sorted ── ── */
+          <>
+            <div className="bb-sec-head">
+              <h2 className="bb-sec-title">Model Ranking</h2>
+              <span className="bb-sec-meta">
+                {modelRanking.length.toLocaleString()} prospects · grade, then success probability
+              </span>
+            </div>
+
+            {modelRanking.length === 0 ? (
+              <div className="bb-state">No prospects for this class.</div>
+            ) : (
+              <div className="bb-table">
+                {shownModel.map((p, i) => (
+                  <BoardRow key={`m-${keyOf(p)}`} p={p} rank={i + 1} curated={false} onOpen={() => openReport(p)} />
+                ))}
+              </div>
+            )}
+
+            {modelHasMore && (
+              <div className="bb-more">
+                <button type="button" className="btn btn-primary" onClick={() => setPage((pg) => pg + 1)}>
+                  Load more ({(modelRanking.length - shownModel.length).toLocaleString()} remaining)
+                </button>
+              </div>
+            )}
           </>
 
         ) : (

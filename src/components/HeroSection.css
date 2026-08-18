@@ -163,7 +163,9 @@
   margin: 0;
   font-family: var(--font-heading);
   font-weight: 500;
-  font-size: clamp(50px, 6.4vw, 104px);
+  /* capped so the single unbreakable word always fits its grid column —
+     at 104px it ran underneath the live-model card */
+  font-size: clamp(46px, 6vw, 88px);
   line-height: 0.88;
   letter-spacing: -0.045em;
   color: var(--color-neutral-100);
@@ -237,6 +239,9 @@
   padding: 0 0 48px;
   display: flex;
   justify-content: flex-end;
+  /* always above the headline if the columns ever crowd */
+  position: relative;
+  z-index: 1;
 }
 .hero-card {
   position: relative;

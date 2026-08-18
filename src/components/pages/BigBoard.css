@@ -160,6 +160,58 @@
   color: var(--color-accent-300);
 }
 
+/* ── Top-10 agreement strip ── */
+
+.bb-compare {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 22px;
+}
+
+.bb-compare-label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+}
+
+.bb-compare-chip {
+  font-size: 12.5px;
+  color: var(--color-neutral-400);
+  padding: 6px 12px;
+  border: 1px solid var(--color-neutral-800);
+  border-radius: 99px;
+  background: var(--color-surface);
+  font-variant-numeric: tabular-nums;
+}
+.bb-compare-chip strong {
+  font-weight: 500;
+  color: var(--color-accent-300);
+}
+
+/* ── Player-name links (all board rows) ── */
+
+.bb-name-link {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+  text-decoration: none;
+}
+.bb-name-link:hover,
+.bb-name-link:focus-visible {
+  color: var(--color-accent-300);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.bb-name-link:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
 /* ── Notes / errors ── */
 
 .bb-note {

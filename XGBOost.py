@@ -2758,6 +2758,23 @@ def find_historical_comps(player_stats: Dict[str, object], n: int = 3) -> list:
     return scored[:n]
 
 
+# ── Kalshi market-edge board (dv_edge.py) ─────────────────────────────────────
+# Read-only analysis of public Kalshi prices vs model output; all discovery,
+# matching, honest-mapping policy, and the paper ledger live in dv_edge.py.
+import dv_edge
+
+
+@app.route("/api/edge")
+def api_edge():
+    _maybe_reload_prospect_cache()
+    return jsonify(dv_edge.edge_payload(_PROSPECT_CACHE))
+
+
+@app.route("/api/edge/ledger")
+def api_edge_ledger():
+    return jsonify(dv_edge.ledger_payload())
+
+
 # ── Serve React production build ──────────────────────────────────────────────
 BUILD_DIR = os.path.join(os.path.dirname(__file__), "build")
 

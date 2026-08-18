@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { anonFetch } from '../../lib/api';
 import './services.css';
 
@@ -189,7 +190,12 @@ export default function Services() {
                     onError={e => { e.target.style.display = 'none'; }}
                   />
                 )}
-                {p.name}
+                <Link
+                  className="dv-player-link"
+                  to={`/player/${`${p.name}-${p.team}`.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`}
+                >
+                  {p.name}
+                </Link>
                 {p.data_source && p.data_source !== 'espn_live' && (
                   <span className="col-est" title="No verified season stats — profile is estimated">EST</span>
                 )}

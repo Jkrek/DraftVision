@@ -185,3 +185,30 @@ Hand-ordered per-class rankings live in `training_data/big_boards.json`
   honor `If-None-Match` with `304 Not Modified` — the board changes weekly, so
   clients revalidate instead of redownloading identical megabytes. `/search`
   is uncached (tiny) and `/api/analytics/*` is never cached.
+
+- **Weekly YouTube recap** — after each board refresh, the workflow runs
+  `scripts/generate_weekly_recap.py`, which turns `board_movers.json` + board
+  history + big boards into `content/recaps/recap_<date>.md` (titles, cold
+  open, risers/fallers, disagreements). The bot commit includes `content/recaps/`.
+
+## Market Edge board (`/api/edge`)
+
+Read-only comparison of DraftVision model output vs public Kalshi prices
+(no auth, no orders — we never take or facilitate bets). Logic lives in
+`dv_edge.py`; `XGBOost.py` only registers the routes.
+
+- **Read:** `GET /api/edge` → `{generated_at, markets, note}`. Relevant open
+  markets are discovered from Kalshi's public data API (bounded pagination,
+  results cached in-memory ~10 min per worker). Off-season or upstream
+  failure degrades to `{"markets": [], "note": "seasonal"}` with HTTP 200 —
+  the page renders a friendly empty state, never a 500.
+- **Honest mapping:** an `edge` is computed only for top-X draft markets
+  (32 ≤ X ≤ 50) whose matched player sits in the model's "Top 50 Pick"
+  bucket; all other markets are listed with null model fields. See the
+  policy comment at the top of `dv_edge.py` before changing this.
+- **Paper ledger:** `GET /api/edge/ledger` serves
+  `training_data/edge_ledger.json`. When a matched |edge| ≥ 10 points is
+  observed, one row per (ticker, day) is appended (atomic write + mtime
+  hot-reload, same pattern as the other caches). Like the big boards, the
+  file survives restarts but **resets on redeploy** to the committed copy —
+  export and commit it to preserve the track record.

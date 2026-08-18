@@ -1,0 +1,657 @@
+{
+  "generated_at": "2026-08-18T23:40:42.576612+00:00",
+  "holdout_note": "Draft classes 2019-2020 are a temporal holdout: the models were trained on 2010-2017 (plus 63 curated seed rows) and calibrated on 2018. No 2019-2020 player was used to fit or calibrate anything.",
+  "metrics": {
+    "auc": 0.6387,
+    "brier": 0.1626,
+    "accuracy": 0.4065,
+    "holdout_rows": 733,
+    "holdout_years": [
+      2019,
+      2020
+    ],
+    "holdout_success_rate": 0.2169,
+    "baseline": {
+      "auc": 0.5989,
+      "brier": 0.3137,
+      "accuracy": 0.322,
+      "source": "models/metadata.json (rule_based_baseline, same holdout)"
+    }
+  },
+  "players": [
+    {
+      "name": "Parris Campbell",
+      "college": "Ohio State",
+      "position": "WR",
+      "draft_year": 2019,
+      "pred_success_prob": 0.575,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 2,
+      "actual_success": 0,
+      "career_note": "1 season as a primary starter",
+      "categories": [
+        "top20",
+        "miss"
+      ]
+    },
+    {
+      "name": "Devin White",
+      "college": "LSU",
+      "position": "LB",
+      "draft_year": 2019,
+      "pred_success_prob": 0.5493,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_success": 1,
+      "career_note": "1x Pro Bowl, 6 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
+      "name": "Isaiah Simmons",
+      "college": "Clemson",
+      "position": "LB",
+      "draft_year": 2020,
+      "pred_success_prob": 0.5378,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_success": 0,
+      "career_note": "2 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "miss"
+      ]
+    },
+    {
+      "name": "Devin Bush Jr.",
+      "college": "Michigan",
+      "position": "LB",
+      "draft_year": 2019,
+      "pred_success_prob": 0.5375,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_success": 1,
+      "career_note": "4 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
+      "name": "Karan Higdon",
+      "college": "Michigan",
+      "position": "RB",
+      "draft_year": 2019,
+      "pred_success_prob": 0.5,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Undrafted Prospect",
+      "actual_round": null,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "top20",
+        "miss"
+      ]
+    },
+    {
+      "name": "Erik McCoy",
+      "college": "Texas A&M",
+      "position": "C",
+      "draft_year": 2019,
+      "pred_success_prob": 0.4821,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 2,
+      "actual_success": 1,
+      "career_note": "2x Pro Bowl, 5 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
+      "name": "Brian Burns",
+      "college": "Florida State",
+      "position": "DE",
+      "draft_year": 2019,
+      "pred_success_prob": 0.4818,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_success": 1,
+      "career_note": "3x Pro Bowl, 6 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
+      "name": "Montez Sweat",
+      "college": "Mississippi State",
+      "position": "DE",
+      "draft_year": 2019,
+      "pred_success_prob": 0.4815,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_success": 1,
+      "career_note": "1x Pro Bowl, 6 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
+      "name": "Patrick Queen",
+      "college": "LSU",
+      "position": "LB",
+      "draft_year": 2020,
+      "pred_success_prob": 0.4766,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_success": 1,
+      "career_note": "2x Pro Bowl, 6 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
+      "name": "Chase Winovich",
+      "college": "Michigan",
+      "position": "DE",
+      "draft_year": 2019,
+      "pred_success_prob": 0.4759,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Day 2 Pick",
+      "actual_round": 3,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "top20",
+        "miss"
+      ]
+    },
+    {
+      "name": "Jedrick Wills Jr.",
+      "college": "Alabama",
+      "position": "OT",
+      "draft_year": 2020,
+      "pred_success_prob": 0.4742,
+      "pred_grade_bucket": "Day 2 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_success": 1,
+      "career_note": "3 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
+      "name": "Saahdiq Charles",
+      "college": "LSU",
+      "position": "OT",
+      "draft_year": 2020,
+      "pred_success_prob": 0.4742,
+      "pred_grade_bucket": "Day 2 Pick",
+      "actual_round_bucket": "Day 2 Pick",
+      "actual_round": 4,
+      "actual_success": 0,
+      "career_note": "1 season as a primary starter",
+      "categories": [
+        "top20",
+        "miss"
+      ]
+    },
+    {
+      "name": "Tytus Howard",
+      "college": "Alabama State",
+      "position": "OT",
+      "draft_year": 2019,
+      "pred_success_prob": 0.4742,
+      "pred_grade_bucket": "Day 2 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_success": 1,
+      "career_note": "6 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
+      "name": "Justin Jefferson",
+      "college": "LSU",
+      "position": "WR",
+      "draft_year": 2020,
+      "pred_success_prob": 0.4737,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_success": 1,
+      "career_note": "4x Pro Bowl, 6 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
+      "name": "Gary Johnson",
+      "college": "Texas",
+      "position": "LB",
+      "draft_year": 2019,
+      "pred_success_prob": 0.4692,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Undrafted Prospect",
+      "actual_round": null,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "top20",
+        "miss"
+      ]
+    },
+    {
+      "name": "Tanner Muse",
+      "college": "Clemson",
+      "position": "S",
+      "draft_year": 2020,
+      "pred_success_prob": 0.4549,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Day 2 Pick",
+      "actual_round": 3,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "top20",
+        "miss"
+      ]
+    },
+    {
+      "name": "Henry Ruggs III",
+      "college": "Alabama",
+      "position": "WR",
+      "draft_year": 2020,
+      "pred_success_prob": 0.4497,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_success": 0,
+      "career_note": "1 season as a primary starter",
+      "categories": [
+        "top20",
+        "miss"
+      ]
+    },
+    {
+      "name": "Lloyd Cushenberry III",
+      "college": "LSU",
+      "position": "C",
+      "draft_year": 2020,
+      "pred_success_prob": 0.4359,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Day 2 Pick",
+      "actual_round": 3,
+      "actual_success": 1,
+      "career_note": "5 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit",
+        "steal"
+      ]
+    },
+    {
+      "name": "Cesar Ruiz",
+      "college": "Michigan",
+      "position": "C",
+      "draft_year": 2020,
+      "pred_success_prob": 0.4311,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_success": 1,
+      "career_note": "6 seasons as a primary starter",
+      "categories": [
+        "top20"
+      ]
+    },
+    {
+      "name": "Tristan Wirfs",
+      "college": "Iowa",
+      "position": "OT",
+      "draft_year": 2020,
+      "pred_success_prob": 0.429,
+      "pred_grade_bucket": "Day 2 Pick",
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_success": 1,
+      "career_note": "5x Pro Bowl, 6 seasons as a primary starter",
+      "categories": [
+        "top20"
+      ]
+    },
+    {
+      "name": "Isaiah Prince",
+      "college": "Ohio State",
+      "position": "OT",
+      "draft_year": 2019,
+      "pred_success_prob": 0.4288,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Late Round Pick",
+      "actual_round": 6,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "miss"
+      ]
+    },
+    {
+      "name": "Jon Runyan Jr.",
+      "college": "Michigan",
+      "position": "OT",
+      "draft_year": 2020,
+      "pred_success_prob": 0.4167,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Late Round Pick",
+      "actual_round": 6,
+      "actual_success": 1,
+      "career_note": "5 seasons as a primary starter",
+      "categories": [
+        "steal"
+      ]
+    },
+    {
+      "name": "Terry McLaurin",
+      "college": "Ohio State",
+      "position": "WR",
+      "draft_year": 2019,
+      "pred_success_prob": 0.4164,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Day 2 Pick",
+      "actual_round": 3,
+      "actual_success": 1,
+      "career_note": "2x Pro Bowl, 7 seasons as a primary starter",
+      "categories": [
+        "steal"
+      ]
+    },
+    {
+      "name": "Oli Udoh",
+      "college": "Elon",
+      "position": "OT",
+      "draft_year": 2019,
+      "pred_success_prob": 0.4152,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Late Round Pick",
+      "actual_round": 6,
+      "actual_success": 0,
+      "career_note": "1 season as a primary starter",
+      "categories": [
+        "miss"
+      ]
+    },
+    {
+      "name": "Devin Duvernay",
+      "college": "Texas",
+      "position": "WR",
+      "draft_year": 2020,
+      "pred_success_prob": 0.3924,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Day 2 Pick",
+      "actual_round": 3,
+      "actual_success": 1,
+      "career_note": "2x Pro Bowl, 1 season as a primary starter",
+      "categories": [
+        "steal"
+      ]
+    },
+    {
+      "name": "Nnamdi Madubuike",
+      "college": "Texas A&M",
+      "position": "DT",
+      "draft_year": 2020,
+      "pred_success_prob": 0.3917,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Day 2 Pick",
+      "actual_round": 3,
+      "actual_success": 1,
+      "career_note": "2x Pro Bowl, 4 seasons as a primary starter",
+      "categories": [
+        "steal"
+      ]
+    },
+    {
+      "name": "Damien Lewis",
+      "college": "LSU",
+      "position": "OG",
+      "draft_year": 2020,
+      "pred_success_prob": 0.3851,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Day 2 Pick",
+      "actual_round": 3,
+      "actual_success": 1,
+      "career_note": "6 seasons as a primary starter",
+      "categories": [
+        "steal"
+      ]
+    },
+    {
+      "name": "John Simpson",
+      "college": "Clemson",
+      "position": "OG",
+      "draft_year": 2020,
+      "pred_success_prob": 0.3851,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Day 2 Pick",
+      "actual_round": 4,
+      "actual_success": 1,
+      "career_note": "4 seasons as a primary starter",
+      "categories": [
+        "steal"
+      ]
+    },
+    {
+      "name": "Jonah Jackson",
+      "college": "Ohio State",
+      "position": "OG",
+      "draft_year": 2020,
+      "pred_success_prob": 0.3639,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Day 2 Pick",
+      "actual_round": 3,
+      "actual_success": 1,
+      "career_note": "1x Pro Bowl, 5 seasons as a primary starter",
+      "categories": [
+        "steal"
+      ]
+    },
+    {
+      "name": "Drue Tranquill",
+      "college": "Notre Dame",
+      "position": "LB",
+      "draft_year": 2019,
+      "pred_success_prob": 0.358,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Day 2 Pick",
+      "actual_round": 4,
+      "actual_success": 1,
+      "career_note": "3 seasons as a primary starter",
+      "categories": [
+        "steal"
+      ]
+    },
+    {
+      "name": "Blake Cashman",
+      "college": "Minnesota",
+      "position": "LB",
+      "draft_year": 2019,
+      "pred_success_prob": 0.3481,
+      "pred_grade_bucket": "Top 50 Pick",
+      "actual_round_bucket": "Late Round Pick",
+      "actual_round": 5,
+      "actual_success": 1,
+      "career_note": "3 seasons as a primary starter",
+      "categories": [
+        "steal"
+      ]
+    },
+    {
+      "name": "Antonio Gibson",
+      "college": "Memphis",
+      "position": "RB",
+      "draft_year": 2020,
+      "pred_success_prob": 0.0853,
+      "pred_grade_bucket": "Undrafted Prospect",
+      "actual_round_bucket": "Day 2 Pick",
+      "actual_round": 3,
+      "actual_success": 0,
+      "career_note": "2 seasons as a primary starter",
+      "categories": [
+        "fade"
+      ]
+    },
+    {
+      "name": "Tony Brown",
+      "college": "Colorado",
+      "position": "WR",
+      "draft_year": 2020,
+      "pred_success_prob": 0.0789,
+      "pred_grade_bucket": "Undrafted Prospect",
+      "actual_round_bucket": "Undrafted Prospect",
+      "actual_round": null,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "fade"
+      ]
+    },
+    {
+      "name": "Collin Johnson",
+      "college": "Texas",
+      "position": "WR",
+      "draft_year": 2020,
+      "pred_success_prob": 0.0755,
+      "pred_grade_bucket": "Undrafted Prospect",
+      "actual_round_bucket": "Late Round Pick",
+      "actual_round": 5,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "fade"
+      ]
+    },
+    {
+      "name": "Cody White",
+      "college": "Michigan State",
+      "position": "WR",
+      "draft_year": 2020,
+      "pred_success_prob": 0.0749,
+      "pred_grade_bucket": "Undrafted Prospect",
+      "actual_round_bucket": "Undrafted Prospect",
+      "actual_round": null,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "fade"
+      ]
+    },
+    {
+      "name": "Ty Johnson",
+      "college": "Maryland",
+      "position": "RB",
+      "draft_year": 2019,
+      "pred_success_prob": 0.0737,
+      "pred_grade_bucket": "Late Round Pick",
+      "actual_round_bucket": "Late Round Pick",
+      "actual_round": 6,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "fade"
+      ]
+    },
+    {
+      "name": "Jakobi Meyers",
+      "college": "NC State",
+      "position": "WR",
+      "draft_year": 2019,
+      "pred_success_prob": 0.0736,
+      "pred_grade_bucket": "Undrafted Prospect",
+      "actual_round_bucket": "Undrafted Prospect",
+      "actual_round": null,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "fade"
+      ]
+    },
+    {
+      "name": "Quintez Cephus",
+      "college": "Wisconsin",
+      "position": "WR",
+      "draft_year": 2020,
+      "pred_success_prob": 0.0712,
+      "pred_grade_bucket": "Undrafted Prospect",
+      "actual_round_bucket": "Late Round Pick",
+      "actual_round": 5,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "fade"
+      ]
+    },
+    {
+      "name": "Kaden Smith",
+      "college": "Stanford",
+      "position": "TE",
+      "draft_year": 2019,
+      "pred_success_prob": 0.0705,
+      "pred_grade_bucket": "Undrafted Prospect",
+      "actual_round_bucket": "Late Round Pick",
+      "actual_round": 6,
+      "actual_success": 0,
+      "career_note": "1 season as a primary starter",
+      "categories": [
+        "fade"
+      ]
+    },
+    {
+      "name": "Nyqwan Murray",
+      "college": "Florida State",
+      "position": "WR",
+      "draft_year": 2019,
+      "pred_success_prob": 0.0572,
+      "pred_grade_bucket": "Undrafted Prospect",
+      "actual_round_bucket": "Undrafted Prospect",
+      "actual_round": null,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "fade"
+      ]
+    },
+    {
+      "name": "Lj Scott",
+      "college": "Michigan State",
+      "position": "RB",
+      "draft_year": 2019,
+      "pred_success_prob": 0.0446,
+      "pred_grade_bucket": "Late Round Pick",
+      "actual_round_bucket": "Undrafted Prospect",
+      "actual_round": null,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "fade"
+      ]
+    }
+  ]
+}

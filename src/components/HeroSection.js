@@ -161,11 +161,11 @@ function HeroSection() {
     // the static card.
     (async () => {
       try {
-        const r = await anonFetch('/api/prospects?q=jeremiah%20smith&limit=5');
+        const r = await anonFetch('/api/prospects?q=arch%20manning&limit=5');
         if (r.ok) {
           const data = await r.json();
           const hit = (data?.prospects || []).find(
-            (p) => p.name === 'Jeremiah Smith' && /ohio state/i.test(p.team || '')
+            (p) => p.name === 'Arch Manning' && /texas/i.test(p.team || '')
           );
           const mapped = toHeroPlayer(hit);
           if (mapped && !cancelled) { setPlayer(mapped); return; }

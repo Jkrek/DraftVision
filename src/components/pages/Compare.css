@@ -1,2 +1,618 @@
-.stub-page { min-height: 60vh; padding: 80px 32px; }
-.stub-inner { max-width: 1280px; margin: 0 auto; }
+/* Compare — head-to-head board, Nocturne styling (tokens in src/nocturne.css) */
+
+.cmp-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+.cmp-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 56px 32px 100px;
+  box-sizing: border-box;
+}
+
+.cmp-title {
+  margin: 0 0 10px;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(32px, 4.6vw, 48px);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.cmp-lede {
+  margin: 0 0 30px;
+  max-width: 620px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--color-neutral-400);
+}
+
+/* ── Search grid: box · vs · box ────────────────────────────── */
+.cmp-search-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 14px;
+  align-items: start;
+  margin-bottom: 36px;
+}
+
+.cmp-vs {
+  align-self: center;
+  padding: 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+
+.cmp-search-box { position: relative; }
+
+.cmp-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--color-surface);
+  border: 1px solid var(--color-neutral-800);
+  border-radius: var(--radius-md);
+  padding: 12px 15px;
+  font-size: 14px;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  caret-color: var(--color-accent);
+  outline: none;
+}
+.cmp-input::placeholder { color: var(--color-neutral-600); }
+.cmp-input:hover { border-color: var(--color-neutral-700); }
+.cmp-input:focus,
+.cmp-input:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+/* Autocomplete dropdown — surface bg, hairline, accent hover rows */
+.cmp-ac {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: var(--color-surface);
+  border: 1px solid var(--color-neutral-800);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden auto;
+  max-height: 320px;
+}
+
+.cmp-ac-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.cmp-ac-row:last-child { border-bottom: 0; }
+.cmp-ac-row:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+/* hs/db rows surface for context but can't be picked */
+.cmp-ac-row-off {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cmp-ac-main { display: block; min-width: 0; }
+.cmp-ac-name {
+  display: block;
+  font-size: 14px;
+  color: var(--color-neutral-100);
+}
+.cmp-ac-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+}
+
+/* Model grade chip — outlined, never solid-filled */
+.cmp-ac-grade {
+  flex: none;
+  padding: 2px 9px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-accent-300);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Selected-player chip replacing the input */
+.cmp-picked {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 15px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-neutral-800);
+  border-radius: var(--radius-md);
+  min-height: 46px;
+  box-sizing: border-box;
+}
+.cmp-picked-logo {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+}
+.cmp-picked-main { min-width: 0; }
+.cmp-picked-name {
+  display: block;
+  font-size: 14px;
+  color: var(--color-neutral-100);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cmp-picked-sub {
+  display: block;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+}
+.cmp-change {
+  margin-left: auto;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-accent-300);
+  cursor: pointer;
+  text-underline-offset: 3px;
+}
+.cmp-change:hover { text-decoration: underline; }
+
+/* ── Empty / status / error ─────────────────────────────────── */
+.cmp-empty {
+  margin: 0;
+  max-width: 560px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--color-neutral-500);
+}
+
+.cmp-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  font-size: 13.5px;
+  color: var(--color-neutral-400);
+}
+.cmp-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex: none;
+}
+
+.cmp-error {
+  margin-top: 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-neutral-300);
+}
+.cmp-retry {
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--color-accent-300);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Board frame ────────────────────────────────────────────── */
+.cmp-board {
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* Two player columns, 1px-gapped */
+.cmp-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--color-divider);
+}
+
+.cmp-col {
+  background: var(--color-bg);
+  padding: 28px;
+  min-width: 0;
+}
+/* subtle accent wash on the model's pick — stays in the mono ramp */
+.cmp-col-lead {
+  background: color-mix(in srgb, var(--color-accent) 5%, var(--color-bg));
+  box-shadow: inset 0 2px 0 var(--color-accent);
+}
+
+.cmp-col-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.cmp-logo {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+}
+.cmp-logo-blank {
+  display: block;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+.cmp-id { min-width: 0; }
+.cmp-name {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(18px, 2.2vw, 24px);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cmp-sub {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--color-neutral-500);
+}
+
+/* grade pill — mono accent ramp tiers, same treatment as the board */
+.cmp-grade {
+  margin-left: auto;
+  flex: none;
+  font-size: 11px;
+  padding: 3px 9px;
+  border: 1px solid var(--color-accent-700);
+  border-radius: 99px;
+  color: var(--color-accent-300);
+  font-variant-numeric: tabular-nums;
+}
+.cmp-grade-a {
+  border-color: var(--color-accent-300);
+  color: var(--color-accent-200);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+.cmp-grade-b { border-color: var(--color-accent-600); color: var(--color-accent-300); }
+.cmp-grade-c { border-color: var(--color-accent-800); color: var(--color-neutral-400); }
+.cmp-grade-d { border-color: var(--color-neutral-800); color: var(--color-neutral-600); }
+
+.cmp-metric-label {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+}
+
+.cmp-prob-block { margin-bottom: 20px; }
+.cmp-prob {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  margin-top: 10px;
+}
+.cmp-prob-value {
+  font-size: 54px;
+  font-weight: 300;
+  line-height: 0.85;
+  letter-spacing: -0.045em;
+  color: var(--color-accent-300);
+  font-variant-numeric: tabular-nums;
+}
+.cmp-prob-unit {
+  font-size: 18px;
+  color: var(--color-neutral-500);
+  padding-bottom: 4px;
+}
+
+.cmp-proj {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.cmp-proj-value {
+  font-size: 15px;
+  color: var(--color-neutral-100);
+}
+
+/* stat minis — thin 2px tracks, house pattern */
+.cmp-mini { margin-bottom: 12px; }
+.cmp-mini:last-child { margin-bottom: 0; }
+.cmp-mini-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--color-neutral-400);
+  margin-bottom: 6px;
+}
+.cmp-mini-val {
+  color: var(--color-neutral-300);
+  font-variant-numeric: tabular-nums;
+}
+.cmp-mini-none {
+  color: var(--color-neutral-600);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.cmp-mini-track {
+  display: block;
+  height: 2px;
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+.cmp-mini-bar {
+  display: block;
+  height: 100%;
+  transform-origin: left;
+  background: var(--color-accent);
+}
+.cmp-mini:nth-child(2) .cmp-mini-bar { background: var(--color-accent-500); }
+.cmp-mini:nth-child(3) .cmp-mini-bar { background: var(--color-accent-600); }
+
+/* ── Verdict strip ──────────────────────────────────────────── */
+.cmp-verdict {
+  border-top: 1px solid var(--color-divider);
+  padding: 16px 24px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-neutral-300);
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+.cmp-verdict strong {
+  font-weight: 500;
+  color: var(--color-accent-200);
+}
+.cmp-verdict-delta {
+  color: var(--color-neutral-100);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Aligned factor rows ────────────────────────────────────── */
+.cmp-factors {
+  border-top: 1px solid var(--color-divider);
+  padding: 26px 28px 22px;
+  background: var(--color-bg);
+}
+
+.cmp-panel-label {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+  margin-bottom: 20px;
+}
+
+.cmp-factor-row {
+  display: grid;
+  grid-template-columns: 1fr minmax(130px, 220px) 1fr;
+  grid-template-areas: "a label b";
+  gap: 14px;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.cmp-flabel {
+  grid-area: label;
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--color-neutral-300);
+}
+
+.cmp-fside {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.cmp-fside-a { grid-area: a; }
+.cmp-fside-b { grid-area: b; flex-direction: row-reverse; }
+
+.cmp-fval {
+  flex: none;
+  font-size: 12px;
+  color: var(--color-neutral-400);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.cmp-fval-none { color: var(--color-neutral-700); }
+/* desaturated tones only — same family as the board's trend chips */
+.cmp-fval.pos { color: color-mix(in srgb, var(--color-accent-300) 80%, var(--color-neutral-300)); }
+.cmp-fval.neg { color: color-mix(in srgb, #d3837d 62%, var(--color-neutral-300)); }
+
+.cmp-ftrack {
+  display: flex;
+  flex: 1 1 auto;
+  height: 2px;
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+/* bars grow outward from the shared center label */
+.cmp-fside-a .cmp-ftrack { justify-content: flex-end; }
+.cmp-fside-b .cmp-ftrack { justify-content: flex-start; }
+
+.cmp-fbar {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+}
+.cmp-fside-a .cmp-fbar { transform-origin: right; }
+.cmp-fside-b .cmp-fbar { transform-origin: left; }
+.cmp-fbar.neg { background: color-mix(in srgb, #d3837d 62%, var(--color-neutral-500)); }
+
+.cmp-note {
+  margin: 18px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-neutral-600);
+}
+
+/* ── Historical comps, per column ───────────────────────────── */
+.cmp-comps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--color-divider);
+  border-top: 1px solid var(--color-divider);
+}
+
+.cmp-comp-col {
+  background: var(--color-bg);
+  padding: 24px 28px;
+  min-width: 0;
+}
+
+.cmp-comp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 7%, transparent);
+  transition: padding-left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cmp-comp-row:last-of-type { border-bottom: 0; }
+.cmp-comp-row:hover { padding-left: 8px; }
+
+.cmp-comp-name {
+  font-size: 13.5px;
+  color: var(--color-neutral-100);
+}
+.cmp-comp-note {
+  font-size: 12px;
+  color: var(--color-neutral-500);
+  margin-top: 2px;
+}
+.cmp-comp-sim {
+  font-size: 12.5px;
+  color: var(--color-accent-300);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Meta footer ────────────────────────────────────────────── */
+.cmp-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin-top: 18px;
+  font-size: 12px;
+  color: var(--color-neutral-600);
+}
+.cmp-clear-btn {
+  margin-left: auto;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+}
+.cmp-clear-btn:hover { color: var(--color-accent-300); }
+
+/* generic focus ring on interactive pieces */
+.cmp-ac-row:focus-visible,
+.cmp-change:focus-visible,
+.cmp-retry:focus-visible,
+.cmp-clear-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ── Motion (gated) ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .cmp-board {
+    animation: cmpUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .cmp-mini-bar,
+  .cmp-fbar {
+    animation: cmpGrow 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .cmp-status-dot {
+    animation: cmpPulse 1.4s ease-in-out infinite;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cmp-ac-row,
+  .cmp-comp-row {
+    transition: none;
+  }
+}
+
+@keyframes cmpGrow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes cmpUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes cmpPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+/* ── Responsive — columns stack ─────────────────────────────── */
+@media (max-width: 860px) {
+  .cmp-shell { padding: 40px 20px 72px; }
+
+  .cmp-search-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .cmp-vs {
+    justify-self: center;
+    padding: 0;
+  }
+
+  .cmp-cols,
+  .cmp-comps { grid-template-columns: 1fr; }
+  .cmp-col { padding: 22px 20px; }
+  .cmp-comp-col { padding: 20px; }
+  .cmp-factors { padding: 22px 20px 18px; }
+
+  /* factor rows: label on top, the two bars stay side by side beneath it */
+  .cmp-factor-row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "label label"
+      "a b";
+    gap: 6px 12px;
+    padding: 10px 0;
+  }
+  .cmp-flabel { text-align: left; }
+}

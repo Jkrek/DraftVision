@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { anonFetch } from '../../lib/api';
 import './Leaderboard.css';
 
@@ -498,7 +498,13 @@ export default function Leaderboard() {
                         onError={e => { e.target.style.display = 'none'; }}
                       />
                     )}
-                    <span>{p.name}</span>
+                    <Link
+                      className="dv-player-link"
+                      to={`/player/${`${p.name}-${p.team}`.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {p.name}
+                    </Link>
                     {p.data_source && p.data_source !== 'espn_live' && (
                       <span className="lb-est" title="No verified season stats — profile is estimated">EST</span>
                     )}
