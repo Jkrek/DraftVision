@@ -156,19 +156,29 @@ function HeroSection() {
 
   useEffect(() => {
     let cancelled = false;
-    anonFetch('/api/prospects?limit=2')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('bad status'))))
-      .then((data) => {
-        if (cancelled) return;
-        const list = Array.isArray(data?.prospects)
-          ? data.prospects
-          : Array.isArray(data)
-            ? data
-            : [];
+    // Feature the household name, not whoever tops the raw model board —
+    // the hero card is a storefront. Fall back to the board's #1, then to
+    // the static card.
+    (async () => {
+      try {
+        const r = await anonFetch('/api/prospects?q=jeremiah%20smith&limit=5');
+        if (r.ok) {
+          const data = await r.json();
+          const hit = (data?.prospects || []).find(
+            (p) => p.name === 'Jeremiah Smith' && /ohio state/i.test(p.team || '')
+          );
+          const mapped = toHeroPlayer(hit);
+          if (mapped && !cancelled) { setPlayer(mapped); return; }
+        }
+      } catch { /* fall through */ }
+      try {
+        const r = await anonFetch('/api/prospects?limit=2');
+        const data = await r.json();
+        const list = Array.isArray(data?.prospects) ? data.prospects : [];
         const mapped = toHeroPlayer(list[0]);
-        if (mapped) setPlayer(mapped);
-      })
-      .catch(() => { /* keep the static fallback */ });
+        if (mapped && !cancelled) setPlayer(mapped);
+      } catch { /* keep the static fallback */ }
+    })();
     return () => { cancelled = true; };
   }, []);
 
