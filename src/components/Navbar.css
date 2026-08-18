@@ -207,3 +207,15 @@
     transition: none;
   }
 }
+
+/* JK Football YouTube link — channel ties directly to the site */
+.nav-yt {
+  font-size: 12.5px;
+  color: var(--color-neutral-500);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.nav-yt:hover {
+  color: #ff6b66; /* a nod to the JK brand red, softened for the dark ground */
+}

@@ -85,6 +85,15 @@ function Navbar() {
 
         {/* Right side */}
         <div className="nav-right">
+          <a
+            href="https://www.youtube.com/@jkrek"
+            target="_blank"
+            rel="noreferrer"
+            className="nav-yt"
+            title="JK Football on YouTube"
+          >
+            ▶ YouTube
+          </a>
           <AuthButton />
           <Link to="/sign-up" className="nav-cta">Get access</Link>
         </div>

@@ -15,7 +15,7 @@ function Footer() {
       <div className="footer-inner">
         <div className="footer-brand">
           <LogoMark size={22} muted className="footer-logo" />
-          <span className="footer-copy">© 2026 Jared Krekeler · University of Cincinnati</span>
+          <span className="footer-copy">© 2026 Jared Krekeler · JK Football</span>
         </div>
 
         <div className="footer-links">
@@ -23,7 +23,15 @@ function Footer() {
             <Link key={to} to={to} className="footer-link">{label}</Link>
           ))}
           <a
-            href="https://github.com/"
+            href="https://www.youtube.com/@jkrek"
+            target="_blank"
+            rel="noreferrer"
+            className="footer-link footer-link-yt"
+          >
+            ▶ YouTube
+          </a>
+          <a
+            href="https://github.com/Jkrek/DraftVision"
             target="_blank"
             rel="noreferrer"
             className="footer-link"
