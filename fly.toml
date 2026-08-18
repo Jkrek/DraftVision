@@ -1,4 +1,4 @@
-app = 'prospect-predictor-w-machine-learning-main'
+app = 'draftvision'
 primary_region = 'ord'
 
 [build]

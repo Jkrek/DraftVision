@@ -16,8 +16,9 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend
-COPY XGBOost.py dv_features.py dv_heuristics.py ./
+COPY XGBOost.py dv_features.py dv_heuristics.py dv_analytics.py ./
 COPY *.json *.pkl *.cbm ./
+COPY models/ ./models/
 COPY training_data/ ./training_data/
 
 # Copy React build from stage 1
