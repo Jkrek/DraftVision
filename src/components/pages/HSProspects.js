@@ -108,10 +108,15 @@ export default function HSProspects() {
 
   return (
     <div className="hsp-page">
-      <div className="hsp-inner">
 
-        {/* Header */}
-        <header className="hsp-header">
+      {/* Cinematic photo header — house lb-hero pattern */}
+      <header className="hsp-hero">
+        <div className="hsp-hero-media" aria-hidden="true">
+          <img src={process.env.PUBLIC_URL + '/images/CFB Content/ahmad-hardy.webp'} alt="" />
+        </div>
+        <div className="hsp-hero-scrim-x" aria-hidden="true" />
+        <div className="hsp-hero-scrim-y" aria-hidden="true" />
+        <div className="hsp-hero-inner">
           <div className="hsp-heading">
             <div className="hsp-eyebrow">High school pipeline</div>
             <h1 className="hsp-title">HS Prospects</h1>
@@ -123,7 +128,10 @@ export default function HSProspects() {
                 ? `${(meta.total || prospects.length).toLocaleString()} prospects${meta.generated_at ? ` · updated ${new Date(meta.generated_at).toLocaleDateString()}` : ''}`
                 : `${prospects.length.toLocaleString()} prospects`}
           </div>
-        </header>
+        </div>
+      </header>
+
+      <div className="hsp-inner">
 
         {!meta && !loading && (
           <p className="hsp-note">

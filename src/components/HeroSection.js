@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { anonFetch } from '../lib/api';
 import './HeroSection.css';
@@ -55,8 +55,104 @@ function toHeroPlayer(p) {
   };
 }
 
+/* Gates for the background-video enhancement: big screens, motion OK,
+   and no data-saver / slow connection. The Ken-Burns photo is always the
+   base layer, so failing any gate simply means "photo only". */
+function videoGatesPass() {
+  if (typeof window === 'undefined') return false;
+  if (window.innerWidth < 900) return false;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+  const conn = navigator.connection;
+  if (conn) {
+    if (conn.saveData === true) return false;
+    const et = conn.effectiveType;
+    if (et === 'slow-2g' || et === '2g' || et === '3g') return false;
+  }
+  return true;
+}
+
+function safePlay(video) {
+  const p = video.play();
+  if (p && typeof p.catch === 'function') p.catch(() => { /* autoplay blocked — poster/photo stays */ });
+}
+
 function HeroSection() {
   const [player, setPlayer] = useState(FALLBACK_PLAYER);
+  const [showVideo, setShowVideo] = useState(false); // mount <video> at all
+  const [videoReady, setVideoReady] = useState(false); // 'canplay' fired → fade in
+  const heroRef = useRef(null);
+  const videoRef = useRef(null);
+
+  /* Defer the video decision until after window load + an idle slice, so it
+     never competes with first paint or data fetches. */
+  useEffect(() => {
+    let cancelled = false;
+    let idleId = null;
+    let timerId = null;
+
+    const decide = () => {
+      if (!cancelled && videoGatesPass()) setShowVideo(true);
+    };
+    const whenIdle = () => {
+      if (cancelled) return;
+      if (typeof window.requestIdleCallback === 'function') {
+        idleId = window.requestIdleCallback(decide, { timeout: 3000 });
+      } else {
+        timerId = setTimeout(decide, 1200);
+      }
+    };
+
+    if (document.readyState === 'complete') {
+      whenIdle();
+    } else {
+      window.addEventListener('load', whenIdle, { once: true });
+    }
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('load', whenIdle);
+      if (idleId != null && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timerId != null) clearTimeout(timerId);
+    };
+  }, []);
+
+  /* Once the element exists, set src (never present in initial HTML),
+     and fade it in over the photo when it can actually play. */
+  useEffect(() => {
+    if (!showVideo) return undefined;
+    const v = videoRef.current;
+    if (!v) return undefined;
+
+    const onCanPlay = () => {
+      setVideoReady(true);
+      safePlay(v);
+    };
+    v.addEventListener('canplay', onCanPlay, { once: true });
+    v.src = process.env.PUBLIC_URL + '/videos/hero-bg.mp4';
+    v.load();
+
+    return () => v.removeEventListener('canplay', onCanPlay);
+  }, [showVideo]);
+
+  /* Pause when the hero scrolls out of view; resume on re-entry. */
+  useEffect(() => {
+    if (!videoReady) return undefined;
+    const host = heroRef.current;
+    const v = videoRef.current;
+    if (!host || !v || typeof IntersectionObserver !== 'function') return undefined;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) safePlay(v);
+        else v.pause();
+      },
+      { threshold: 0.05 }
+    );
+    io.observe(host);
+    return () => io.disconnect();
+  }, [videoReady]);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,12 +173,24 @@ function HeroSection() {
   }, []);
 
   return (
-    <section className="hero">
+    <section className="hero" ref={heroRef}>
       <div className="hero-media" aria-hidden="true">
         <img
           src={process.env.PUBLIC_URL + '/images/CFB Content/action-1.jpg'}
           alt=""
         />
+        {showVideo && (
+          <video
+            ref={videoRef}
+            className={videoReady ? 'hero-video is-ready' : 'hero-video'}
+            muted
+            loop
+            playsInline
+            preload="none"
+            poster={process.env.PUBLIC_URL + '/videos/hero-poster.jpg'}
+            tabIndex={-1}
+          />
+        )}
       </div>
       <div className="hero-tint" aria-hidden="true" />
       <div className="hero-scrim-v" aria-hidden="true" />

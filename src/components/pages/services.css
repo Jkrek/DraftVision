@@ -27,6 +27,25 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* micro-label while the rest of the board streams in the background */
+.stars-stream {
+  display: inline-block;
+  margin-left: 10px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--color-accent-300);
+  opacity: 0.75;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .stars-stream {
+    animation: starsPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes starsPulse {
+    0%, 100% { opacity: 0.75; }
+    50%      { opacity: 0.35; }
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .stars-head {
     animation: starsUp 0.7s ease-out both;

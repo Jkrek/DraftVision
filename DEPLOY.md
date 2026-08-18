@@ -154,3 +154,34 @@ season via GitHub Actions (`.github/workflows/refresh-board.yml`):
   `generated_at`) before overwriting it — the first refreshed board therefore
   already has deltas. Until a refresh has run, `/api/movers` returns a valid
   empty payload (`"since": null`, empty `risers`/`fallers`).
+
+## Class big boards (`/api/big-board`)
+
+Hand-ordered per-class rankings live in `training_data/big_boards.json`
+(`{"2027": ["Name|Team", ...], ...}`).
+
+- **Read:** `GET /api/big-board?class=2027` → `board` (your ordered rows,
+  resolved against the live prospect cache; unresolvable keys are skipped and
+  listed in `missing`), `rest` (every other prospect of that class,
+  model-ranked by grade/success probability), and `updated_at`.
+- **Write:** `POST /api/big-board` with `{"class": 2027, "board": ["Name|Team", ...]}`,
+  guarded exactly like `/api/analytics/summary` — supply `ANALYTICS_KEY` via
+  the `X-Analytics-Key` header or `?key=`; unset/wrong key returns 404. Keys
+  are validated against the prospect cache and the file is written atomically;
+  every worker hot-reloads it on mtime, no restart needed.
+- **Export:** `GET /api/big-board/export` (same guard) downloads the raw file.
+- **Persistence:** the JSON lives on the machine's disk — it **survives
+  restarts** but **RESETS on every redeploy** to the copy committed in the
+  repo. To make rankings permanent, export the file and commit it as
+  `training_data/big_boards.json` before the next deploy.
+
+## Response compression + HTTP caching
+
+- `flask-compress` (optional dep — the app boots without it) gzip/brotli
+  compresses responses; the ~1-2MB `/api/prospects` payload shrinks ~10x.
+- `/api/prospects`, `/api/hs-prospects`, `/api/movers`, and `/init` send
+  `Cache-Control: public, max-age=300, stale-while-revalidate=600` plus a weak
+  `ETag` derived from the underlying cache file's mtime + query string, and
+  honor `If-None-Match` with `304 Not Modified` — the board changes weekly, so
+  clients revalidate instead of redownloading identical megabytes. `/search`
+  is uncached (tiny) and `/api/analytics/*` is never cached.

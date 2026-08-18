@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { anonFetch } from '../../lib/api';
 import './services.css';
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE   = 100;
+const FIRST_PAGE  = 300;  // small first fetch → fast first paint
+const FETCH_CHUNK = 2000; // server max per request while streaming the rest
 
 function formatProb(value) {
   const n = typeof value === 'number' ? value : parseFloat(value);
@@ -32,22 +34,69 @@ export default function Services() {
   const [prospects, setProspects] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
+  // Progressive load: paint fast with a small first page, then stream the
+  // rest of the board in the background with offset pagination. Rows are
+  // deduped by name+team; server order (grade sort) is preserved by append.
   useEffect(() => {
-    anonFetch('/api/prospects?limit=5000')
+    let cancelled = false;
+    const keyOf = (p) => `${(p.name || '').toLowerCase()}|${(p.team || '').toLowerCase()}`;
+
+    async function fetchRemainder(first) {
+      const seen = new Set(first.map(keyOf));
+      let merged = first;
+      let offset = first.length;
+      try {
+        for (;;) {
+          const r = await anonFetch(`/api/prospects?limit=${FETCH_CHUNK}&offset=${offset}`);
+          const d = await r.json();
+          if (cancelled) return;
+          const rows = Array.isArray(d.prospects) ? d.prospects : [];
+          if (rows.length === 0) break;
+          offset += rows.length;
+          const fresh = rows.filter(p => {
+            const k = keyOf(p);
+            if (seen.has(k)) return false;
+            seen.add(k);
+            return true;
+          });
+          if (fresh.length) {
+            merged = merged.concat(fresh);
+            setProspects(merged);
+          }
+          if (rows.length < FETCH_CHUNK) break;
+        }
+      } catch {
+        /* keep whatever streamed in — the first page stays usable */
+      }
+      if (!cancelled) setStreaming(false);
+    }
+
+    anonFetch(`/api/prospects?limit=${FIRST_PAGE}`)
       .then(r => r.json())
       .then(d => {
-        setProspects(Array.isArray(d.prospects) ? d.prospects : []);
+        if (cancelled) return;
+        const first = Array.isArray(d.prospects) ? d.prospects : [];
+        setProspects(first);
         setMeta(d.meta || null);
+        setLoading(false);
+        if (first.length >= FIRST_PAGE) {
+          setStreaming(true);
+          fetchRemainder(first);
+        }
       })
       .catch(() => {
-        setProspects([]);
-        setError('Could not load prospects. Is the prediction server running?');
-      })
-      .finally(() => setLoading(false));
+        if (!cancelled) {
+          setProspects([]);
+          setError('Could not load prospects. Is the prediction server running?');
+          setLoading(false);
+        }
+      });
+    return () => { cancelled = true; };
   }, []);
 
   const filtered = useMemo(() => {
@@ -76,8 +125,13 @@ export default function Services() {
         <p className="stars-count">
           {loading
             ? 'Loading graded prospects…'
-            : `${filtered.length.toLocaleString()} of ${prospects.length.toLocaleString()} graded prospects` +
-              (boardDate ? ` · Board updated ${boardDate}` : '')}
+            : (
+              <>
+                {`${filtered.length.toLocaleString()} of ${prospects.length.toLocaleString()} graded prospects` +
+                  (boardDate ? ` · Board updated ${boardDate}` : '')}
+                {streaming && <span className="stars-stream">loading full board…</span>}
+              </>
+            )}
         </p>
       </header>
 

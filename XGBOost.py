@@ -8,6 +8,7 @@ Future Star Predictor backend.
 - Falls back to rule scoring only if model inference is unavailable.
 """
 
+import functools
 import json
 import math
 import os
@@ -22,7 +23,7 @@ import numpy as np
 import pandas as pd
 import requests
 import xgboost as xgb
-from flask import Flask, jsonify, redirect, request, send_from_directory
+from flask import Flask, has_request_context, jsonify, redirect, request, send_from_directory
 from flask_cors import CORS
 
 # Shared, side-effect-free modules (also imported by scripts/train_models.py so
@@ -63,6 +64,7 @@ PROSPECT_CACHE_PATH        = "training_data/prospect_cache.json"
 MOCK_DRAFT_PATH            = "mock_draft.json"
 HS_PROSPECT_CACHE_PATH     = "training_data/hs_prospect_cache.json"
 BOARD_MOVERS_PATH          = "training_data/board_movers.json"
+BIG_BOARDS_PATH            = "training_data/big_boards.json"     # hand-ordered per-class boards
 CFBD_API_KEY               = os.environ.get("CFBD_API_KEY", "")
 CFBD_BASE_URL              = "https://api.collegefootballdata.com"
 PLAYER_DB_PATH       = "players.db"
@@ -399,6 +401,15 @@ FORCE_HTTPS = os.getenv("FORCE_HTTPS", "false").strip().lower() in {"1", "true",
 LOCAL_HOSTS = {"localhost", "127.0.0.1"}
 
 CORS(app, resources={r"/*": {"origins": allowed_origins}})
+
+# Response compression (gzip/brotli) — the prospect board JSON is ~1-2MB raw
+# and compresses ~10x. Optional dependency: the app must boot without it.
+try:
+    from flask_compress import Compress
+    Compress(app)
+    print("flask-compress enabled (gzip/br responses)")
+except ImportError:
+    print("flask-compress not installed — responses served uncompressed")
 
 
 @app.before_request
@@ -1864,6 +1875,72 @@ _POS_GROUPS = {
 _GRADE_ORDER = {"A+": 0, "A": 1, "A-": 2, "B+": 3, "B": 4, "B-": 5, "C+": 6, "C": 7, "C-": 8, "D": 9}
 
 
+# ── HTTP caching (Cache-Control + weak ETag) ──────────────────────────────────
+# The board only changes when a cache file is rebuilt (weekly), so clients can
+# revalidate cheaply: identical file mtime + query string → identical ETag →
+# 304, instead of redownloading identical megabytes. Applied to the big list
+# endpoints only — /search is tiny and /api/analytics/* must never be cached.
+_HTTP_CACHE_CONTROL = "public, max-age=300, stale-while-revalidate=600"
+
+
+def _safe_int(value) -> Optional[int]:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _weak_etag(mtimes) -> str:
+    raw = "|".join(f"{m:.6f}" for m in mtimes) \
+          + "|" + request.query_string.decode("utf-8", "replace")
+    return 'W/"' + hashlib.md5(raw.encode("utf-8")).hexdigest() + '"'
+
+
+def http_cached(mtime_getter):
+    """Decorator: weak ETag derived from the underlying cache file mtime(s) +
+    query string; honors If-None-Match with 304. `mtime_getter` runs
+    per-request (triggering the endpoint's hot-reload first, so the ETag always
+    reflects the file that would be served)."""
+    def decorator(fn):
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            if not has_request_context():  # e.g. /init warm-up at boot
+                return fn(*args, **kwargs)
+            etag = _weak_etag(mtime_getter())
+            tokens = {t.strip() for t in
+                      request.headers.get("If-None-Match", "").split(",") if t.strip()}
+            if "*" in tokens or etag in tokens or etag[2:] in tokens:
+                resp = app.response_class(status=304)
+            else:
+                resp = app.make_response(fn(*args, **kwargs))
+            resp.headers["ETag"] = etag
+            resp.headers["Cache-Control"] = _HTTP_CACHE_CONTROL
+            return resp
+        return wrapper
+    return decorator
+
+
+def _prospects_mtimes():
+    _maybe_reload_prospect_cache()
+    _maybe_reload_board_movers()  # per-row "trend" comes from the movers file
+    return (_PROSPECT_CACHE_MTIME, _BOARD_MOVERS_MTIME)
+
+
+def _hs_prospects_mtimes():
+    _maybe_reload_hs_prospect_cache()
+    return (_HS_PROSPECT_CACHE_MTIME,)
+
+
+def _movers_mtimes():
+    _maybe_reload_board_movers()
+    return (_BOARD_MOVERS_MTIME,)
+
+
+def _init_mtimes():
+    _maybe_reload_prospect_cache()
+    return (_PROSPECT_CACHE_MTIME,)
+
+
 def load_prospect_cache() -> None:
     global _PROSPECT_CACHE, _PROSPECT_CACHE_META, _PROSPECT_CACHE_MTIME
     if not os.path.exists(PROSPECT_CACHE_PATH):
@@ -1906,6 +1983,7 @@ def _maybe_reload_prospect_cache() -> None:
 
 
 @app.get("/api/prospects")
+@http_cached(_prospects_mtimes)
 def api_prospects():
     _maybe_reload_prospect_cache()
     _maybe_reload_board_movers()  # keeps per-row "trend" in sync with movers file
@@ -1913,6 +1991,7 @@ def api_prospects():
     grade_filter = (request.args.get("grade") or "").strip().upper()
     query        = (request.args.get("q") or "").strip().lower()
     team_filter  = (request.args.get("team") or "").strip().lower()
+    class_filter = (request.args.get("draft_class") or "").strip()
     sort_by      = (request.args.get("sort") or "grade").strip()
     try:
         limit  = min(int(request.args.get("limit") or 500), 2000)
@@ -1943,6 +2022,15 @@ def api_prospects():
     # Team filter
     if team_filter and team_filter not in ("", "all"):
         results = [p for p in results if team_filter in (p.get("team") or "").lower()]
+
+    # Draft-class filter (e.g. ?draft_class=2027) — combinable with the rest
+    if class_filter and class_filter.upper() != "ALL":
+        try:
+            wanted_class = int(class_filter)
+            results = [p for p in results
+                       if _safe_int(p.get("draft_class")) == wanted_class]
+        except ValueError:
+            pass  # non-numeric → ignore the filter, same as other bad params
 
     # Sort
     if sort_by == "name":
@@ -2028,6 +2116,7 @@ def _maybe_reload_board_movers() -> None:
 
 
 @app.get("/api/movers")
+@http_cached(_movers_mtimes)
 def api_movers():
     _maybe_reload_board_movers()
     data = _BOARD_MOVERS
@@ -2226,6 +2315,7 @@ def _maybe_reload_hs_prospect_cache() -> None:
 
 
 @app.get("/api/hs-prospects")
+@http_cached(_hs_prospects_mtimes)
 def api_hs_prospects():
     _maybe_reload_hs_prospect_cache()
     pos_filter   = (request.args.get("position") or "").strip().upper()
@@ -2290,6 +2380,190 @@ def api_hs_prospects():
         "api_key_set":   bool(CFBD_API_KEY),
         "prospects":     results[offset: offset + limit],
     })
+
+
+# ── Class big boards (hand-ordered rankings per draft class) ──────────────────
+# training_data/big_boards.json maps draft-class → ordered list of player keys
+# ("Name|Team"). The file lives on the app machine's disk: it survives restarts
+# and hot-reloads on mtime like the other caches, but a redeploy resets it to
+# the committed copy — export + commit to make rankings permanent (see DEPLOY.md).
+
+_BIG_BOARD_SEED = {"2027": [], "2028": [], "2029": [], "2030": []}
+_BIG_BOARDS: dict = {k: [] for k in _BIG_BOARD_SEED}
+_BIG_BOARDS_MTIME: float = 0.0
+_big_boards_reload_lock = threading.Lock()
+
+
+def load_big_boards() -> None:
+    global _BIG_BOARDS, _BIG_BOARDS_MTIME
+    if not os.path.exists(BIG_BOARDS_PATH):
+        print("Big boards file not found — serving empty seed boards.")
+        return
+    try:
+        mtime = os.path.getmtime(BIG_BOARDS_PATH)  # capture BEFORE reading
+        with open(BIG_BOARDS_PATH) as f:
+            data = json.load(f)
+        if not isinstance(data, dict):
+            raise ValueError("big_boards.json root must be an object")
+        _BIG_BOARDS = {str(k): [str(x) for x in v]
+                       for k, v in data.items() if isinstance(v, list)}
+        _BIG_BOARDS_MTIME = mtime
+        counts = {k: len(v) for k, v in sorted(_BIG_BOARDS.items())}
+        print(f"Loaded big boards: {counts}")
+    except Exception as exc:
+        # mtime NOT updated on failure (e.g. file mid-rewrite) → retried next request
+        print(f"Failed to load big boards: {exc}")
+
+
+def _maybe_reload_big_boards() -> None:
+    """Hot-reload on mtime (same pattern as the prospect cache)."""
+    try:
+        mtime = os.path.getmtime(BIG_BOARDS_PATH)
+    except OSError:
+        return
+    if mtime == _BIG_BOARDS_MTIME:
+        return
+    with _big_boards_reload_lock:
+        if mtime == _BIG_BOARDS_MTIME:  # another thread already reloaded
+            return
+        load_big_boards()
+
+
+def _big_board_guard_ok() -> bool:
+    """EXACTLY the /api/analytics/summary guard: invisible until ANALYTICS_KEY
+    is configured; wrong key is also treated as 404 so the endpoint's
+    existence can't be probed."""
+    configured = os.getenv("ANALYTICS_KEY", "").strip()
+    if not configured:
+        return False
+    supplied = request.args.get("key") or request.headers.get("X-Analytics-Key") or ""
+    return supplied == configured
+
+
+def _prospect_key(p: dict) -> str:
+    return f"{(p.get('name') or '').strip()}|{(p.get('team') or '').strip()}"
+
+
+def _prospect_key_index() -> dict:
+    """lowercase 'name|team' → cached row (first occurrence wins)."""
+    idx: dict = {}
+    for p in _PROSPECT_CACHE:
+        idx.setdefault(_prospect_key(p).lower(), p)
+    return idx
+
+
+def _big_boards_updated_at() -> Optional[str]:
+    if not _BIG_BOARDS_MTIME:
+        return None
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(_BIG_BOARDS_MTIME))
+
+
+@app.get("/api/big-board")
+def api_big_board():
+    _maybe_reload_prospect_cache()
+    _maybe_reload_big_boards()
+    cls = _safe_int(request.args.get("class") or 2027)
+    if cls is None:
+        return jsonify({"error": "class must be an integer"}), 400
+    if str(cls) not in _BIG_BOARDS:
+        return jsonify({"error": f"unknown class {cls}",
+                        "classes": sorted(_BIG_BOARDS)}), 400
+
+    idx = _prospect_key_index()
+    board_rows, missing, on_board = [], [], set()
+    for key in _BIG_BOARDS[str(cls)]:
+        row = idx.get(key.strip().lower())
+        if row is None:
+            missing.append(key)  # skipped, but reported
+            continue
+        on_board.add(_prospect_key(row).lower())
+        board_rows.append(row)
+
+    # Remaining prospects of that class, model-ranked (grade, then success prob)
+    rest = [p for p in _PROSPECT_CACHE
+            if _safe_int(p.get("draft_class")) == cls
+            and _prospect_key(p).lower() not in on_board]
+    rest.sort(key=lambda p: (_GRADE_ORDER.get(p.get("grade"), 9),
+                             -(p.get("success_probability") or 0)))
+
+    return jsonify({
+        "class":      cls,
+        "board":      board_rows,
+        "missing":    missing,
+        "rest":       rest,
+        "updated_at": _big_boards_updated_at(),
+    })
+
+
+@app.post("/api/big-board")
+def api_big_board_save():
+    if not _big_board_guard_ok():
+        return jsonify({"error": "not found"}), 404
+    _maybe_reload_prospect_cache()
+    _maybe_reload_big_boards()
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Invalid JSON"}), 400
+    cls = _safe_int(payload.get("class"))
+    if cls is None:
+        return jsonify({"error": "class must be an integer"}), 400
+    if str(cls) not in _BIG_BOARDS:
+        return jsonify({"error": f"unknown class {cls}",
+                        "classes": sorted(_BIG_BOARDS)}), 400
+    board = payload.get("board")
+    if not isinstance(board, list) or not all(isinstance(k, str) for k in board):
+        return jsonify({"error": "board must be a list of 'Name|Team' strings"}), 400
+
+    # Validate every key against the live prospect cache; canonicalize to the
+    # cache's exact "Name|Team" spelling and drop duplicate keys (first wins).
+    idx = _prospect_key_index()
+    canonical, invalid, seen = [], [], set()
+    for key in board:
+        row = idx.get(key.strip().lower())
+        if row is None:
+            invalid.append(key)
+            continue
+        canon = _prospect_key(row)
+        if canon.lower() in seen:
+            continue
+        seen.add(canon.lower())
+        canonical.append(canon)
+    if invalid:
+        return jsonify({"error": "unknown player keys", "invalid_keys": invalid}), 400
+
+    data = {k: list(v) for k, v in _BIG_BOARDS.items()}
+    data[str(cls)] = canonical
+
+    # Atomic write: temp file + os.replace, so a reader (or the mtime
+    # hot-reloader in another worker) never sees a half-written file.
+    tmp_path = BIG_BOARDS_PATH + ".tmp"
+    with open(tmp_path, "w") as f:
+        json.dump(data, f, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp_path, BIG_BOARDS_PATH)
+    load_big_boards()  # this worker updates now; others hot-reload on mtime
+
+    return jsonify({"ok": True, "class": cls, "count": len(canonical),
+                    "updated_at": _big_boards_updated_at()})
+
+
+@app.get("/api/big-board/export")
+def api_big_board_export():
+    if not _big_board_guard_ok():
+        return jsonify({"error": "not found"}), 404
+    _maybe_reload_big_boards()
+    if not os.path.exists(BIG_BOARDS_PATH):
+        # Never written on this machine — export the in-memory (seed) boards
+        resp = jsonify(_BIG_BOARDS)
+        resp.headers["Content-Disposition"] = 'attachment; filename="big_boards.json"'
+        return resp
+    return send_from_directory(
+        os.path.abspath(os.path.dirname(BIG_BOARDS_PATH)),
+        os.path.basename(BIG_BOARDS_PATH),
+        as_attachment=True, max_age=0,
+    )
 
 
 # ── Prospect grade ────────────────────────────────────────────────────────────
@@ -2487,6 +2761,7 @@ SKILL_POSITIONS = {"QB", "RB", "WR", "TE"}
 PROSPECT_SOURCES = ("college_prospect", "nfl_draft_2025", "freshman_2026")
 
 @app.get("/init")
+@http_cached(_init_mtimes)
 def init_data():
     cached = cache_get("init")
     if cached:
@@ -2969,6 +3244,7 @@ load_prospect_cache()
 load_board_movers()
 load_mock_draft()
 load_hs_prospect_cache()
+load_big_boards()
 
 # ── Usage analytics + optional Auth0 login (dv_analytics.py) ──────────────────
 # Registers before/after_request logging hooks, the /api/analytics/summary

@@ -2,6 +2,9 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { nflLogoUrl } from '../../nflTeams';
 
+/* "San Francisco 49ers" → "49ers" — compact trade label. */
+const nick = (t) => (t || '').split(' ').pop();
+
 /* One board row in the mock-draft visual language. Shared by the live
    simulator board and the imported-image board — both render into the
    same .mock-row grid from MockDraft.css. */
@@ -13,6 +16,8 @@ export default function MockRow({
   position,
   grade,     // letter grade or PFF grade — rendered as a pill
   highlight, // true → user's own pick (accent edge)
+  tag,       // 'STEAL' | 'REACH' | null — value-delta chip
+  via,       // team the slot was acquired from ("via trade with X")
 }) {
   const navigate = useNavigate();
   const logo = nflLogoUrl(nflTeam);
@@ -22,13 +27,29 @@ export default function MockRow({
       <span className="mock-row-pick">{pick}</span>
 
       <div className="mock-row-player">
-        <div
-          className={`mock-row-name${name ? ' is-link' : ''}`}
-          onClick={() => name && navigate(`/predict?name=${encodeURIComponent(name)}`)}
-        >
-          {name || '—'}
+        <div className="mock-row-nameline">
+          <span
+            className={`mock-row-name${name ? ' is-link' : ''}`}
+            onClick={() => name && navigate(`/predict?name=${encodeURIComponent(name)}`)}
+          >
+            {name || '—'}
+          </span>
+          {tag && (
+            <span className={`mock-tag ${tag === 'STEAL' ? 'is-steal' : 'is-reach'}`}>
+              {tag}
+            </span>
+          )}
         </div>
-        {school && <div className="mock-row-school">{school}</div>}
+        {(school || via) && (
+          <div className="mock-row-school">
+            {school}
+            {via && (
+              <span className="mock-row-via">
+                {school ? ' · ' : ''}via trade with {nick(via)}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="mock-row-team">

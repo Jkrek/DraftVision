@@ -11,6 +11,7 @@ import {
   POS_TABS,
   posGroup,
   buildPool,
+  buildPoolFromBoard,
   createDraft,
   advanceCpu,
   commitPick,
@@ -18,9 +19,18 @@ import {
   isUserOnClock,
   currentTeam,
   currentPickNumber,
+  deltaLetter,
+  tradeDownOffers,
+  tradeUpOffers,
+  executeTrade,
 } from './simulator/draftEngine';
 
-const STORE_KEY = 'dv_mock_sim_v1';
+/* v2: picks carry delta/tag/via, results carry orderLen — old v1 saves
+   are simply ignored rather than loaded into the new shape. */
+const STORE_KEY = 'dv_mock_sim_v2';
+const SCHEMA_V = 2;
+
+const HERO_IMG = process.env.PUBLIC_URL + '/images/CFB Content/lamar.png';
 
 /* "San Francisco 49ers" → "49ers" — compact chip label. */
 const nick = (t) => (t || '').split(' ').pop();
@@ -39,7 +49,12 @@ function newSeed() {
 function loadSaved() {
   try {
     const data = JSON.parse(localStorage.getItem(STORE_KEY));
-    return data && Array.isArray(data.picks) && data.picks.length ? data : null;
+    return data &&
+      data.v === SCHEMA_V &&
+      Array.isArray(data.picks) &&
+      data.picks.length
+      ? data
+      : null;
   } catch {
     return null;
   }
@@ -50,6 +65,9 @@ function slimPicks(picks) {
     pick: pk.pick,
     round: pk.round,
     team: pk.team,
+    delta: Number.isFinite(pk.delta) ? pk.delta : null,
+    tag: pk.tag || null,
+    via: pk.via || null,
     player: {
       name: pk.player.name,
       position: pk.player.position,
@@ -59,6 +77,51 @@ function slimPicks(picks) {
       espn_team_id: pk.player.espn_team_id,
     },
   }));
+}
+
+/* Plaintext export: "round.pick team player pos school grade" lines. */
+function draftText(picks, orderLen) {
+  const len = orderLen || 32;
+  return picks
+    .map((pk) => {
+      const inRound = pk.pick - (pk.round - 1) * len;
+      return [
+        `${pk.round}.${String(inRound).padStart(2, '0')}`,
+        pk.team,
+        pk.player.name,
+        pk.player.position || '',
+        pk.player.team || '',
+        pk.player.grade || '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+    })
+    .join('\n');
+}
+
+async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    /* fall through to the legacy path */
+  }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function persistResult(result) {
@@ -78,6 +141,11 @@ export default function MockDraft() {
 
   // player pool — null while loading, [] on failure
   const [poolRows, setPoolRows] = useState(null);
+  // true when the pool came from the owner-curated '27 big board
+  const [boardPowered, setBoardPowered] = useState(false);
+
+  // clipboard feedback — 'draft' | 'haul' | null
+  const [copied, setCopied] = useState(null);
 
   // setup
   const [rounds, setRounds]         = useState(1);
@@ -94,12 +162,36 @@ export default function MockDraft() {
   // completed result being displayed (from a finished sim or localStorage)
   const [view, setView] = useState(null);
 
-  /* ── Player pool: /api/prospects, 2027 class, board-sorted ── */
+  /* ── Player pool: the '27 big board when it exists (owner order first,
+     model-ranked rest after), else /api/prospects board-sorted. ── */
   useEffect(() => {
-    anonFetch('/api/prospects?limit=2000')
-      .then((r) => r.json())
-      .then((data) => setPoolRows(buildPool(data.prospects)))
-      .catch(() => setPoolRows([]));
+    let alive = true;
+    (async () => {
+      try {
+        const r = await anonFetch('/api/big-board?class=2027');
+        if (r.ok) {
+          const data = await r.json();
+          if (data && Array.isArray(data.board) && data.board.length) {
+            const pool = buildPoolFromBoard(data.board, data.rest);
+            if (pool.length && alive) {
+              setPoolRows(pool);
+              setBoardPowered(true);
+              return;
+            }
+          }
+        }
+      } catch {
+        /* 404 / network — fall back to the model board */
+      }
+      try {
+        const r = await anonFetch('/api/prospects?limit=2000');
+        const data = await r.json();
+        if (alive) setPoolRows(buildPool(data.prospects));
+      } catch {
+        if (alive) setPoolRows([]);
+      }
+    })();
+    return () => { alive = false; };
   }, []);
 
   /* ── Start / restart ── */
@@ -142,8 +234,10 @@ export default function MockDraft() {
   useEffect(() => {
     if (phase !== 'live' || !sim || !isDone(sim)) return;
     const result = {
+      v: SCHEMA_V,
       rounds: sim.rounds,
       userTeam: sim.userTeam,
+      orderLen: sim.order.length,
       completedAt: new Date().toISOString(),
       picks: slimPicks(sim.picks),
     };
@@ -207,6 +301,51 @@ export default function MockDraft() {
   const clockTeam = sim && !isDone(sim) ? currentTeam(sim) : null;
   const pickNo = sim ? currentPickNumber(sim) : 0;
 
+  /* ── Trades ── */
+  const downOffers = useMemo(
+    () => (onClock ? tradeDownOffers(sim) : []),
+    [onClock, sim]
+  );
+  const upOffers = useMemo(
+    () =>
+      sim && phase === 'live' && !simming && !onClock && !isDone(sim)
+        ? tradeUpOffers(sim)
+        : [],
+    [sim, phase, simming, onClock]
+  );
+
+  const acceptOffer = useCallback((offer) => {
+    setSim((s) => (s ? executeTrade(s, offer) : s));
+    // trading down surrenders the current pick — resume toward the next one
+    if (offer.dir === 'down') setSimming('user');
+  }, []);
+
+  /* ── Net value of the user's haul (sum of pick deltas) ── */
+  const haulValue = useMemo(
+    () =>
+      haul.reduce(
+        (s, pk) => s + (Number.isFinite(pk.delta) ? pk.delta : 0),
+        0
+      ),
+    [haul]
+  );
+
+  /* ── Plaintext exports ── */
+  const exportOrderLen = sim
+    ? sim.order.length
+    : (view && view.orderLen) || DRAFT_ORDER_2027.length;
+
+  const copyPicks = useCallback(
+    async (picks, which) => {
+      const ok = await copyToClipboard(draftText(picks, exportOrderLen));
+      if (ok) {
+        setCopied(which);
+        setTimeout(() => setCopied(null), 1800);
+      }
+    },
+    [exportOrderLen]
+  );
+
   const moveTeam = useCallback((i, dir) => {
     setOrder((o) => {
       const j = i + dir;
@@ -221,19 +360,56 @@ export default function MockDraft() {
 
   const canStart = poolRows && poolRows.length > 0 && (controlAll || userTeam);
 
+  const fmtSlots = (nums) => nums.map((n) => `#${n}`).join(' + ');
+
+  const renderOffer = (offer) => (
+    <div className="sim-trade-row" key={`${offer.dir}-${offer.team}-${offer.userGets[0]}`}>
+      <img
+        className="sim-trade-logo"
+        src={nflLogoUrl(offer.team, 500)}
+        alt=""
+        loading="lazy"
+      />
+      <span className="sim-trade-team">{nick(offer.team)}</span>
+      <span className="sim-trade-detail">
+        send {fmtSlots(offer.userGives)} · get {fmtSlots(offer.userGets)}
+      </span>
+      <span className="sim-trade-val">
+        {offer.give.toLocaleString()} → {offer.get.toLocaleString()} pts
+      </span>
+      <button
+        className="sim-btn sim-btn-accent sim-trade-accept"
+        disabled={!offer.fair}
+        title={offer.fair ? undefined : 'Not close enough to chart value'}
+        onClick={() => acceptOffer(offer)}
+      >
+        {offer.fair ? 'Accept' : 'Declined'}
+      </button>
+    </div>
+  );
+
   /* ─────────────────────────────────────────────────────────────────── */
 
   return (
     <div className="mock-page">
-      <div className="mock-inner">
 
-        <header className="mock-header">
+      {/* ── Cinematic photo header (Leaderboard's lb-hero pattern) ── */}
+      <header className="mock-hero">
+        <div className="mock-hero-media" aria-hidden="true">
+          <img src={HERO_IMG} alt="" />
+        </div>
+        <div className="mock-hero-scrim-x" aria-hidden="true" />
+        <div className="mock-hero-scrim-y" aria-hidden="true" />
+        <div className="mock-hero-inner">
           <div className="eyebrow">Mock draft</div>
           <h1 className="mock-title">Mock Draft Simulator</h1>
           <p className="mock-sub">
             Run a 2027 NFL mock against the DraftVision board — CPU picks weigh
             success probability, grade, and positional need.
           </p>
+          {boardPowered && (
+            <span className="mock-board-badge">Powered by the ’27 Big Board</span>
+          )}
           {phase === 'live' && sim && (
             <p className="mock-meta">
               Pick {Math.min(pickNo, sim.totalPicks)} of {sim.totalPicks}
@@ -246,7 +422,10 @@ export default function MockDraft() {
               {view.completedAt && ` · ${new Date(view.completedAt).toLocaleDateString()}`}
             </p>
           )}
-        </header>
+        </div>
+      </header>
+
+      <div className="mock-inner">
 
         {/* ── Saved-sim prompt ── */}
         {phase === 'prompt' && saved && (
@@ -421,9 +600,29 @@ export default function MockDraft() {
           </div>
         )}
 
+        {/* ── Trade up (paused, CPU on the clock ahead of your pick) ── */}
+        {upOffers.length > 0 && (
+          <details className="sim-trades">
+            <summary className="sim-trades-summary">
+              <span className="mock-import-chev">›</span>
+              Trade up — {upOffers.length} pick{upOffers.length === 1 ? '' : 's'} ahead of yours
+            </summary>
+            <div className="sim-trade-list">{upOffers.map(renderOffer)}</div>
+          </details>
+        )}
+
         {/* ── On the clock: searchable best-available ── */}
         {onClock && (
           <div className="sim-clock">
+            {downOffers.length > 0 && (
+              <details className="sim-trades sim-trades-clock">
+                <summary className="sim-trades-summary">
+                  <span className="mock-import-chev">›</span>
+                  Trade down — offers for pick {pickNo}
+                </summary>
+                <div className="sim-trade-list">{downOffers.map(renderOffer)}</div>
+              </details>
+            )}
             <div className="sim-clock-controls">
               <input
                 className="sim-search"
@@ -488,20 +687,38 @@ export default function MockDraft() {
                     <div className="sim-summary-title">Your haul — {boardUserTeam}</div>
                     <div className="sim-summary-sub">
                       {haul.length} pick{haul.length === 1 ? '' : 's'} over {view.rounds} round{view.rounds === 1 ? '' : 's'}
+                      {' · '}net value {haulValue >= 0 ? '+' : ''}{haulValue}
                     </div>
                   </div>
                 </div>
                 <div className="sim-summary-rows">
-                  {haul.map((pk) => (
-                    <div key={pk.pick} className="sim-summary-row">
-                      <span className="sim-summary-pick">{pk.pick}</span>
-                      <span className="sim-summary-name">{pk.player.name}</span>
-                      <span className="sim-summary-school">{pk.player.team}</span>
-                      <span className="sim-av-pos">{pk.player.position}</span>
-                      <span className="sim-av-grade"><span>{pk.player.grade || '—'}</span></span>
-                      <span className="sim-av-prob">{fmtProb(pk.player.success_probability)}</span>
-                    </div>
-                  ))}
+                  {haul.map((pk) => {
+                    const letter = deltaLetter(pk.delta);
+                    return (
+                      <div key={pk.pick} className="sim-summary-row">
+                        <span className="sim-summary-pick">{pk.pick}</span>
+                        <span className="sim-summary-name">
+                          {pk.player.name}
+                          {pk.tag && (
+                            <span className={`mock-tag ${pk.tag === 'STEAL' ? 'is-steal' : 'is-reach'}`}>
+                              {pk.tag}
+                            </span>
+                          )}
+                        </span>
+                        <span className="sim-summary-school">{pk.player.team}</span>
+                        <span className="sim-av-pos">{pk.player.position}</span>
+                        <span className="sim-av-grade"><span>{pk.player.grade || '—'}</span></span>
+                        <span
+                          className={`sim-haul-letter${letter ? ` is-${letter.toLowerCase()}` : ''}`}
+                          title={Number.isFinite(pk.delta)
+                            ? `Value ${pk.delta >= 0 ? '+' : ''}${pk.delta} vs board rank`
+                            : undefined}
+                        >
+                          {letter || '—'}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </>
             ) : (
@@ -534,6 +751,20 @@ export default function MockDraft() {
               >
                 New draft
               </button>
+              <button
+                className="sim-btn"
+                onClick={() => copyPicks(view.picks, 'draft')}
+              >
+                {copied === 'draft' ? 'Copied' : 'Copy draft'}
+              </button>
+              {haul.length > 0 && (
+                <button
+                  className="sim-btn"
+                  onClick={() => copyPicks(haul, 'haul')}
+                >
+                  {copied === 'haul' ? 'Copied' : 'Copy my haul'}
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -556,6 +787,8 @@ export default function MockDraft() {
                   nflTeam={pk.team}
                   position={pk.player.position}
                   grade={pk.player.grade}
+                  tag={pk.tag}
+                  via={pk.via}
                   highlight={
                     boardUserTeam !== CONTROL_ALL && pk.team === boardUserTeam
                   }

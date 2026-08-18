@@ -1,0 +1,669 @@
+/* ── Big Board — Nocturne curated-board screen ────────────────────────── */
+
+.bb-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+/* ── Photo header (house lb-hero scrim pattern) ── */
+
+.bb-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.bb-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+.bb-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 24%;
+  filter: saturate(1.5) contrast(1.1) brightness(0.82);
+}
+
+/* dark left scrim into the page ground */
+.bb-hero-scrim-x {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    var(--color-bg) 6%,
+    color-mix(in srgb, var(--color-bg) 90%, transparent) 44%,
+    color-mix(in srgb, var(--color-bg) 42%, transparent) 100%
+  );
+}
+/* bottom scrim — photo never has a hard edge */
+.bb-hero-scrim-y {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, transparent 60%, var(--color-bg));
+}
+
+.bb-hero-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 104px 32px 56px;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+}
+
+.bb-hero-text {
+  flex: 1 1 360px;
+}
+
+.bb-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent-300);
+  margin-bottom: 14px;
+}
+
+.bb-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(34px, 5vw, 54px);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.bb-count {
+  font-size: 13px;
+  color: var(--color-neutral-500);
+  padding-bottom: 6px;
+  margin-left: auto;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Main column ── */
+
+.bb-main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 34px 32px 120px;
+  box-sizing: border-box;
+}
+
+/* ── Controls row: class tabs + edit toggle ── */
+
+.bb-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.bb-seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-neutral-800);
+  border-radius: var(--radius-md);
+}
+
+.bb-seg-btn {
+  appearance: none;
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 7px 15px;
+  border-radius: 5px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  font-variant-numeric: tabular-nums;
+  transition: color 0.15s, background 0.15s;
+}
+.bb-seg-btn:hover {
+  color: var(--color-neutral-300);
+}
+.bb-seg-btn.active {
+  color: var(--color-accent-200);
+  background: var(--color-accent-800);
+}
+
+/* unobtrusive owner control — quiet text link, right-aligned */
+.bb-edit-toggle {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 4px 2px;
+  margin-left: auto;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-neutral-600);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+.bb-edit-toggle:hover {
+  color: var(--color-accent-300);
+}
+
+/* ── Notes / errors ── */
+
+.bb-note {
+  margin: 0 0 18px;
+  font-size: 12.5px;
+  color: var(--color-neutral-500);
+}
+
+.bb-error {
+  color: color-mix(in srgb, #d3837d 70%, var(--color-neutral-200));
+}
+
+/* ── Admin key gate ── */
+
+.bb-gate {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  border: 1px solid var(--color-neutral-800);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.bb-gate-label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+}
+
+.bb-key-input {
+  flex: 1 1 200px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-neutral-800);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  outline: none;
+}
+.bb-key-input:focus,
+.bb-key-input:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+/* outlined buttons — Nocturne rule: never solid-filled */
+.bb-btn {
+  appearance: none;
+  background: transparent;
+  margin: 0;
+  padding: 8px 16px;
+  border: 1px solid var(--color-accent-700);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--color-accent-300);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.bb-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  border-color: var(--color-accent);
+}
+.bb-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.bb-btn-quiet {
+  border-color: var(--color-neutral-800);
+  color: var(--color-neutral-400);
+}
+.bb-btn-quiet:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  border-color: var(--color-neutral-600);
+}
+
+/* ── Section heads + divider ── */
+
+.bb-sec-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: 6px 0 14px;
+}
+
+.bb-sec-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: var(--color-neutral-100);
+}
+
+.bb-sec-meta {
+  font-size: 12px;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+}
+
+/* thin fading divider with a label — house divider language */
+.bb-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 40px 0 16px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+  white-space: nowrap;
+}
+.bb-divider::before,
+.bb-divider::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+}
+.bb-divider::before {
+  background: linear-gradient(90deg, transparent, var(--color-divider));
+}
+.bb-divider::after {
+  background: linear-gradient(90deg, var(--color-divider), transparent);
+}
+
+/* ── Board table + rows (board-row language) ── */
+
+.bb-table {
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.bb-row {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 13px 22px;
+  cursor: pointer;
+  font-size: 13.5px;
+  overflow: hidden;
+  transition: background 0.2s;
+}
+.bb-row + .bb-row,
+.bb-edit-row + .bb-edit-row {
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+.bb-row:hover {
+  background: color-mix(in srgb, var(--color-accent) 9%, transparent);
+}
+.bb-row:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+/* curated treatment — inset accent bar + tint + larger rank: reads as
+   deliberately placed by a person, not sorted by a model */
+.bb-row.bb-curated {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  background: color-mix(in srgb, var(--color-accent) 4.5%, transparent);
+}
+.bb-row.bb-curated:hover {
+  background: color-mix(in srgb, var(--color-accent) 11%, transparent);
+}
+.bb-curated-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--color-accent-400), var(--color-accent-700));
+  pointer-events: none;
+}
+
+/* column tracks */
+.bb-c-rank   { flex: 0 0 52px; }
+.bb-c-name   { flex: 2 1 210px; min-width: 0; }
+.bb-c-pos    { flex: 0 0 58px; }
+.bb-c-school { flex: 1 1 150px; min-width: 0; }
+.bb-c-grade  { flex: 0 0 46px; text-align: center; }
+.bb-c-prob   { flex: 0 0 72px; text-align: right; }
+
+.bb-rank {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  font-weight: 300;
+  font-size: 15px;
+  color: var(--color-neutral-600);
+}
+.bb-curated .bb-rank {
+  font-size: 22px;
+  color: var(--color-accent-300);
+}
+
+.bb-name {
+  color: var(--color-neutral-100);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.bb-name > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bb-team-logo {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+}
+
+.bb-est {
+  flex: 0 0 auto;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--color-neutral-700);
+  color: var(--color-neutral-500);
+}
+
+.bb-pos {
+  color: var(--color-accent-300);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+.bb-school {
+  color: var(--color-neutral-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bb-grade > span {
+  font-size: 11px;
+  padding: 3px 7px;
+  border: 1px solid var(--color-accent-700);
+  border-radius: 99px;
+  color: var(--color-accent-300);
+}
+
+.bb-prob {
+  font-size: 17px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: var(--color-neutral-100);
+  font-variant-numeric: tabular-nums;
+}
+.bb-curated .bb-prob {
+  font-size: 19px;
+}
+
+/* ── Empty board state ── */
+
+.bb-empty {
+  border: 1px dashed var(--color-neutral-800);
+  border-radius: var(--radius-lg);
+  padding: 34px 26px;
+  text-align: center;
+}
+.bb-empty-title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: var(--color-neutral-200);
+}
+.bb-empty-sub {
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  color: var(--color-neutral-500);
+}
+.bb-empty .bb-btn {
+  margin-top: 2px;
+}
+
+/* ── Editor rows ── */
+
+.bb-edit-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 16px;
+  font-size: 13.5px;
+}
+
+.bb-rank-input {
+  flex: 0 0 52px;
+  width: 52px;
+  box-sizing: border-box;
+  background: var(--color-bg);
+  border: 1px solid var(--color-neutral-800);
+  border-radius: var(--radius-sm);
+  padding: 6px 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-align: center;
+  color: var(--color-accent-300);
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+.bb-rank-input:focus,
+.bb-rank-input:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+.bb-edit-ctls {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.bb-ctl {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--color-neutral-800);
+  border-radius: var(--radius-sm);
+  margin: 0;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.bb-ctl:hover:not(:disabled) {
+  color: var(--color-accent-300);
+  border-color: var(--color-accent-700);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+.bb-ctl:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.bb-ctl-remove:hover:not(:disabled) {
+  color: color-mix(in srgb, #d3837d 70%, var(--color-neutral-200));
+  border-color: color-mix(in srgb, #d3837d 45%, var(--color-neutral-800));
+  background: color-mix(in srgb, #d3837d 8%, transparent);
+}
+
+.bb-add {
+  margin-left: auto;
+  padding: 6px 13px;
+  font-size: 12px;
+}
+
+/* ── Editor search + pool ── */
+
+.bb-search {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--color-surface);
+  border: 1px solid var(--color-neutral-800);
+  border-radius: var(--radius-md);
+  padding: 11px 14px;
+  margin-bottom: 14px;
+  font-size: 13.5px;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  outline: none;
+}
+.bb-search::placeholder {
+  color: var(--color-neutral-600);
+}
+.bb-search:focus,
+.bb-search:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+.bb-pool {
+  margin-bottom: 90px; /* clear the fixed save bar */
+}
+
+/* ── Unsaved-changes bar ── */
+
+.bb-savebar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 32px;
+  border-top: 1px solid var(--color-divider);
+  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.bb-savebar-status {
+  font-size: 12.5px;
+  color: var(--color-neutral-400);
+}
+
+.bb-savebar-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ── States / load more ── */
+
+.bb-state {
+  padding: 36px 22px;
+  font-size: 13.5px;
+  color: var(--color-neutral-500);
+}
+
+.bb-more {
+  display: flex;
+  justify-content: center;
+  padding: 26px 0 0;
+}
+
+/* generic focus ring on interactive pieces */
+.bb-seg-btn:focus-visible,
+.bb-edit-toggle:focus-visible,
+.bb-btn:focus-visible,
+.bb-ctl:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ── Motion (gated) ── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .bb-hero-media img {
+    animation: bbKen 30s ease-in-out infinite alternate;
+  }
+  .bb-hero-text {
+    animation: bbUp 0.7s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-row,
+  .bb-seg-btn,
+  .bb-btn,
+  .bb-ctl,
+  .bb-edit-toggle {
+    transition: none;
+  }
+}
+
+@keyframes bbUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes bbKen {
+  0%   { transform: scale(1.04) translate3d(0, 0, 0); }
+  100% { transform: scale(1.18) translate3d(-2%, -2%, 0); }
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 860px) {
+  .bb-hero-inner {
+    padding: 84px 20px 40px;
+  }
+  .bb-main {
+    padding: 26px 20px 110px;
+  }
+  .bb-savebar {
+    padding: 12px 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .bb-c-school {
+    display: none;
+  }
+  .bb-row,
+  .bb-edit-row {
+    gap: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .bb-c-rank {
+    flex-basis: 34px;
+  }
+  .bb-count {
+    margin-left: 0;
+    text-align: left;
+  }
+}

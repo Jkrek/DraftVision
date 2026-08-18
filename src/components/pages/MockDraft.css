@@ -5,18 +5,76 @@
 .mock-page {
   min-height: 100vh;
   background: var(--color-bg);
-  padding: 56px 32px 110px;
+  padding: 0 0 110px;
 }
 
 .mock-inner {
   max-width: 1100px;
   margin: 0 auto;
+  padding: 36px 32px 0;
+  box-sizing: border-box;
 }
 
-/* ── Page header — flush left ─────────────────────────────────────────── */
+/* ── Cinematic photo header — Leaderboard's lb-hero pattern ───────────── */
 
-.mock-header {
-  margin-bottom: 34px;
+.mock-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.mock-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+.mock-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 68% 24%;
+  filter: saturate(1.5) contrast(1.1) brightness(0.8);
+}
+
+/* dark left scrim into the page ground — copy stays legible */
+.mock-hero-scrim-x {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    var(--color-bg) 6%,
+    color-mix(in srgb, var(--color-bg) 90%, transparent) 44%,
+    color-mix(in srgb, var(--color-bg) 42%, transparent) 100%
+  );
+}
+/* bottom scrim — the photo never has a hard edge */
+.mock-hero-scrim-y {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, transparent 55%, var(--color-bg));
+}
+
+.mock-hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 104px 32px 52px;
+  box-sizing: border-box;
+}
+
+.mock-board-badge {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 5px 12px;
+  border: 1px solid var(--color-accent-700);
+  border-radius: 99px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent-300);
+  background: color-mix(in srgb, var(--color-bg) 55%, transparent);
 }
 
 .mock-title {
@@ -521,6 +579,110 @@
   color: var(--color-neutral-500);
 }
 
+/* ── Trades panel (collapsible, minimal) ──────────────────────────────── */
+
+.sim-trades {
+  margin-bottom: 22px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  padding: 12px 20px;
+}
+
+/* inside the on-the-clock card: subordinate, hairline only */
+.sim-trades-clock {
+  border: 0;
+  border-radius: 0;
+  padding: 0 0 12px;
+  margin-bottom: 14px;
+  background: linear-gradient(to right,
+    transparent, var(--color-divider) 48px,
+    var(--color-divider) calc(100% - 48px), transparent) no-repeat bottom / 100% 1px;
+}
+
+.sim-trades-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--color-neutral-400);
+  padding: 6px 0;
+}
+.sim-trades-summary::-webkit-details-marker { display: none; }
+.sim-trades-summary:hover { color: var(--color-neutral-200); }
+
+.sim-trade-list {
+  margin-top: 8px;
+}
+
+.sim-trade-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  font-size: 12.5px;
+}
+.sim-trade-row + .sim-trade-row {
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+.sim-trade-logo {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+}
+
+.sim-trade-team {
+  flex: 0 0 90px;
+  color: var(--color-neutral-200);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sim-trade-detail {
+  flex: 1 1 180px;
+  color: var(--color-neutral-400);
+  font-variant-numeric: tabular-nums;
+}
+
+.sim-trade-val {
+  color: var(--color-neutral-500);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sim-trade-accept {
+  padding: 5px 14px;
+  font-size: 11.5px;
+}
+
+/* ── Value tags (steal / reach) ───────────────────────────────────────── */
+
+.mock-tag {
+  flex: none;
+  padding: 2px 7px;
+  margin-left: 8px;
+  border-radius: 99px;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid;
+}
+.mock-tag.is-steal {
+  color: var(--color-accent-200);
+  border-color: var(--color-accent-500);
+}
+.mock-tag.is-reach {
+  color: var(--color-neutral-500);
+  border-color: var(--color-neutral-700);
+}
+
 /* ── Result summary card ──────────────────────────────────────────────── */
 
 .sim-summary {
@@ -586,9 +748,11 @@
 }
 
 .sim-summary-name {
+  display: flex;
+  align-items: center;
+  min-width: 0;
   color: var(--color-neutral-100);
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -598,6 +762,31 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* per-pick value letter (A–F from the pick's delta bucket) */
+.sim-haul-letter {
+  justify-self: center;
+  min-width: 26px;
+  text-align: center;
+  padding: 3px 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-divider);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-400);
+}
+.sim-haul-letter.is-a {
+  color: var(--color-accent-200);
+  border-color: var(--color-accent-500);
+}
+.sim-haul-letter.is-b {
+  color: var(--color-accent-300);
+  border-color: var(--color-accent-700);
+}
+.sim-haul-letter.is-d,
+.sim-haul-letter.is-f {
+  color: var(--color-neutral-600);
 }
 
 /* ── Status micro-labels (simming / loading) ──────────────────────────── */
@@ -716,7 +905,14 @@
   min-width: 0;
 }
 
+.mock-row-nameline {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
 .mock-row-name {
+  min-width: 0;
   font-size: 14px;
   color: var(--color-neutral-100);
   white-space: nowrap;
@@ -739,6 +935,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* trade provenance — "via trade with X" board log line */
+.mock-row-via {
+  color: var(--color-accent-300);
 }
 
 .mock-row-team {
@@ -917,6 +1118,24 @@ details[open] > summary .mock-import-chev {
 
 /* ── Motion (gated) ───────────────────────────────────────────────────── */
 
+@media (prefers-reduced-motion: no-preference) {
+  .mock-hero-media img {
+    animation: mockKen 30s ease-in-out infinite alternate;
+  }
+  .mock-hero-inner {
+    animation: mockUp 0.7s ease-out both;
+  }
+}
+
+@keyframes mockKen {
+  0%   { transform: scale(1.04) translate3d(0, 0, 0); }
+  100% { transform: scale(1.18) translate3d(-2%, -2%, 0); }
+}
+@keyframes mockUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sim-btn,
   .sim-seg-btn,
@@ -936,7 +1155,13 @@ details[open] > summary .mock-import-chev {
 
 @media (max-width: 720px) {
   .mock-page {
-    padding: 40px 18px 80px;
+    padding: 0 0 80px;
+  }
+  .mock-inner {
+    padding: 28px 18px 0;
+  }
+  .mock-hero-inner {
+    padding: 84px 18px 40px;
   }
   .mock-row {
     grid-template-columns: 44px minmax(0, 1fr) 44px auto;
@@ -955,11 +1180,14 @@ details[open] > summary .mock-import-chev {
     display: none;
   }
   .sim-summary-row {
-    grid-template-columns: 38px minmax(0, 1.4fr) 44px 48px;
+    grid-template-columns: 38px minmax(0, 1.4fr) 40px 44px 30px;
   }
   .sim-summary-school,
   .sim-summary-row .sim-av-prob {
     display: none;
+  }
+  .sim-trade-team {
+    flex-basis: auto;
   }
   .sim-setup,
   .sim-summary,

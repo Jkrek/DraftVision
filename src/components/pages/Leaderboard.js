@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { anonFetch } from '../../lib/api';
 import './Leaderboard.css';
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE   = 100;
+const FIRST_PAGE  = 300;  // small first fetch → fast first paint
+const FETCH_CHUNK = 2000; // server max per request while streaming the rest
 
 const POS_GROUP_MAP = {
   DB: new Set(['CB', 'S', 'DB', 'FS', 'SS']),
@@ -22,6 +24,12 @@ const DRAFT_SHORT = {
 };
 
 const GRADE_ORDER = { 'A+': 0, 'A': 1, 'A-': 2, 'B+': 3, 'B': 4, 'B-': 5, 'C+': 6, 'C': 7, 'C-': 8, 'D': 9 };
+
+// Grade letter → tier class for the mono-ramp pill tinting (a/b/c/d).
+function gradeTier(grade) {
+  const c = (grade || '').charAt(0).toUpperCase();
+  return c === 'A' ? 'a' : c === 'B' ? 'b' : c === 'C' ? 'c' : c === 'D' ? 'd' : '';
+}
 
 function posGroup(pos) {
   const p = (pos || '').toUpperCase();
@@ -64,6 +72,7 @@ export default function Leaderboard() {
   const [prospects, setProspects] = useState([]);
   const [meta, setMeta]           = useState(null);
   const [loading, setLoading]     = useState(true);
+  const [streaming, setStreaming] = useState(false);
   const [error, setError]         = useState(null);
 
   const [posTab, setPosTab]     = useState('ALL');
@@ -74,17 +83,65 @@ export default function Leaderboard() {
   const [expanded, setExpanded] = useState(null);
   const [animKey, setAnimKey]   = useState(0);
 
+  // Progressive load: paint fast with a small first page, then stream the
+  // rest of the board in the background with offset pagination. Rows are
+  // deduped by name+team; client-side sorting keeps order consistent.
   useEffect(() => {
+    let cancelled = false;
+    const keyOf = (p) => `${(p.name || '').toLowerCase()}|${(p.team || '').toLowerCase()}`;
+
+    async function fetchRemainder(first) {
+      const seen = new Set(first.map(keyOf));
+      let merged = first;
+      let offset = first.length;
+      try {
+        for (;;) {
+          const r = await anonFetch(`/api/prospects?limit=${FETCH_CHUNK}&offset=${offset}`);
+          const d = await r.json();
+          if (cancelled) return;
+          const rows = Array.isArray(d.prospects) ? d.prospects : [];
+          if (rows.length === 0) break;
+          offset += rows.length;
+          const fresh = rows.filter(p => {
+            const k = keyOf(p);
+            if (seen.has(k)) return false;
+            seen.add(k);
+            return true;
+          });
+          if (fresh.length) {
+            merged = merged.concat(fresh);
+            setProspects(merged);
+          }
+          if (rows.length < FETCH_CHUNK) break;
+        }
+      } catch {
+        /* keep whatever streamed in — the first page stays usable */
+      }
+      if (!cancelled) setStreaming(false);
+    }
+
     setLoading(true);
-    anonFetch('/api/prospects?limit=2000')
+    anonFetch(`/api/prospects?limit=${FIRST_PAGE}`)
       .then(r => r.json())
       .then(data => {
-        setProspects(Array.isArray(data.prospects) ? data.prospects : []);
+        if (cancelled) return;
+        const first = Array.isArray(data.prospects) ? data.prospects : [];
+        setProspects(first);
         setMeta(data.meta || null);
         setError(null);
+        setLoading(false);
+        if (first.length >= FIRST_PAGE) {
+          setStreaming(true);
+          fetchRemainder(first);
+        }
       })
-      .catch(() => setError('Failed to load leaderboard.'))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (!cancelled) {
+          setError('Failed to load leaderboard.');
+          setLoading(false);
+        }
+      });
+    return () => { cancelled = true; };
   }, []);
 
   const filtered = useMemo(() => {
@@ -151,6 +208,22 @@ export default function Leaderboard() {
   }, [prospects]);
 
   const posTabs = useMemo(() => ['ALL', ...dist.map(d => d.label)], [dist]);
+
+  // "Top of the class" — #1 graded player per position group, from loaded data.
+  const topOfClass = useMemo(() => {
+    const best = new Map();
+    prospects.forEach(p => {
+      const g = posGroup(p.position);
+      const cur = best.get(g);
+      if (
+        !cur ||
+        (GRADE_ORDER[p.grade] ?? 9) < (GRADE_ORDER[cur.grade] ?? 9) ||
+        ((GRADE_ORDER[p.grade] ?? 9) === (GRADE_ORDER[cur.grade] ?? 9) &&
+          (p.success_probability || 0) > (cur.success_probability || 0))
+      ) best.set(g, p);
+    });
+    return GROUP_ORDER.filter(g => best.has(g)).map(g => ({ group: g, player: best.get(g) }));
+  }, [prospects]);
 
   // Scale for the translucent fill bar behind each row (relative grade).
   const [minProb, maxProb] = useMemo(() => {
@@ -229,8 +302,13 @@ export default function Leaderboard() {
           <div className="lb-count">
             {loading
               ? 'Loading…'
-              : `${total.toLocaleString()} shown` +
-                (boardDate ? ` · Board updated ${boardDate}` : meta ? ' · cached, sub-100ms' : '')}
+              : (
+                <>
+                  {`${total.toLocaleString()} shown` +
+                    (boardDate ? ` · Board updated ${boardDate}` : meta ? ' · cached, sub-100ms' : '')}
+                  {streaming && <span className="lb-stream">loading full board…</span>}
+                </>
+              )}
           </div>
         </div>
       </header>
@@ -276,6 +354,36 @@ export default function Leaderboard() {
             </div>
           )}
         </div>
+
+        {/* ── Top of the class — #1 per position group ── */}
+        {!loading && !error && topOfClass.length > 0 && (
+          <div className="lb-topclass" role="list" aria-label="Top of the class by position group">
+            <span className="lb-topclass-label" aria-hidden="true">Top of<br />the class</span>
+            {topOfClass.map(({ group, player }) => (
+              <button
+                key={group}
+                type="button"
+                role="listitem"
+                className="lb-topcard"
+                title={`${player.name} — top ${group}`}
+                onClick={() => handlePlayerClick(player)}
+              >
+                <span className="lb-topcard-pos">{group}</span>
+                {player.espn_team_id && (
+                  <img
+                    className="lb-topcard-logo"
+                    src={`https://a.espncdn.com/i/teamlogos/ncaa/500/${player.espn_team_id}.png`}
+                    alt=""
+                    loading="lazy"
+                    onError={e => { e.target.style.display = 'none'; }}
+                  />
+                )}
+                <span className="lb-topcard-name">{player.name}</span>
+                <span className="lb-topcard-grade">{player.grade || '—'}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* ── Position distribution ── */}
         {dist.length > 0 && (
@@ -339,7 +447,9 @@ export default function Leaderboard() {
             const id    = `${p.name}-${i}`;
             const open  = expanded === id;
             const top   = i < 3;
+            const t10   = i < 10;
             const sp    = p.success_probability || 0;
+            const tier  = gradeTier(p.grade);
             const trend = trendOf(p);
             const fillPct = maxProb > minProb
               ? 6 + 94 * ((sp - minProb) / (maxProb - minProb))
@@ -359,7 +469,7 @@ export default function Leaderboard() {
             return (
               <div className="lb-rowwrap" key={id}>
                 <div
-                  className={`lb-row${top ? ' lb-row-top' : ''}`}
+                  className={`lb-row${t10 ? ' lb-row-t10' : ''}${top ? ' lb-row-top' : ''}`}
                   role="button"
                   tabIndex={0}
                   aria-expanded={open}
@@ -396,7 +506,9 @@ export default function Leaderboard() {
                   <span className="lb-pos lb-c-pos">{(p.position || '?').toUpperCase()}</span>
                   <span className="lb-school lb-c-school">{p.team || '—'}</span>
                   <span className="lb-proj lb-c-proj">{DRAFT_SHORT[p.draft_grade] || p.draft_grade || '—'}</span>
-                  <span className="lb-grade lb-c-grade"><span>{p.grade || '—'}</span></span>
+                  <span className="lb-grade lb-c-grade">
+                    <span className={tier ? `lb-grade-${tier}` : undefined}>{p.grade || '—'}</span>
+                  </span>
                   <span className="lb-prob lb-c-prob">
                     {p.success_probability != null ? sp.toFixed(1) : '—'}
                     {trend && (

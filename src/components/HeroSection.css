@@ -25,6 +25,40 @@
   transform: scale(1.04);
 }
 
+/* Background video — an enhancement layered over the photo once it can play.
+   Same framing/treatment as the img so the crossfade is invisible; sits above
+   the photo but below .hero-tint and both scrims, so text contrast is
+   untouched. Mounted post-load by JS (never in initial HTML). */
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 52% 20%;
+  filter: saturate(1.6) contrast(1.16) brightness(0.84);
+  transform: scale(1.04);
+  opacity: 0;
+  transition: opacity 600ms ease;
+  pointer-events: none;
+}
+.hero-video.is-ready {
+  opacity: 1;
+}
+
+/* Once the video is covering the photo, stop the Ken-Burns work underneath. */
+.hero-media:has(.hero-video.is-ready) img {
+  animation-play-state: paused;
+}
+
+/* Belt and suspenders: JS already gates on reduced motion, but never show
+   the video if the preference flips after mount. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-video {
+    display: none;
+  }
+}
+
 /* Accent wash blended into the photo, then dark scrims down to the ground. */
 .hero-tint {
   position: absolute;
