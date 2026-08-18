@@ -64,6 +64,21 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* owner big-board rank (№3) and elite-grade chip for non-board entries */
+.ticker-boardrank {
+  color: var(--color-accent-300);
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+}
+.ticker-gradechip {
+  font-size: 10px;
+  padding: 1px 6px;
+  border: 1px solid var(--color-accent-700);
+  border-radius: 99px;
+  color: var(--color-accent-300);
+}
+
 .ticker-name {
   color: var(--color-neutral-200);
 }

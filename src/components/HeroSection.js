@@ -173,7 +173,7 @@ function HeroSection() {
   }, []);
 
   return (
-    <section className="hero" ref={heroRef}>
+    <section className={videoReady ? 'hero has-video' : 'hero'} ref={heroRef}>
       <div className="hero-media" aria-hidden="true">
         <img
           src={process.env.PUBLIC_URL + '/images/CFB Content/action-1.jpg'}

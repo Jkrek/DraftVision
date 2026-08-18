@@ -36,7 +36,10 @@
   height: 100%;
   object-fit: cover;
   object-position: 52% 20%;
-  filter: saturate(1.6) contrast(1.16) brightness(0.84);
+  /* Unlike the moody photo treatment, the video shows its true colors —
+     text contrast comes from the has-video scrim overrides below, not
+     from crushing the footage. */
+  filter: none;
   transform: scale(1.04);
   opacity: 0;
   transition: opacity 600ms ease;
@@ -44,6 +47,34 @@
 }
 .hero-video.is-ready {
   opacity: 1;
+}
+
+/* When the video is live, lift the mood: near-zero tint, darkness only where
+   the copy sits (left column) and where the section melts into the page
+   (bottom). The photo fallback keeps the original cinematic treatment. */
+.hero.has-video .hero-tint {
+  opacity: 0.12;
+}
+.hero.has-video .hero-scrim-v {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-bg) 18%, transparent) 0%,
+    transparent 30%,
+    color-mix(in srgb, var(--color-bg) 40%, transparent) 78%,
+    var(--color-bg) 100%
+  );
+}
+.hero.has-video .hero-scrim-h {
+  background: linear-gradient(
+    96deg,
+    color-mix(in srgb, var(--color-bg) 82%, transparent) 0%,
+    color-mix(in srgb, var(--color-bg) 55%, transparent) 32%,
+    color-mix(in srgb, var(--color-bg) 12%, transparent) 55%,
+    transparent 72%
+  );
+}
+.hero.has-video .hero-copy {
+  text-shadow: 0 1px 12px color-mix(in srgb, var(--color-bg) 70%, transparent);
 }
 
 /* Once the video is covering the photo, stop the Ken-Burns work underneath. */

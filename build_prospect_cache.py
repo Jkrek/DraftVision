@@ -89,8 +89,13 @@ def espn_get(url, params=None, retries=3):
     return {}
 
 
-def fetch_teams(max_teams=250):
-    """Fetch all FBS teams from ESPN."""
+def fetch_teams(max_teams=1000):
+    """Fetch all college teams from ESPN.
+
+    ESPN ignores groups=80 on this endpoint and interleaves every division —
+    a low limit silently drops real FBS programs (a 250 cap once lost Oregon,
+    Miami, South Carolina…). Fetch everything; the conference-tier filter at
+    predict time discards sub-FBS rosters."""
     data = espn_get(ESPN_CFB_TEAMS_URL, params={"limit": max_teams, "groups": 80})
     teams = []
     for sport in data.get("sports", []):

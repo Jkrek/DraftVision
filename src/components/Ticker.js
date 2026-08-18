@@ -12,6 +12,7 @@ function toItem(p, i) {
     name,
     pos: p.position || p.pos || '',
     team: p.team || p.school || '',
+    grade: p.grade || null,
     prob: typeof prob === 'number' ? prob.toFixed(1) : (prob || null),
   };
 }
@@ -30,7 +31,7 @@ function toMover(m) {
 }
 
 function Ticker() {
-  // mode: 'movers' (real deltas) | 'top' (fallback: top prospects)
+  // mode: 'board' (owner big board + elite grades) | 'movers' | 'top'
   const [state, setState] = useState({ mode: null, items: [] });
 
   useEffect(() => {
@@ -52,24 +53,53 @@ function Ticker() {
         .catch(() => { /* render nothing on failure */ });
     };
 
-    anonFetch('/api/movers')
+    const loadMovers = () => {
+      anonFetch('/api/movers')
+        .then(r => (r.ok ? r.json() : Promise.reject(new Error('bad status'))))
+        .then(data => {
+          if (cancelled) return;
+          const risers  = Array.isArray(data?.risers)  ? data.risers  : [];
+          const fallers = Array.isArray(data?.fallers) ? data.fallers : [];
+          const movers = [...risers, ...fallers]
+            .map(toMover)
+            .filter(Boolean)
+            .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+          if (movers.length) {
+            setState({ mode: 'movers', items: movers });
+          } else {
+            loadFallback();
+          }
+        })
+        .catch(() => { if (!cancelled) loadFallback(); });
+    };
+
+    // Primary: the owner's Big Board (engagement picks) padded with elite
+    // grades not on it. Falls back to movers, then top prospects.
+    anonFetch('/api/big-board?class=2027')
       .then(r => (r.ok ? r.json() : Promise.reject(new Error('bad status'))))
       .then(data => {
         if (cancelled) return;
-        const risers  = Array.isArray(data?.risers)  ? data.risers  : [];
-        const fallers = Array.isArray(data?.fallers) ? data.fallers : [];
-        const movers = [...risers, ...fallers]
-          .map(toMover)
-          .filter(Boolean)
-          .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
-        if (movers.length) {
-          setState({ mode: 'movers', items: movers });
-        } else {
-          // No prior snapshot yet ("since": null) — graceful fallback.
-          loadFallback();
-        }
+        const board = Array.isArray(data?.board) ? data.board : [];
+        if (!board.length) { loadMovers(); return; }
+        const onBoard = new Set(
+          board.map(p => `${(p.name || '').toLowerCase()}|${(p.team || '').toLowerCase()}`)
+        );
+        const boardItems = board.slice(0, 20).map((p, i) => {
+          const it = toItem(p, i);
+          if (it) it.boardRank = i + 1;
+          return it;
+        }).filter(Boolean);
+        const elite = (Array.isArray(data?.rest) ? data.rest : [])
+          .filter(p =>
+            (p.grade === 'A+' || p.grade === 'A') &&
+            !onBoard.has(`${(p.name || '').toLowerCase()}|${(p.team || '').toLowerCase()}`)
+          )
+          .slice(0, 10)
+          .map(toItem)
+          .filter(Boolean);
+        setState({ mode: 'board', items: [...boardItems, ...elite] });
       })
-      .catch(() => { if (!cancelled) loadFallback(); });
+      .catch(() => { if (!cancelled) loadMovers(); });
 
     return () => { cancelled = true; };
   }, []);
@@ -87,6 +117,11 @@ function Ticker() {
     <div className="ticker-row" aria-hidden={hidden || undefined}>
       {items.map((t, i) => (
         <div className="ticker-item" key={(hidden ? 'b' : 'a') + i}>
+          {mode === 'board' && (
+            t.boardRank
+              ? <span className="ticker-boardrank">№{t.boardRank}</span>
+              : <span className="ticker-gradechip">{t.grade}</span>
+          )}
           {mode === 'top' && <span className="ticker-rank">{t.rank}</span>}
           <span className="ticker-name">{t.name}</span>
           {t.pos && <span className="ticker-pos">{t.pos}</span>}
@@ -110,7 +145,7 @@ function Ticker() {
       <div className="ticker-label">
         <span className="ticker-dot" />
         <span className="ticker-label-text">
-          {mode === 'movers' ? 'Board movers' : 'Top prospects'}
+          {mode === 'board' ? 'The board' : mode === 'movers' ? 'Board movers' : 'Top prospects'}
         </span>
       </div>
       <div className="ticker-viewport">
