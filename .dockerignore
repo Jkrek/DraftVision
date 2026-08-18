@@ -25,3 +25,6 @@ README.md
 Procfile
 railway.toml
 nixpacks.toml
+
+# hero background video is a shipped asset (4MB, web-optimized)
+!public/videos/hero-bg.mp4
