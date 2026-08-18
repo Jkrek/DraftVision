@@ -7,6 +7,9 @@ const FOOTER_LINKS = [
   { label: 'Predict',     to: '/predict'     },
   { label: 'Leaderboard', to: '/leaderboard' },
   { label: 'Mock Draft',  to: '/mock-draft'  },
+  { label: 'Compare',     to: '/compare'     },
+  { label: 'Backtest',    to: '/backtest'    },
+  { label: 'Market Edge', to: '/edge'        },
 ];
 
 function Footer() {

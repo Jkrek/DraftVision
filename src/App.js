@@ -17,6 +17,10 @@ import MockDraft from './components/pages/MockDraft';
 import HSProspects from './components/pages/HSProspects';
 import Insights from './components/pages/Insights';
 import BigBoard from './components/pages/BigBoard';
+import PlayerPage from './components/pages/PlayerPage';
+import Compare from './components/pages/Compare';
+import Backtest from './components/pages/Backtest';
+import Edge from './components/pages/Edge';
 
 function App() {
   return (
@@ -34,6 +38,10 @@ function App() {
           <Route path="/big-board" element={<BigBoard />} />
           <Route path="/mock-draft" element={<MockDraft />} />
           <Route path="/hs-prospects" element={<HSProspects />} />
+          <Route path="/player/:slug" element={<PlayerPage />} />
+          <Route path="/compare" element={<Compare />} />
+          <Route path="/backtest" element={<Backtest />} />
+          <Route path="/edge" element={<Edge />} />
           {/* private owner dashboard — intentionally not linked from the nav */}
           <Route path="/insights" element={<Insights />} />
         </Routes>
