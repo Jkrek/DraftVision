@@ -5,6 +5,8 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY public/ public/
 COPY src/ src/
+# CRA bakes REACT_APP_* (Auth0 public credentials) from this at build time
+COPY .env.production ./
 RUN npm run build
 
 # ── Stage 2: Python runtime ───────────────────────────────────────────────────
