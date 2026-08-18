@@ -147,10 +147,29 @@ _TIER_SCHOOLS = {
     8: {"appalachian state", "app state", "coastal carolina", "marshall", "utsa",
         "troy", "louisiana", "james madison", "buffalo", "kent state", "ohio",
         "miami (oh)", "western michigan", "central michigan", "eastern michigan",
-        "northern illinois", "ball state", "toledo"},
+        "northern illinois", "ball state", "toledo",
+        # FBS programs previously absent from the tables entirely — they fell
+        # to tier 10 and were silently excluded from the board
+        "north texas", "old dominion", "charlotte", "middle tennessee",
+        "southern miss", "south alabama", "akron", "bowling green", "umass",
+        "jacksonville state", "sam houston", "kennesaw state", "missouri state",
+        "arkansas state", "georgia southern", "georgia state", "texas state",
+        "florida atlantic", "fiu", "florida international", "unlv", "delaware"},
     9: {"north dakota state", "montana", "south dakota state", "furman",
-        "villanova", "richmond", "delaware", "sacramento state",
+        "villanova", "richmond", "sacramento state",
         "central arkansas", "cal poly"},
+    # Prefix-collision guards: sub-FBS schools whose names START WITH a power
+    # school's name inherit its tier without these ("north carolina a&t" ->
+    # "north carolina" tier 3, "georgia southern" -> "georgia" tier 1).
+    # Longest-key-first matching makes these explicit entries win; tier 10
+    # keeps them off the FBS board.
+    10: {"north carolina a&t", "north carolina central", "south carolina state",
+         "texas southern", "texas a&m commerce", "texas a&m kingsville",
+         "florida a&m", "alabama a&m", "alabama state", "houston christian",
+         "tennessee state", "tennessee tech", "tennessee martin",
+         "illinois state", "indiana state", "virginia state", "virginia union",
+         "arkansas pine bluff", "utah tech", "minnesota state",
+         "mississippi valley state", "delaware state"},
 }
 
 _SCHOOL_TIERS: Dict[str, int] = {
