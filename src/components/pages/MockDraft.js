@@ -1,242 +1,572 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { anonFetch } from '../../lib/api';
 import '../../App.css';
 import './MockDraft.css';
 import { nflLogoUrl } from '../nflTeams';
+import MockRow from './simulator/MockRow';
+import ImportMock from './simulator/ImportMock';
+import {
+  DRAFT_ORDER_2027,
+  CONTROL_ALL,
+  POS_TABS,
+  posGroup,
+  buildPool,
+  createDraft,
+  advanceCpu,
+  commitPick,
+  isDone,
+  isUserOnClock,
+  currentTeam,
+  currentPickNumber,
+} from './simulator/draftEngine';
 
-const ROUND_PICKS = 32; // picks per round
+const STORE_KEY = 'dv_mock_sim_v1';
 
-function getRound(pickNum) {
-  return Math.ceil(pickNum / ROUND_PICKS);
+/* "San Francisco 49ers" → "49ers" — compact chip label. */
+const nick = (t) => (t || '').split(' ').pop();
+
+const fmtProb = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? `${Math.round(n)}%` : '—';
+};
+
+function newSeed() {
+  return (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
 }
 
+/* ── localStorage persistence (last completed sim) ───────────────────── */
+
+function loadSaved() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORE_KEY));
+    return data && Array.isArray(data.picks) && data.picks.length ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+function slimPicks(picks) {
+  return picks.map((pk) => ({
+    pick: pk.pick,
+    round: pk.round,
+    team: pk.team,
+    player: {
+      name: pk.player.name,
+      position: pk.player.position,
+      team: pk.player.team,
+      grade: pk.player.grade,
+      success_probability: pk.player.success_probability,
+      espn_team_id: pk.player.espn_team_id,
+    },
+  }));
+}
+
+function persistResult(result) {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(result));
+  } catch {
+    /* private mode etc. — the sim still works, it just won't persist */
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────── */
+
 export default function MockDraft() {
-  const navigate = useNavigate();
-  const fileRef  = useRef(null);
+  // phase: 'prompt' (saved sim found) | 'setup' | 'live' | 'done'
+  const [phase, setPhase] = useState(() => (loadSaved() ? 'prompt' : 'setup'));
+  const [saved] = useState(loadSaved);
 
-  const [picks, setPicks]       = useState([]);
-  const [title, setTitle]       = useState('');
-  const [meta, setMeta]         = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError]       = useState(null);
-  const [dragOver, setDragOver] = useState(false);
+  // player pool — null while loading, [] on failure
+  const [poolRows, setPoolRows] = useState(null);
 
-  // Load existing draft on mount
+  // setup
+  const [rounds, setRounds]         = useState(1);
+  const [userTeam, setUserTeam]     = useState(null);
+  const [controlAll, setControlAll] = useState(false);
+  const [order, setOrder]           = useState(() => DRAFT_ORDER_2027.slice());
+
+  // live sim
+  const [sim, setSim]         = useState(null);
+  const [simming, setSimming] = useState(null); // null | 'user' | 'end'
+  const [search, setSearch]   = useState('');
+  const [posFilter, setPosFilter] = useState('ALL');
+
+  // completed result being displayed (from a finished sim or localStorage)
+  const [view, setView] = useState(null);
+
+  /* ── Player pool: /api/prospects, 2027 class, board-sorted ── */
   useEffect(() => {
-    anonFetch('/api/mock-draft')
-      .then(r => r.json())
-      .then(data => {
-        setPicks(Array.isArray(data.picks) ? data.picks : []);
-        setTitle(data.title || '');
-        setMeta(data.generated_at ? { generated_at: data.generated_at, total: data.total } : null);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    anonFetch('/api/prospects?limit=2000')
+      .then((r) => r.json())
+      .then((data) => setPoolRows(buildPool(data.prospects)))
+      .catch(() => setPoolRows([]));
   }, []);
 
-  const uploadImage = useCallback(async (file) => {
-    setUploading(true);
-    setError(null);
-    try {
-      // Read file as base64
-      const b64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = e => {
-          // e.target.result is "data:image/png;base64,XXXX" — strip the prefix
-          const [, data] = e.target.result.split(',');
-          resolve(data);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+  /* ── Start / restart ── */
+  const startDraft = useCallback((cfg) => {
+    if (!poolRows || poolRows.length === 0) return;
+    const team = cfg.userTeam;
+    const s = createDraft({
+      order: cfg.order || DRAFT_ORDER_2027,
+      rounds: cfg.rounds,
+      userTeam: team,
+      pool: poolRows,
+      seed: newSeed(),
+    });
+    setSim(s);
+    setView(null);
+    setSearch('');
+    setPosFilter('ALL');
+    setPhase('live');
+    // CPU teams run until the user is on the clock; in control-every-pick
+    // mode the user is on the clock immediately.
+    setSimming(team === CONTROL_ALL ? null : 'user');
+  }, [poolRows]);
 
-      const mediaType = file.type || 'image/png';
-      const res  = await anonFetch('/api/mock-draft/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image_b64: b64, media_type: mediaType, title: 'JKrek\'s Mock Draft' }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Upload failed');
-
-      // Reload the draft
-      const fresh = await anonFetch('/api/mock-draft').then(r => r.json());
-      setPicks(Array.isArray(fresh.picks) ? fresh.picks : []);
-      setTitle(fresh.title || '');
-      setMeta({ generated_at: fresh.generated_at, total: fresh.total });
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setUploading(false);
+  /* ── Sim loop: one CPU pick per tick while "simming" ── */
+  useEffect(() => {
+    if (!simming || !sim) return undefined;
+    if (isDone(sim) || (simming === 'user' && isUserOnClock(sim))) {
+      setSimming(null);
+      return undefined;
     }
+    const reduced =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const delay = reduced ? 10 : simming === 'end' ? 45 : 90;
+    const t = setTimeout(() => setSim((s) => (s ? advanceCpu(s) : s)), delay);
+    return () => clearTimeout(t);
+  }, [simming, sim]);
+
+  /* ── Completion: freeze the result + persist ── */
+  useEffect(() => {
+    if (phase !== 'live' || !sim || !isDone(sim)) return;
+    const result = {
+      rounds: sim.rounds,
+      userTeam: sim.userTeam,
+      completedAt: new Date().toISOString(),
+      picks: slimPicks(sim.picks),
+    };
+    setView(result);
+    persistResult(result);
+    setSimming(null);
+    setPhase('done');
+  }, [sim, phase]);
+
+  /* ── User pick ── */
+  const draftPlayer = useCallback((poolIdx) => {
+    if (!sim || !isUserOnClock(sim)) return;
+    setSim(commitPick(sim, poolIdx));
+    setSearch('');
+    setPosFilter('ALL');
+    // CPU resumes toward the next user pick; in control-every-pick mode
+    // the user stays on the clock for every selection.
+    if (sim.userTeam !== CONTROL_ALL) setSimming('user');
+  }, [sim]);
+
+  /* ── Available players for the on-the-clock panel ── */
+  const available = useMemo(() => {
+    if (!sim) return [];
+    let list = sim.pool.map((p, i) => ({ p, i }));
+    if (posFilter !== 'ALL') {
+      list = list.filter((x) => posGroup(x.p.position) === posFilter);
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (x) =>
+          (x.p.name || '').toLowerCase().includes(q) ||
+          (x.p.team || '').toLowerCase().includes(q)
+      );
+    }
+    return list.slice(0, 40);
+  }, [sim, posFilter, search]);
+
+  /* ── Board data (live sim or a stored result) ── */
+  const boardPicks = useMemo(
+    () => (sim ? sim.picks : view ? view.picks : []),
+    [sim, view]
+  );
+  const boardUserTeam = sim ? sim.userTeam : view ? view.userTeam : null;
+
+  const roundGroups = useMemo(() => {
+    const map = new Map();
+    for (const pk of boardPicks) {
+      if (!map.has(pk.round)) map.set(pk.round, []);
+      map.get(pk.round).push(pk);
+    }
+    return [...map.entries()];
+  }, [boardPicks]);
+
+  const haul = useMemo(() => {
+    if (!boardUserTeam || boardUserTeam === CONTROL_ALL) return [];
+    return boardPicks.filter((pk) => pk.team === boardUserTeam);
+  }, [boardPicks, boardUserTeam]);
+
+  const onClock = sim && phase === 'live' && !simming && isUserOnClock(sim);
+  const clockTeam = sim && !isDone(sim) ? currentTeam(sim) : null;
+  const pickNo = sim ? currentPickNumber(sim) : 0;
+
+  const moveTeam = useCallback((i, dir) => {
+    setOrder((o) => {
+      const j = i + dir;
+      if (j < 0 || j >= o.length) return o;
+      const next = o.slice();
+      const tmp = next[i];
+      next[i] = next[j];
+      next[j] = tmp;
+      return next;
+    });
   }, []);
 
-  const handleFile = useCallback((file) => {
-    if (!file) return;
-    uploadImage(file);
-  }, [uploadImage]);
+  const canStart = poolRows && poolRows.length > 0 && (controlAll || userTeam);
 
-  const handleDrop = useCallback((e) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  }, [handleFile]);
-
-  // Group picks by round
-  const rounds = picks.reduce((acc, pick) => {
-    const rnd = pick.round ? String(pick.round) : String(getRound(pick.pick || 1));
-    if (!acc[rnd]) acc[rnd] = [];
-    acc[rnd].push(pick);
-    return acc;
-  }, {});
-
-  const roundKeys = Object.keys(rounds).sort((a, b) => {
-    const na = parseInt(a) || 99, nb = parseInt(b) || 99;
-    return na - nb;
-  });
-
-  const isEmpty = picks.length === 0 && !loading;
+  /* ─────────────────────────────────────────────────────────────────── */
 
   return (
     <div className="mock-page">
       <div className="mock-inner">
 
-        {/* Header — flush left */}
         <header className="mock-header">
           <div className="eyebrow">Mock draft</div>
-          <h1 className="mock-title">{title || 'JKrek\'s Mock Draft'}</h1>
-          <p className="mock-sub">Official pick-by-pick NFL Draft board</p>
-          {meta && (
+          <h1 className="mock-title">Mock Draft Simulator</h1>
+          <p className="mock-sub">
+            Run a 2027 NFL mock against the DraftVision board — CPU picks weigh
+            success probability, grade, and positional need.
+          </p>
+          {phase === 'live' && sim && (
             <p className="mock-meta">
-              {meta.total} picks
-              {meta.generated_at && ` · updated ${new Date(meta.generated_at).toLocaleDateString()}`}
+              Pick {Math.min(pickNo, sim.totalPicks)} of {sim.totalPicks}
+              {' · '}Round {Math.ceil(Math.min(pickNo, sim.totalPicks) / sim.order.length)}
             </p>
           )}
-          {error && <p className="mock-error">{error}</p>}
+          {phase === 'done' && view && (
+            <p className="mock-meta">
+              Draft complete · {view.picks.length} picks
+              {view.completedAt && ` · ${new Date(view.completedAt).toLocaleDateString()}`}
+            </p>
+          )}
         </header>
 
-        {/* Upload dropzone — always visible at top */}
-        <div
-          className={`mock-dropzone${dragOver ? ' is-dragover' : ''}`}
-          role="button"
-          tabIndex={0}
-          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={handleDrop}
-          onClick={() => fileRef.current?.click()}
-          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileRef.current?.click(); } }}
-        >
-          <input
-            ref={fileRef}
-            className="mock-file-input"
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/*"
-            onChange={e => handleFile(e.target.files[0])}
-          />
-          {uploading ? (
-            <p className="mock-status"><span className="mock-dot" />Claude vision is parsing the picks</p>
-          ) : (
-            <>
-              <p className="mock-drop-label">
-                {picks.length > 0 ? 'Update mock draft' : 'Upload mock draft'}
-              </p>
-              <p className="mock-drop-hint">
-                Drop a mock draft PNG — Claude vision parses the picks
-              </p>
-            </>
-          )}
-        </div>
-
-        {/* Empty state */}
-        {isEmpty && (
-          <div className="mock-empty">
-            <p>
-              No mock draft loaded yet. Export a PNG of your board from the PFF
-              Mock Draft Simulator and drop it above.
+        {/* ── Saved-sim prompt ── */}
+        {phase === 'prompt' && saved && (
+          <div className="sim-resume">
+            <p className="sim-resume-text">
+              You finished a {saved.rounds}-round mock
+              {saved.userTeam && saved.userTeam !== CONTROL_ALL && ` as the ${saved.userTeam}`}
+              {saved.completedAt && ` on ${new Date(saved.completedAt).toLocaleDateString()}`}.
             </p>
+            <div className="sim-btn-row">
+              <button
+                className="sim-btn sim-btn-accent"
+                onClick={() => { setView(saved); setPhase('done'); }}
+              >
+                View last mock
+              </button>
+              <button className="sim-btn" onClick={() => setPhase('setup')}>
+                Start a new draft
+              </button>
+            </div>
           </div>
         )}
 
-        {loading && (
-          <div className="mock-loading">
-            <p className="mock-status"><span className="mock-dot" />Loading board</p>
-          </div>
-        )}
-
-        {/* Draft board — grouped by round */}
-        {roundKeys.map(rndKey => (
-          <section key={rndKey} className="mock-round">
-            {/* Round divider */}
-            <div className="mock-round-head">
-              <span className="mock-round-label">
-                {isNaN(parseInt(rndKey)) ? rndKey : `Round ${rndKey}`}
-              </span>
-              <span className="mock-round-rule" />
-              <span className="mock-round-count">{rounds[rndKey].length} picks</span>
+        {/* ── Setup panel ── */}
+        {phase === 'setup' && (
+          <div className="sim-setup">
+            <div className="sim-setup-row">
+              <span className="sim-label">Rounds</span>
+              <div className="sim-seg">
+                {[1, 2, 3].map((r) => (
+                  <button
+                    key={r}
+                    className={`sim-seg-btn${rounds === r ? ' active' : ''}`}
+                    onClick={() => setRounds(r)}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Pick rows */}
-            <div className="mock-board">
-              {rounds[rndKey].map((pick, i) => (
-                <div key={`${pick.pick}-${i}`} className="mock-row">
+            <div className="sim-setup-row">
+              <span className="sim-label">Your team</span>
+              <button
+                className={`sim-chip${controlAll ? ' active' : ''}`}
+                onClick={() => setControlAll((v) => !v)}
+              >
+                Control every pick
+              </button>
+            </div>
 
-                  {/* Pick number */}
-                  <span className="mock-row-pick">{pick.pick}</span>
+            {!controlAll && (
+              <div className="sim-teams">
+                {order.slice().sort((a, b) => a.localeCompare(b)).map((t) => (
+                  <button
+                    key={t}
+                    className={`sim-team${userTeam === t ? ' active' : ''}`}
+                    onClick={() => setUserTeam((prev) => (prev === t ? null : t))}
+                    title={t}
+                  >
+                    <img src={nflLogoUrl(t, 500)} alt="" loading="lazy" />
+                    <span>{nick(t)}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
-                  {/* Player name + school */}
-                  <div className="mock-row-player">
-                    <div
-                      className={`mock-row-name${pick.player ? ' is-link' : ''}`}
-                      onClick={() => pick.player && navigate(`/predict?name=${encodeURIComponent(pick.player)}`)}
-                    >
-                      {pick.player || '—'}
-                    </div>
-                    {pick.school && (
-                      <div className="mock-row-school">{pick.school}</div>
-                    )}
+            <details className="sim-order">
+              <summary className="sim-order-summary">
+                <span className="mock-import-chev">›</span>
+                Draft order — projected order, use the arrows to reorder
+              </summary>
+              <div className="sim-order-list">
+                {order.map((t, i) => (
+                  <div key={t} className="sim-order-row">
+                    <span className="sim-order-num">{i + 1}</span>
+                    <img className="sim-order-logo" src={nflLogoUrl(t, 500)} alt="" loading="lazy" />
+                    <span className="sim-order-name">{t}</span>
+                    <span className="sim-order-arrows">
+                      <button
+                        className="sim-arrow"
+                        aria-label={`Move ${t} up`}
+                        disabled={i === 0}
+                        onClick={() => moveTeam(i, -1)}
+                      >
+                        ↑
+                      </button>
+                      <button
+                        className="sim-arrow"
+                        aria-label={`Move ${t} down`}
+                        disabled={i === order.length - 1}
+                        onClick={() => moveTeam(i, 1)}
+                      >
+                        ↓
+                      </button>
+                    </span>
                   </div>
+                ))}
+              </div>
+              <button
+                className="sim-btn sim-order-reset"
+                onClick={() => setOrder(DRAFT_ORDER_2027.slice())}
+              >
+                Reset order
+              </button>
+            </details>
 
-                  {/* NFL team */}
-                  <div className="mock-row-team">
-                    {nflLogoUrl(pick.nfl_team) && (
-                      <img
-                        className="mock-row-logo"
-                        src={nflLogoUrl(pick.nfl_team, 500)}
-                        alt=""
-                        loading="lazy"
-                        onError={e => { e.target.style.display = 'none'; }}
-                      />
-                    )}
-                    <span>{pick.nfl_team || '—'}</span>
-                  </div>
+            <div className="sim-btn-row">
+              <button
+                className="sim-btn sim-btn-accent sim-start"
+                disabled={!canStart}
+                onClick={() =>
+                  startDraft({
+                    order,
+                    rounds,
+                    userTeam: controlAll ? CONTROL_ALL : userTeam,
+                  })
+                }
+              >
+                Start draft
+              </button>
+              {poolRows === null && (
+                <span className="mock-status"><span className="mock-dot" />Loading player pool</span>
+              )}
+              {poolRows && poolRows.length === 0 && (
+                <span className="mock-error">Player pool unavailable — try again shortly.</span>
+              )}
+              {poolRows && poolRows.length > 0 && !controlAll && !userTeam && (
+                <span className="sim-hint">Pick a team (or control every pick) to start.</span>
+              )}
+            </div>
+          </div>
+        )}
 
-                  {/* Position */}
-                  {pick.position
-                    ? <span className="mock-row-pos">{pick.position}</span>
-                    : <span />}
-
-                  {/* PFF grade */}
-                  {pick.pff_grade
-                    ? <span className="mock-row-grade"><span>{pick.pff_grade}</span></span>
-                    : <span />}
-
-                  {/* Predict button */}
-                  {pick.player ? (
-                    <button
-                      className="mock-row-btn"
-                      onClick={() => navigate(`/predict?name=${encodeURIComponent(pick.player)}`)}
-                    >
-                      Predict
+        {/* ── Live controls bar ── */}
+        {phase === 'live' && sim && (
+          <div className="sim-bar">
+            <div className="sim-bar-status">
+              {clockTeam && nflLogoUrl(clockTeam) && (
+                <img className="sim-bar-logo" src={nflLogoUrl(clockTeam, 500)} alt="" />
+              )}
+              {onClock ? (
+                <span className="sim-bar-onclock">You're on the clock — pick {pickNo}</span>
+              ) : simming ? (
+                <span className="mock-status"><span className="mock-dot" />Simulating · {clockTeam} on the clock</span>
+              ) : (
+                <span className="sim-bar-idle">{clockTeam} on the clock — pick {pickNo}</span>
+              )}
+            </div>
+            <div className="sim-btn-row">
+              {simming ? (
+                <button className="sim-btn" onClick={() => setSimming(null)}>Pause</button>
+              ) : (
+                <>
+                  {sim.userTeam !== CONTROL_ALL && !onClock && (
+                    <button className="sim-btn sim-btn-accent" onClick={() => setSimming('user')}>
+                      Sim to my pick
                     </button>
-                  ) : <span />}
+                  )}
+                  <button className="sim-btn" onClick={() => setSimming('end')}>Sim to end</button>
+                </>
+              )}
+              <button
+                className="sim-btn"
+                onClick={() =>
+                  startDraft({ order: sim.order, rounds: sim.rounds, userTeam: sim.userTeam })
+                }
+              >
+                Restart
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── On the clock: searchable best-available ── */}
+        {onClock && (
+          <div className="sim-clock">
+            <div className="sim-clock-controls">
+              <input
+                className="sim-search"
+                placeholder="Search best available…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <div className="sim-chips">
+                {POS_TABS.map((t) => (
+                  <button
+                    key={t}
+                    className={`sim-chip${posFilter === t ? ' active' : ''}`}
+                    onClick={() => setPosFilter(t)}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="sim-av">
+              {available.map(({ p, i }) => (
+                <button key={`${p.name}-${i}`} className="sim-av-row" onClick={() => draftPlayer(i)}>
+                  {p.espn_team_id ? (
+                    <img
+                      className="sim-av-logo"
+                      src={`https://a.espncdn.com/i/teamlogos/ncaa/500/${p.espn_team_id}.png`}
+                      alt=""
+                      loading="lazy"
+                      onError={(e) => { e.target.style.visibility = 'hidden'; }}
+                    />
+                  ) : (
+                    <span className="sim-av-logo" />
+                  )}
+                  <span className="sim-av-name">
+                    <span className="sim-av-player">{p.name}</span>
+                    <span className="sim-av-school">{p.team}</span>
+                  </span>
+                  <span className="sim-av-pos">{p.position}</span>
+                  <span className="sim-av-grade"><span>{p.grade || '—'}</span></span>
+                  <span className="sim-av-prob">{fmtProb(p.success_probability)}</span>
+                  <span className="sim-av-draft">Draft</span>
+                </button>
+              ))}
+              {available.length === 0 && (
+                <p className="sim-av-empty">No available players match that filter.</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Result summary ── */}
+        {phase === 'done' && view && (
+          <div className="sim-summary">
+            {boardUserTeam && boardUserTeam !== CONTROL_ALL ? (
+              <>
+                <div className="sim-summary-head">
+                  {nflLogoUrl(boardUserTeam) && (
+                    <img className="sim-summary-logo" src={nflLogoUrl(boardUserTeam, 500)} alt="" />
+                  )}
+                  <div>
+                    <div className="sim-summary-title">Your haul — {boardUserTeam}</div>
+                    <div className="sim-summary-sub">
+                      {haul.length} pick{haul.length === 1 ? '' : 's'} over {view.rounds} round{view.rounds === 1 ? '' : 's'}
+                    </div>
+                  </div>
                 </div>
+                <div className="sim-summary-rows">
+                  {haul.map((pk) => (
+                    <div key={pk.pick} className="sim-summary-row">
+                      <span className="sim-summary-pick">{pk.pick}</span>
+                      <span className="sim-summary-name">{pk.player.name}</span>
+                      <span className="sim-summary-school">{pk.player.team}</span>
+                      <span className="sim-av-pos">{pk.player.position}</span>
+                      <span className="sim-av-grade"><span>{pk.player.grade || '—'}</span></span>
+                      <span className="sim-av-prob">{fmtProb(pk.player.success_probability)}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="sim-summary-head">
+                <div>
+                  <div className="sim-summary-title">Draft complete</div>
+                  <div className="sim-summary-sub">
+                    You called all {view.picks.length} picks.
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="sim-btn-row">
+              <button
+                className="sim-btn sim-btn-accent"
+                disabled={!poolRows || poolRows.length === 0}
+                onClick={() =>
+                  startDraft({
+                    order: sim ? sim.order : order,
+                    rounds: view.rounds,
+                    userTeam: view.userTeam,
+                  })
+                }
+              >
+                Run it back
+              </button>
+              <button
+                className="sim-btn"
+                onClick={() => { setSim(null); setView(null); setPhase('setup'); }}
+              >
+                New draft
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Board ── */}
+        {roundGroups.map(([rnd, picks]) => (
+          <section key={rnd} className="mock-round">
+            <div className="mock-round-head">
+              <span className="mock-round-label">Round {rnd}</span>
+              <span className="mock-round-rule" />
+              <span className="mock-round-count">{picks.length} picks</span>
+            </div>
+            <div className="mock-board">
+              {picks.map((pk) => (
+                <MockRow
+                  key={pk.pick}
+                  pick={pk.pick}
+                  name={pk.player.name}
+                  school={pk.player.team}
+                  nflTeam={pk.team}
+                  position={pk.player.position}
+                  grade={pk.player.grade}
+                  highlight={
+                    boardUserTeam !== CONTROL_ALL && pk.team === boardUserTeam
+                  }
+                />
               ))}
             </div>
           </section>
         ))}
+
+        {/* ── Legacy image-import flow (collapsed) ── */}
+        <ImportMock />
       </div>
     </div>
   );

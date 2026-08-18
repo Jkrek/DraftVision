@@ -1,4 +1,6 @@
-/* MockDraft — Nocturne restyle. Tokens come from src/nocturne.css. */
+/* MockDraft — Nocturne. Tokens come from src/nocturne.css.
+   The board rows (.mock-row et al) are the shared visual language for the
+   live simulator board and the imported-image board. */
 
 .mock-page {
   min-height: 100vh;
@@ -31,6 +33,7 @@
   margin: 0;
   font-size: 14px;
   color: var(--color-neutral-500);
+  max-width: 62ch;
 }
 
 .mock-meta {
@@ -48,48 +51,556 @@
   color: var(--color-accent-300);
 }
 
-/* ── Upload dropzone ──────────────────────────────────────────────────── */
+/* ── Shared outlined buttons (Nocturne: never solid-filled) ───────────── */
 
-.mock-dropzone {
-  border: 1px dashed var(--color-accent-700);
-  border-radius: var(--radius-lg);
-  padding: 26px 28px;
-  cursor: pointer;
-  margin-bottom: 44px;
+.sim-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.sim-btn {
+  appearance: none;
   background: transparent;
-  transition: background 0.2s, border-color 0.2s;
+  margin: 0;
+  padding: 9px 18px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--color-neutral-300);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
-
-.mock-dropzone:hover,
-.mock-dropzone.is-dragover {
-  background: color-mix(in srgb, var(--color-accent) 7%, transparent);
-  border-color: var(--color-accent-500);
+.sim-btn:hover {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
 }
-
-.mock-dropzone:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+.sim-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
-
-.mock-file-input {
-  display: none;
-}
-
-.mock-drop-label {
-  margin: 0 0 6px;
-  font-family: var(--font-heading);
-  font-weight: 500;
-  font-size: 15px;
+.sim-btn-accent {
+  border-color: var(--color-accent-700);
   color: var(--color-accent-300);
 }
+.sim-btn-accent:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  border-color: var(--color-accent);
+}
 
-.mock-drop-hint {
-  margin: 0;
+.sim-hint {
   font-size: 12.5px;
   color: var(--color-neutral-500);
 }
 
-/* ── Status micro-labels (parsing / loading) ──────────────────────────── */
+/* ── Saved-sim prompt ─────────────────────────────────────────────────── */
+
+.sim-resume {
+  border: 1px solid var(--color-accent-700);
+  border-radius: var(--radius-lg);
+  padding: 22px 26px;
+  margin-bottom: 40px;
+}
+
+.sim-resume-text {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: var(--color-neutral-300);
+}
+
+/* ── Setup panel ──────────────────────────────────────────────────────── */
+
+.sim-setup {
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  padding: 24px 26px;
+  margin-bottom: 44px;
+}
+
+.sim-setup-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.sim-label {
+  flex: 0 0 78px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+
+/* segmented rounds control — Leaderboard's seg language */
+.sim-seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-neutral-800);
+  border-radius: var(--radius-md);
+}
+
+.sim-seg-btn {
+  appearance: none;
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 7px 15px;
+  border-radius: 5px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  transition: color 0.15s, background 0.15s;
+}
+.sim-seg-btn:hover {
+  color: var(--color-neutral-300);
+}
+.sim-seg-btn.active {
+  color: var(--color-accent-200);
+  background: var(--color-accent-800);
+}
+
+/* chips — position filters + "control every pick" toggle */
+.sim-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sim-chip {
+  appearance: none;
+  background: transparent;
+  margin: 0;
+  padding: 6px 13px;
+  border: 1px solid var(--color-divider);
+  border-radius: 99px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.sim-chip:hover {
+  color: var(--color-neutral-200);
+}
+.sim-chip.active {
+  color: var(--color-accent-200);
+  border-color: var(--color-accent-600);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
+/* 32-team picker grid */
+.sim-teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.sim-team {
+  appearance: none;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px 9px;
+  background: transparent;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.sim-team img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+}
+.sim-team:hover {
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  color: var(--color-neutral-200);
+}
+.sim-team.active {
+  border-color: var(--color-accent);
+  color: var(--color-accent-200);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+
+/* draft-order editor */
+.sim-order {
+  margin-bottom: 20px;
+}
+
+.sim-order-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--color-neutral-400);
+  padding: 6px 0;
+}
+.sim-order-summary::-webkit-details-marker { display: none; }
+.sim-order-summary:hover { color: var(--color-neutral-200); }
+
+.sim-order-list {
+  margin-top: 10px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.sim-order-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  color: var(--color-neutral-300);
+}
+.sim-order-row + .sim-order-row {
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+.sim-order-num {
+  flex: 0 0 24px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-600);
+}
+
+.sim-order-logo {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+}
+
+.sim-order-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sim-order-arrows {
+  display: flex;
+  gap: 4px;
+}
+
+.sim-arrow {
+  appearance: none;
+  margin: 0;
+  width: 26px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-sm);
+  color: var(--color-neutral-400);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.sim-arrow:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-accent-200);
+}
+.sim-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.sim-order-reset {
+  margin-top: 10px;
+}
+
+.sim-start {
+  padding: 11px 26px;
+  font-size: 13.5px;
+}
+
+/* ── Live controls bar ────────────────────────────────────────────────── */
+
+.sim-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
+  margin-bottom: 22px;
+}
+
+.sim-bar-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sim-bar-logo {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+}
+
+.sim-bar-onclock {
+  font-size: 13.5px;
+  color: var(--color-accent-300);
+}
+
+.sim-bar-idle {
+  font-size: 13px;
+  color: var(--color-neutral-400);
+}
+
+/* ── On-the-clock panel ───────────────────────────────────────────────── */
+
+.sim-clock {
+  border: 1px solid var(--color-accent-700);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 30px;
+}
+
+.sim-clock-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.sim-search {
+  flex: 1 1 240px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-neutral-800);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  outline: none;
+}
+.sim-search::placeholder {
+  color: var(--color-neutral-600);
+}
+.sim-search:focus,
+.sim-search:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+/* best-available rows */
+.sim-av {
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+}
+
+.sim-av-row {
+  appearance: none;
+  margin: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 26px minmax(160px, 2fr) 48px 52px 52px auto;
+  gap: 0 14px;
+  align-items: center;
+  text-align: left;
+  padding: 9px 16px;
+  background: transparent;
+  border: 0;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.sim-av-row + .sim-av-row {
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+.sim-av-row:hover {
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+.sim-av-row:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.sim-av-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+}
+
+.sim-av-name {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.sim-av-player {
+  font-size: 13px;
+  color: var(--color-neutral-100);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sim-av-school {
+  font-size: 11.5px;
+  color: var(--color-neutral-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sim-av-pos {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--color-accent-300);
+}
+
+.sim-av-grade {
+  text-align: center;
+}
+.sim-av-grade > span {
+  font-size: 11px;
+  padding: 3px 7px;
+  border: 1px solid var(--color-accent-700);
+  border-radius: 99px;
+  color: var(--color-accent-300);
+  font-variant-numeric: tabular-nums;
+}
+
+.sim-av-prob {
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--color-neutral-200);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.sim-av-draft {
+  justify-self: end;
+  padding: 4px 12px;
+  font-size: 11.5px;
+  color: var(--color-accent-300);
+  border: 1px solid var(--color-accent-700);
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.sim-av-row:hover .sim-av-draft {
+  background: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  border-color: var(--color-accent);
+}
+
+.sim-av-empty {
+  margin: 0;
+  padding: 22px 16px;
+  font-size: 13px;
+  color: var(--color-neutral-500);
+}
+
+/* ── Result summary card ──────────────────────────────────────────────── */
+
+.sim-summary {
+  border: 1px solid var(--color-accent-700);
+  border-radius: var(--radius-lg);
+  padding: 22px 26px;
+  margin-bottom: 40px;
+}
+
+.sim-summary-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.sim-summary-logo {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+}
+
+.sim-summary-title {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.sim-summary-sub {
+  font-size: 12.5px;
+  color: var(--color-neutral-500);
+  margin-top: 2px;
+}
+
+.sim-summary-rows {
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.sim-summary-row {
+  display: grid;
+  grid-template-columns: 44px minmax(140px, 1.6fr) minmax(100px, 1fr) 48px 52px 52px;
+  gap: 0 14px;
+  align-items: center;
+  padding: 10px 16px;
+  font-size: 13px;
+}
+.sim-summary-row + .sim-summary-row {
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+.sim-summary-pick {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--color-neutral-400);
+  font-variant-numeric: tabular-nums;
+}
+
+.sim-summary-name {
+  color: var(--color-neutral-100);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sim-summary-school {
+  color: var(--color-neutral-500);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Status micro-labels (simming / loading) ──────────────────────────── */
 
 .mock-status {
   display: inline-flex;
@@ -120,25 +631,6 @@
 @keyframes mock-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.25; }
-}
-
-.mock-loading {
-  padding: 48px 0;
-}
-
-/* ── Empty state ──────────────────────────────────────────────────────── */
-
-.mock-empty {
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-lg);
-  padding: 64px 32px;
-}
-
-.mock-empty p {
-  margin: 0;
-  font-size: 14px;
-  color: var(--color-neutral-500);
-  max-width: 46ch;
 }
 
 /* ── Round headers ────────────────────────────────────────────────────── */
@@ -201,6 +693,15 @@
 
 .mock-row:hover {
   background: color-mix(in srgb, var(--color-accent) 9%, transparent);
+}
+
+/* the user's own picks — accent edge, faint tint */
+.mock-row.is-user {
+  box-shadow: inset 2px 0 0 var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+}
+.mock-row.is-user:hover {
+  background: color-mix(in srgb, var(--color-accent) 11%, transparent);
 }
 
 .mock-row-pick {
@@ -299,9 +800,136 @@
   border-color: var(--color-accent);
 }
 
+/* ── Legacy image-import section (collapsed) ──────────────────────────── */
+
+.mock-import {
+  margin-top: 26px;
+  border-top: 1px solid transparent;
+  /* thin fading divider above the section — Nocturne signature */
+  background: linear-gradient(to right,
+    transparent, var(--color-divider) 48px,
+    var(--color-divider) calc(100% - 48px), transparent) no-repeat top / 100% 1px;
+  padding-top: 18px;
+}
+
+.mock-import-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-neutral-400);
+  padding: 6px 0;
+}
+.mock-import-summary::-webkit-details-marker { display: none; }
+.mock-import-summary:hover { color: var(--color-neutral-200); }
+
+.mock-import-chev {
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--color-neutral-600);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+details[open] > summary .mock-import-chev {
+  transform: rotate(90deg);
+  color: var(--color-accent-300);
+}
+
+.mock-import-hint {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+
+.mock-import-body {
+  padding-top: 16px;
+}
+
+.mock-import-title {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--color-text);
+  margin: 24px 0 18px;
+}
+
+.mock-import-meta {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+  font-variant-numeric: tabular-nums;
+}
+
+/* upload dropzone (inside the import section) */
+.mock-dropzone {
+  border: 1px dashed var(--color-accent-700);
+  border-radius: var(--radius-lg);
+  padding: 26px 28px;
+  cursor: pointer;
+  background: transparent;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.mock-dropzone:hover,
+.mock-dropzone.is-dragover {
+  background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+  border-color: var(--color-accent-500);
+}
+
+.mock-dropzone:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.mock-file-input {
+  display: none;
+}
+
+.mock-drop-label {
+  margin: 0 0 6px;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--color-accent-300);
+}
+
+.mock-drop-hint {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--color-neutral-500);
+}
+
+/* ── Focus rings ──────────────────────────────────────────────────────── */
+
+.sim-btn:focus-visible,
+.sim-seg-btn:focus-visible,
+.sim-chip:focus-visible,
+.sim-team:focus-visible,
+.sim-arrow:focus-visible,
 .mock-row-btn:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/* ── Motion (gated) ───────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .sim-btn,
+  .sim-seg-btn,
+  .sim-chip,
+  .sim-team,
+  .sim-arrow,
+  .sim-av-row,
+  .mock-row,
+  .mock-row-btn,
+  .mock-dropzone,
+  .mock-import-chev {
+    transition: none;
+  }
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────── */
@@ -317,5 +945,26 @@
   .mock-row-team,
   .mock-row-grade {
     display: none;
+  }
+  .sim-av-row {
+    grid-template-columns: 26px minmax(0, 1fr) 44px auto;
+    padding: 9px 12px;
+  }
+  .sim-av-grade,
+  .sim-av-prob {
+    display: none;
+  }
+  .sim-summary-row {
+    grid-template-columns: 38px minmax(0, 1.4fr) 44px 48px;
+  }
+  .sim-summary-school,
+  .sim-summary-row .sim-av-prob {
+    display: none;
+  }
+  .sim-setup,
+  .sim-summary,
+  .sim-resume,
+  .sim-clock {
+    padding: 18px 16px;
   }
 }

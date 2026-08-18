@@ -1,7 +1,7 @@
 import React, {
   useCallback, useEffect, useRef, useState,
 } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { anonFetch } from '../lib/api';
 import './PredictionComponent.css';
 
@@ -11,6 +11,7 @@ const img = (file) => `${process.env.PUBLIC_URL}/images/CFB Content/${file}`;
 // ── Main component ─────────────────────────────────────────────────────────
 export default function PredictionComponent() {
   const apiUrl = (path) => path; // same-origin (Flask serves everything)
+  const navigate = useNavigate();
 
   // autocomplete state
   const [acQuery, setAcQuery]       = useState('');
@@ -83,7 +84,13 @@ export default function PredictionComponent() {
       const res  = await anonFetch(apiUrl('/predict'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: player.name }),
+        body: JSON.stringify({
+          name: player.name,
+          ...(player.position && player.position !== 'UNK' ? { position: player.position } : {}),
+          ...(player.team ? { team: player.team } : {}),
+          // espn_id (when the search row carries it) unlocks verified ESPN stats
+          ...(player.espn_id ? { espn_id: player.espn_id } : {}),
+        }),
         signal: AbortSignal.timeout(14000),
       });
       const data = await res.json();
@@ -96,11 +103,14 @@ export default function PredictionComponent() {
     }
   }, []);
 
-  // "Run model" — predict whatever is typed (prefer an autocomplete match)
+  // "Run model" — predict whatever is typed (prefer a non-HS autocomplete match;
+  // the college model does not apply to high-school prospects)
   const handleRun = useCallback(() => {
     const name = acQuery.trim();
     if (name.length < 2 || predicting) return;
-    const match = acResults.find((p) => p.name.toLowerCase() === name.toLowerCase());
+    const match = acResults.find(
+      (p) => p.kind !== 'hs' && p.name.toLowerCase() === name.toLowerCase(),
+    );
     runPrediction(match || { name, position: 'UNK', team: '' });
   }, [acQuery, acResults, predicting, runPrediction]);
 
@@ -152,27 +162,60 @@ export default function PredictionComponent() {
               placeholder="Enter a player name"
               aria-label="Player name"
             />
-            {acOpen && acResults.length > 0 && (
-              <div className="predict-ac" role="listbox">
-                {acResults.map((p) => {
-                  const isNFL = ['legacy', 'nfl_seed'].includes(p.source);
-                  return (
-                    <button
-                      type="button"
-                      key={p.name}
-                      className="predict-ac-row"
-                      onMouseDown={() => runPrediction(p)}
-                    >
-                      <span className="predict-ac-name">{p.name}</span>
-                      <span className="predict-ac-sub">
-                        {[p.position, p.team].filter(Boolean).join(' · ')}
-                        {isNFL ? ' · NFL Pro' : ''}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            {acOpen && acResults.length > 0 && (() => {
+              const collegeRows = acResults.filter((p) => p.kind !== 'hs');
+              const hsRows      = acResults.filter((p) => p.kind === 'hs');
+              return (
+                <div className="predict-ac" role="listbox">
+                  {collegeRows.map((p) => {
+                    const isNFL = ['legacy', 'nfl_seed'].includes(p.source);
+                    return (
+                      <button
+                        type="button"
+                        key={`c-${p.name}-${p.team || ''}`}
+                        className="predict-ac-row"
+                        onMouseDown={() => runPrediction(p)}
+                      >
+                        <span className="predict-ac-main">
+                          <span className="predict-ac-name">{p.name}</span>
+                          <span className="predict-ac-sub">
+                            {[p.position, p.team].filter(Boolean).join(' · ')}
+                            {isNFL ? ' · NFL Pro' : ''}
+                          </span>
+                        </span>
+                        {p.grade && <span className="predict-ac-grade">{p.grade}</span>}
+                      </button>
+                    );
+                  })}
+                  {hsRows.length > 0 && (
+                    <>
+                      <div className="predict-ac-group" aria-hidden="true">High school</div>
+                      {hsRows.map((p) => (
+                        <button
+                          type="button"
+                          key={`hs-${p.name}-${p.school || ''}`}
+                          className="predict-ac-row predict-ac-row-hs"
+                          title="High school prospect — the college model doesn't apply; opens the HS board instead."
+                          onMouseDown={() => navigate(`/hs-prospects?q=${encodeURIComponent(p.name)}`)}
+                        >
+                          <span className="predict-ac-main">
+                            <span className="predict-ac-name">{p.name}</span>
+                            <span className="predict-ac-sub">
+                              {[p.position, p.school].filter(Boolean).join(' · ')}
+                            </span>
+                          </span>
+                          <span className="predict-ac-sub predict-ac-hsmeta">
+                            {p.stars ? `${p.stars}★` : ''}
+                            {p.stars && p.year ? ' · ' : ''}
+                            {p.year ? `'${String(p.year).slice(-2)}` : ''}
+                          </span>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              );
+            })()}
           </div>
           <button
             type="button"

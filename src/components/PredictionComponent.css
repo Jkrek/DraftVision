@@ -85,7 +85,10 @@
 }
 
 .predict-ac-row {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   width: 100%;
   text-align: left;
   padding: 10px 14px;
@@ -101,6 +104,11 @@
   background: color-mix(in srgb, var(--color-accent) 12%, transparent);
 }
 
+.predict-ac-main {
+  display: block;
+  min-width: 0;
+}
+
 .predict-ac-name {
   display: block;
   font-size: 14px;
@@ -111,6 +119,39 @@
   margin-top: 2px;
   font-size: 12px;
   color: var(--color-neutral-500);
+}
+
+/* Model grade chip on college rows — outlined, never solid-filled */
+.predict-ac-grade {
+  flex: none;
+  padding: 2px 9px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-accent-300);
+  font-variant-numeric: tabular-nums;
+}
+
+/* "High school" group header — thin fading divider above the section */
+.predict-ac-group {
+  padding: 9px 14px 5px;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+  border-top: 1px solid transparent;
+  border-image: linear-gradient(90deg,
+    color-mix(in srgb, var(--color-text) 18%, transparent),
+    transparent) 1;
+}
+
+.predict-ac-hsmeta {
+  flex: none;
+  margin-top: 0;
+  white-space: nowrap;
+  color: var(--color-accent-300);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Empty / initial state ──────────────────────────────────── */

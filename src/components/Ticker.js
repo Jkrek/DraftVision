@@ -77,6 +77,12 @@ function Ticker() {
   const { mode, items } = state;
   if (!items.length) return null;
 
+  // One full loop scrolls one copy of the list (track is duplicated for the
+  // seamless wrap), so pace by single-copy length: ~8s per entry, clamped.
+  // Only sets duration — the animation itself still lives behind the
+  // prefers-reduced-motion media query in CSS, so reduced-motion stays off.
+  const loopSeconds = Math.min(Math.max(items.length * 8, 90), 200);
+
   const renderRow = (hidden) => (
     <div className="ticker-row" aria-hidden={hidden || undefined}>
       {items.map((t, i) => (
@@ -108,7 +114,10 @@ function Ticker() {
         </span>
       </div>
       <div className="ticker-viewport">
-        <div className="ticker-track">
+        <div
+          className="ticker-track"
+          style={{ animationDuration: `${loopSeconds}s` }}
+        >
           {renderRow(false)}
           {renderRow(true)}
         </div>

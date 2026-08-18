@@ -40,7 +40,11 @@ export default function HSProspects() {
   const [posTab, setPosTab]         = useState('ALL');
   const [starsFilter, setStarsFilter] = useState('ALL');
   const [yearFilter, setYearFilter] = useState('ALL');
-  const [search, setSearch]         = useState('');
+  // Pre-fill from ?q= (e.g. navigated from the predict page's HS search results)
+  const [search, setSearch]         = useState(() => {
+    try { return new URLSearchParams(window.location.search).get('q') || ''; }
+    catch { return ''; }
+  });
   const [sortBy, setSortBy]         = useState('rank');
   const [page, setPage]             = useState(0);
 

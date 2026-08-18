@@ -25,6 +25,8 @@
   display: block;
   overflow: visible;
   flex-shrink: 0;
+  /* Muted mark inherits this via currentColor */
+  color: var(--color-neutral-600);
 }
 
 .footer-copy {

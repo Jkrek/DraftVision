@@ -2420,9 +2420,17 @@ def find_historical_comps(player_stats: Dict[str, object], n: int = 3) -> list:
     pos = (str(player_stats.get("position", "") or "")).upper()
     player_group = _POS_GROUP.get(pos, pos)
 
-    prod  = float(player_stats.get("production_score") or 0)
-    speed = float(player_stats.get("combine_speed_score") or 50)
-    tier  = float(player_stats.get("conference_tier") or 5)
+    def _num(v, default):
+        """NaN-safe float — NaN is truthy, so `or default` alone misses it."""
+        try:
+            f = float(v)
+        except (TypeError, ValueError):
+            return default
+        return default if math.isnan(f) else f
+
+    prod  = _num(player_stats.get("production_score") or 0, 0)
+    speed = _num(player_stats.get("combine_speed_score") or 50, 50)
+    tier  = _num(player_stats.get("conference_tier") or 5, 5)
     award = int(player_stats.get("is_award_winner") or 0)
     aa    = int(player_stats.get("is_all_american") or 0)
     tier_norm = (11.0 - tier) / 10.0 * 100  # invert so higher = better
@@ -2484,6 +2492,28 @@ def init_data():
     if cached:
         return jsonify(cached)
 
+    # Primary source: the in-memory prospect cache (grade-sorted, no SQL) —
+    # in prod the players DB only holds seed rows, so seeding the predict
+    # page from it surfaced ~13 names.
+    _maybe_reload_prospect_cache()
+    if _PROSPECT_CACHE:
+        players = [
+            {
+                "name":     p.get("name") or "",
+                "position": p.get("position") or "",
+                "team":     p.get("team") or "",
+                "source":   "college_prospect",
+            }
+            for p in _PROSPECT_CACHE
+        ]
+        teams = sorted({p.get("team") or "" for p in _PROSPECT_CACHE} - {"", "Unknown"})
+        positions = sorted({(p.get("position") or "").upper() for p in _PROSPECT_CACHE}
+                           - {"", "UNK", "UNKNOWN"})
+        payload = {"players": players, "teams": teams, "positions": positions}
+        cache_set("init", payload)
+        return jsonify(payload)
+
+    # Fallback: legacy DB path (dev environments without the cache file)
     conn = _get_conn()
     cursor = conn.cursor()
     ph = _placeholder()
@@ -2585,7 +2615,14 @@ def search_players_filtered(query: str = "", limit: int = 200,
 
 @app.get("/search")
 def search_all():
-    """Fast autocomplete search across ALL player sources."""
+    """Fast autocomplete search across ALL player sources.
+
+    Order: (a) in-memory college prospect cache (kind:"college"),
+    (b) HS prospect cache (kind:"hs"), (c) legacy players DB (kind:"db").
+    (a) and (b) never touch SQL, so search works in prod even when the
+    players DB only holds the handful of seed rows (the old "13 players"
+    bug came from this endpoint reading the DB exclusively).
+    """
     q = (request.args.get("q") or "").strip()
     if len(q) < 2:
         return jsonify({"players": []})
@@ -2593,19 +2630,87 @@ def search_all():
     cached = cache_get(cached_key)
     if cached:
         return jsonify(cached)
-    ph = _placeholder()
-    conn = _get_conn()
-    cursor = conn.cursor()
-    cursor.execute(
-        f"SELECT name, position, team, source FROM players "
-        f"WHERE name LIKE {ph} ORDER BY "
-        "CASE source WHEN 'college_prospect' THEN 0 WHEN 'nfl_seed' THEN 1 WHEN 'legacy' THEN 2 ELSE 3 END, "
-        "name ASC LIMIT 10",
-        (f"%{q}%",),
-    )
-    players = _rows_as_dicts(cursor)
-    conn.close()
-    payload = {"players": players}
+
+    _maybe_reload_prospect_cache()
+    _maybe_reload_hs_prospect_cache()
+    ql = q.lower()
+
+    # (a) College prospects — full in-memory scan (8k rows, cheap).
+    college = []
+    for p in _PROSPECT_CACHE:
+        name = p.get("name") or ""
+        team = p.get("team") or ""
+        if ql in name.lower() or ql in team.lower():
+            row = {
+                "name":                name,
+                "position":            p.get("position") or "",
+                "team":                team,
+                "espn_team_id":        p.get("espn_team_id") or "",
+                "grade":               p.get("grade"),
+                "success_probability": p.get("success_probability"),
+                "kind":                "college",
+                "source":              "college_prospect",  # legacy row shape
+            }
+            # Older cache builds don't carry the player's own espn_id —
+            # omit it and let /predict resolve by name+team.
+            if p.get("espn_id"):
+                row["espn_id"] = p["espn_id"]
+            college.append(row)
+    # Prefix name matches first; ties keep the cache's grade ordering.
+    college.sort(key=lambda r: 0 if r["name"].lower().startswith(ql) else 1)
+    college = college[:14]
+
+    # (b) High-school prospects — name/school match.
+    hs = []
+    for p in _HS_PROSPECT_CACHE:
+        name = p.get("name") or ""
+        school = p.get("school") or ""
+        if ql in name.lower() or ql in school.lower():
+            hs.append({
+                "name":     name,
+                "position": p.get("position") or "",
+                "school":   school,
+                "stars":    p.get("stars"),
+                "year":     p.get("year"),
+                "kind":     "hs",
+                "source":   "hs_prospect",
+            })
+    hs.sort(key=lambda r: 0 if r["name"].lower().startswith(ql) else 1)
+    hs = hs[:5]
+
+    # (c) Legacy players DB (NFL seed names). Best-effort — an empty or
+    # missing DB must never break search.
+    db_rows = []
+    try:
+        seen = {r["name"].lower() for r in college}
+        ph = _placeholder()
+        conn = _get_conn()
+        cursor = conn.cursor()
+        cursor.execute(
+            f"SELECT name, position, team, source, espn_id FROM players "
+            f"WHERE name LIKE {ph} ORDER BY "
+            "CASE source WHEN 'college_prospect' THEN 0 WHEN 'nfl_seed' THEN 1 WHEN 'legacy' THEN 2 ELSE 3 END, "
+            "name ASC LIMIT 10",
+            (f"%{q}%",),
+        )
+        for r in _rows_as_dicts(cursor):
+            if (r.get("name") or "").lower() in seen:
+                continue
+            row = {
+                "name":     r.get("name") or "",
+                "position": r.get("position") or "",
+                "team":     r.get("team") or "",
+                "kind":     "db",
+                "source":   r.get("source") or "legacy",
+            }
+            if r.get("espn_id"):
+                row["espn_id"] = r["espn_id"]
+            db_rows.append(row)
+        conn.close()
+    except Exception as exc:
+        print(f"/search DB leg skipped: {exc}")
+
+    payload = {"players": (college + hs + db_rows)[:20]}
     cache_set(cached_key, payload)
     return jsonify(payload)
 

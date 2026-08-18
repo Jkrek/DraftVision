@@ -193,6 +193,9 @@ def call_predict(player, api_url, timeout=15):
                                     if stats.get("combine_speed_score") is not None else None),
             "games_played":       (int(float(stats["games_played"]))
                                    if stats.get("games_played") is not None else None),
+            # Player's own ESPN athlete id — passed to /predict to unlock
+            # verified stats (espn_live) without a name+team lookup.
+            "espn_id":            player.get("espn_id") or "",
             # ESPN NCAA team id -> logo at a.espncdn.com/i/teamlogos/ncaa/500/{id}.png
             "espn_team_id":       player.get("team_id") or "",
             "class_year":         player.get("class_year") or "",

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 32 32" fill="none">
+  <!-- DraftVision "scouting eye": football/eye vesica, laces as rising bar ticks -->
+  <rect width="32" height="32" rx="7" fill="#161826"/>
+  <g transform="translate(16 16) scale(0.84) translate(-16 -16)">
+    <path d="M2.6 16 Q16 3.8 29.4 16 Q16 28.2 2.6 16 Z" stroke="#cfd3e5" stroke-width="1.7" stroke-linejoin="round"/>
+    <line x1="10.8" y1="19.8" x2="10.8" y2="17.6" stroke="#796cbf" stroke-width="2.2" stroke-linecap="round"/>
+    <line x1="14.3" y1="19.8" x2="14.3" y2="16.2" stroke="#968ae0" stroke-width="2.2" stroke-linecap="round"/>
+    <line x1="17.8" y1="19.8" x2="17.8" y2="14.6" stroke="#b5abfc" stroke-width="2.2" stroke-linecap="round"/>
+    <line x1="21.3" y1="19.8" x2="21.3" y2="12.8" stroke="#d2cefd" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+</svg>

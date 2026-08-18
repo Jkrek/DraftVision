@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
+import LogoMark from './Logo';
 
 const FOOTER_LINKS = [
   { label: 'Predict',     to: '/predict'     },
@@ -13,19 +14,7 @@ function Footer() {
     <footer className="footer">
       <div className="footer-inner">
         <div className="footer-brand">
-          <svg
-            className="footer-logo"
-            width="22"
-            height="22"
-            viewBox="0 0 32 32"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path d="M4 6 L16 26 L28 6" stroke="var(--color-neutral-600)" strokeWidth="2.2" strokeLinecap="square" />
-            <path d="M10.5 6 L16 15 L21.5 6" stroke="var(--color-neutral-800)" strokeWidth="2.2" strokeLinecap="square" />
-            <circle cx="16" cy="26" r="2.6" fill="var(--color-neutral-600)" />
-            <circle cx="16" cy="26" r="6.5" stroke="var(--color-neutral-700)" strokeWidth="1" opacity=".5" />
-          </svg>
+          <LogoMark size={22} muted className="footer-logo" />
           <span className="footer-copy">© 2026 Jared Krekeler · University of Cincinnati</span>
         </div>
 

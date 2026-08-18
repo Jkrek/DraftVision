@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import './Navbar.css';
 import AuthButton from './AuthButton';
+import LogoMark from './Logo';
 
 const NAV_LINKS = [
   { to: '/',             label: 'Overview',      end: true },
@@ -11,24 +12,6 @@ const NAV_LINKS = [
   { to: '/leaderboard',  label: 'Leaderboard'    },
   { to: '/predict',      label: 'Predict'        },
 ];
-
-function ChevronLogo({ className }) {
-  return (
-    <svg
-      className={className}
-      width="26"
-      height="26"
-      viewBox="0 0 32 32"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path d="M4 6 L16 26 L28 6" stroke="var(--color-accent-300)" strokeWidth="2.2" strokeLinecap="square" />
-      <path d="M10.5 6 L16 15 L21.5 6" stroke="var(--color-accent-700)" strokeWidth="2.2" strokeLinecap="square" />
-      <circle cx="16" cy="26" r="2.6" fill="var(--color-accent)" />
-      <circle cx="16" cy="26" r="6.5" stroke="var(--color-accent)" strokeWidth="1" opacity=".38" />
-    </svg>
-  );
-}
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -84,7 +67,7 @@ function Navbar() {
 
         {/* Logo */}
         <Link to="/" className="navbar-logo" onClick={close}>
-          <ChevronLogo className="navbar-logo-mark" />
+          <LogoMark size={26} className="navbar-logo-mark" />
           <span className="navbar-logo-text">
             Draft<span className="navbar-logo-accent">Vision</span>
           </span>
