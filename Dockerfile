@@ -18,7 +18,9 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend
-COPY XGBOost.py dv_features.py dv_heuristics.py dv_analytics.py ./
+# dv_*.py glob: every backend module ships (adding a module without updating
+# this line crashed prod twice — dv_analytics, then dv_edge)
+COPY XGBOost.py dv_*.py ./
 COPY *.json *.pkl *.cbm ./
 COPY models/ ./models/
 COPY training_data/ ./training_data/
