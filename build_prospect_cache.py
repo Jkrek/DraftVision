@@ -14,14 +14,25 @@ Usage:
 
     # Limit to fewer teams (faster, for testing):
     python build_prospect_cache.py --max-teams 20
+
+    # Concurrent grading (CI / local server only — per-call HTTP is I/O bound
+    # on the server's own ESPN fetches, so threads give near-linear speedup):
+    python build_prospect_cache.py --workers 6 --delay 0
+
+    # Hermetic smoke run — writes cache/history/movers under /tmp, never
+    # touching training_data/:
+    python build_prospect_cache.py --max-teams 3 --workers 4 \
+        --output /tmp/dv_smoke/prospect_cache.json
 """
 
 import argparse
 import json
 import os
 import re
+import threading
 import time
 import requests
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 
@@ -217,6 +228,68 @@ def call_predict(player, api_url, timeout=15):
         return None
 
 
+# ── Concurrency ───────────────────────────────────────────────────────────────
+
+class RateLimiter:
+    """Global requests/sec ceiling shared by every worker thread.
+
+    Evenly spaces request STARTS 1/rate seconds apart (a one-token bucket).
+    The /predict server fans each call out to ESPN, so this — not per-thread
+    sleeps — is what keeps ESPN traffic polite when --workers > 1.
+    """
+
+    def __init__(self, rate_per_sec):
+        self.interval = (1.0 / rate_per_sec) if rate_per_sec > 0 else 0.0
+        self._lock = threading.Lock()
+        self._next_start = 0.0
+
+    def acquire(self):
+        if self.interval <= 0:
+            return
+        with self._lock:
+            now = time.monotonic()
+            start = max(now, self._next_start)
+            self._next_start = start + self.interval
+        wait = start - now
+        if wait > 0:
+            time.sleep(wait)
+
+
+def grade_players(players, api_url, workers, delay, limiter):
+    """Grade an already-deduped list of roster players → (results, errors).
+
+    workers <= 1 reproduces the original serial loop exactly (per-call
+    --delay sleep, no rate limiter). workers > 1 fans the /predict calls out
+    over a thread pool with the shared RateLimiter enforcing the global
+    req/s ceiling. Result order is irrelevant — the board is fully re-sorted
+    before writing — but pool.map keeps it stable anyway.
+    """
+    results, errors = [], 0
+
+    if workers <= 1:
+        for player in players:
+            result = call_predict(player, api_url)
+            if result:
+                results.append(result)
+            else:
+                errors += 1
+            time.sleep(delay)
+        return results, errors
+
+    def task(player):
+        if limiter:
+            limiter.acquire()
+        return call_predict(player, api_url)
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for result in pool.map(task, players):
+            if result:
+                results.append(result)
+            else:
+                errors += 1
+    return results, errors
+
+
 # ── Board history snapshots + movers ──────────────────────────────────────────
 
 def _snapshot_date_from_iso(iso_str, fallback_path=None):
@@ -375,6 +448,8 @@ def write_board_history(all_prospects, generated_at):
 
 
 def main():
+    global OUTPUT_FILE, HISTORY_DIR, MOVERS_FILE
+
     parser = argparse.ArgumentParser(description="Build prospect prediction cache.")
     parser.add_argument("--api-url",   default="http://localhost:5001",
                         help="Base URL of the running prediction API")
@@ -383,10 +458,34 @@ def main():
                              "interleaves every division; 250 silently dropped "
                              "~90 FBS programs TWICE)")
     parser.add_argument("--delay",     type=float, default=0.25,
-                        help="Seconds between /predict calls (default: 0.25)")
+                        help="Seconds between /predict calls in serial mode "
+                             "(default: 0.25; ignored when --workers > 1 — the "
+                             "--rps ceiling governs pacing there)")
+    parser.add_argument("--workers",   type=int, default=1,
+                        help="Concurrent /predict calls per roster (default 1 "
+                             "= exact legacy serial behavior). Per-call HTTP "
+                             "is I/O bound on the server's ESPN fetches, so "
+                             "4-8 gives near-linear speedup against localhost.")
+    parser.add_argument("--rps",       type=float, default=10.0,
+                        help="Global /predict requests-per-second ceiling when "
+                             "--workers > 1 (default 10 — keeps the server's "
+                             "downstream ESPN traffic polite). 0 = no ceiling.")
+    parser.add_argument("--output",    default=OUTPUT_FILE,
+                        help=f"Cache output path (default {OUTPUT_FILE}). When "
+                             "overridden, board_history/ and board_movers.json "
+                             "are written NEXT TO the override, so smoke runs "
+                             "never touch the real board files.")
     args = parser.parse_args()
 
-    os.makedirs("training_data", exist_ok=True)
+    # Output override: redirect the snapshot/movers side-effects alongside it
+    # so a test run is fully hermetic (never clobbers the real history/movers).
+    out_abs = os.path.abspath(args.output)
+    if out_abs != os.path.abspath(OUTPUT_FILE):
+        OUTPUT_FILE = args.output
+        out_dir     = os.path.dirname(out_abs) or "."
+        HISTORY_DIR = os.path.join(out_dir, "board_history")
+        MOVERS_FILE = os.path.join(out_dir, "board_movers.json")
+    os.makedirs(os.path.dirname(out_abs) or ".", exist_ok=True)
 
     # One-time migration: seed board history from the pre-existing cache BEFORE
     # this run overwrites it, so the first refreshed board already has deltas.
@@ -418,30 +517,32 @@ def main():
     all_prospects = []
     seen_names    = set()
     errors        = 0
+    limiter       = RateLimiter(args.rps) if args.workers > 1 else None
 
     for idx, team in enumerate(teams):
         roster = fetch_roster(team["id"], team["name"])
-        team_prospects = 0
         print(f"[{idx+1:3}/{len(teams)}] {team['name']:<35} {len(roster)} players", end="")
 
+        # Dedupe by name+team BEFORE fan-out: a bare-name key once skipped
+        # South Carolina's Dylan Stewart because Delaware also has one.
+        todo = []
         for player in roster:
-            # Dedupe by name+team: a bare-name key once skipped South
-            # Carolina's Dylan Stewart because Delaware also has one.
             norm = f"{player['name'].lower().strip()}|{player['team'].lower().strip()}"
             if norm in seen_names:
                 continue
             seen_names.add(norm)
+            todo.append(player)
 
-            result = call_predict(player, args.api_url)
-            if result:
-                # Skip FCS-level tier players (tier 9-10) to keep list P5/G5 focused
-                if int(result.get("conference_tier") or 10) <= MAX_CONFERENCE_TIER:
-                    all_prospects.append(result)
-                    team_prospects += 1
-            else:
-                errors += 1
+        results, team_errors = grade_players(
+            todo, args.api_url, args.workers, args.delay, limiter)
+        errors += team_errors
 
-            time.sleep(args.delay)
+        team_prospects = 0
+        for result in results:
+            # Skip FCS-level tier players (tier 9-10) to keep list P5/G5 focused
+            if int(result.get("conference_tier") or 10) <= MAX_CONFERENCE_TIER:
+                all_prospects.append(result)
+                team_prospects += 1
 
         print(f"  → {team_prospects} cached")
         time.sleep(0.05)

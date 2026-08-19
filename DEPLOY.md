@@ -125,30 +125,61 @@ Or set `AUTO_SYNC_COLLEGE_PROSPECTS=true` for the first boot, then flip it back 
 ## Weekly board refresh (risers / fallers)
 
 The prospect board refreshes itself once a week during the college football
-season via GitHub Actions (`.github/workflows/refresh-board.yml`):
+season via GitHub Actions (`.github/workflows/refresh-board.yml`). The whole
+job is **self-contained inside the Actions runner** — it boots its own copy of
+the prediction server from the checked-out repo and grades every player
+against `127.0.0.1`, so **production receives zero traffic** during a refresh
+(the old design fired ~12,300 `/predict` calls at the 1 GB Fly box over 8+
+hours; the new one finishes in ~25–40 minutes).
 
 - **Schedule:** Tuesdays 09:00 UTC, August through January (cron `0 9 * 8-12,1 2`).
   It can also be run on demand from the Actions tab (`workflow_dispatch`).
-- **What it does:** the job runs `scripts/refresh_board.sh` against the live API
-  (repository variable `BOARD_API_URL`, e.g. `https://draft.jkrek.com`). The script
-  invokes `build_prospect_cache.py`, which:
-  1. rebuilds `training_data/prospect_cache.json` (every FBS player re-graded),
-  2. snapshots the slim board to `training_data/board_history/board_<YYYY-MM-DD>.json`,
-  3. diffs against the most recent prior snapshot and writes
+- **What it does:**
+  1. installs `requirements.txt` and starts `gunicorn -w 4 XGBOost:app` on
+     `127.0.0.1:5001` (models load from the committed artifacts;
+     `AUTO_SYNC_COLLEGE_PROSPECTS=false`, no `ANALYTICS_KEY` so analytics
+     stays dormant), then waits for `/health`;
+  2. *(optional)* refreshes `training_data/enrichment.json` via
+     `scripts/build_enrichment.py` — only when the `CFBD_API_KEY` repo secret
+     is configured, and `continue-on-error` so a CFBD hiccup never blocks the
+     board (the committed `enrichment.json` keeps serving otherwise);
+  3. runs `build_prospect_cache.py --workers 6 --delay 0` against localhost —
+     6 threads paced by the builder's global ~10 requests/sec ceiling
+     (~12.3k predicts ≈ 21 min + roster fetches). This rebuilds
+     `training_data/prospect_cache.json`, snapshots the slim board to
+     `training_data/board_history/board_<YYYY-MM-DD>.json`, and writes
      `training_data/board_movers.json` (top-15 risers/fallers plus per-player
      deltas, served by `GET /api/movers` and merged into `/api/prospects` rows
-     as an optional `trend` field).
-- **Publishing:** the workflow commits the refreshed cache, the new history
-  snapshot, and `board_movers.json` back to `main`. Railway auto-deploys on
-  every push to `main`, and the freshly deployed image ships the new JSON, so
-  the site picks the refresh up automatically.
-- **No-redeploy path:** the Flask app also hot-reloads these files on mtime —
-  each request to `/api/prospects` / `/api/movers` stats the JSON and reloads
-  it if it changed on disk. So a cache uploaded manually to a running instance
-  (e.g. via the Railway shell) takes effect immediately, no restart needed.
+     as an optional `trend` field);
+  4. runs `scripts/generate_weekly_recap.py` (→ `content/recaps/`), stops the
+     server, and commits the refreshed files back to `main` as the board bot.
+- **Failure = no commit:** the commit step only runs when every prior step
+  succeeded, so a broken refresh publishes nothing and the old board stays
+  live. The job has a 120-minute timeout and a `refresh-board` concurrency
+  guard so runs never overlap.
+- **Publishing — Fly does NOT auto-deploy on push.** The weekly commit updates
+  the repo; production picks it up in one of three ways:
+  1. *Recommended:* add a `FLY_API_TOKEN` repo secret (create one with
+     `fly tokens create deploy -a draftvision`) — the workflow's final,
+     `continue-on-error` step then runs `flyctl deploy --remote-only` and the
+     new board goes live automatically. Without the secret the step is a no-op.
+  2. Manual: run `fly deploy` whenever; the image ships the committed JSON.
+  3. Hot-reload: the Flask app stats these JSON files on every
+     `/api/prospects` / `/api/movers` request and reloads them on mtime
+     change, so a cache uploaded directly to a running machine (e.g.
+     `fly ssh sftp`) takes effect immediately, no restart needed.
+- **Secrets (both optional — the job works with neither):**
+
+  | Repo secret | Effect when set |
+  |-------------|-----------------|
+  | `CFBD_API_KEY` | enables the enrichment-refresh step (recruiting/SP+/production features); unset = committed `enrichment.json` is used as-is |
+  | `FLY_API_TOKEN` | auto-deploys to Fly after the bot commit; unset = deploy stays manual |
+
 - **Local refresh:** start the API (`python XGBOost.py`), then run
   `scripts/refresh_board.sh` (defaults to `http://localhost:5001`; override
-  with `BOARD_API_URL`).
+  with `BOARD_API_URL`; extra flags like `--workers 4 --delay 0` pass
+  through). A hermetic test run that never touches the real board files:
+  `python build_prospect_cache.py --max-teams 3 --workers 4 --output /tmp/dv_smoke/prospect_cache.json`.
 - **First run:** history starts empty, so `build_prospect_cache.py` bootstraps
   it by snapshotting the pre-existing `prospect_cache.json` (dated from its
   `generated_at`) before overwriting it — the first refreshed board therefore
@@ -212,3 +243,42 @@ Read-only comparison of DraftVision model output vs public Kalshi prices
   hot-reload, same pattern as the other caches). Like the big boards, the
   file survives restarts but **resets on redeploy** to the committed copy —
   export and commit it to preserve the track record.
+
+## Fly.io Postgres (current production database)
+
+> Production now runs on Fly.io (app `draftvision`, https://draft.jkrek.com).
+> The Railway sections above are kept for historical reference.
+
+A durable Postgres cluster is attached to the app, so **analytics events,
+users, and anything written through the DB layer now survive restarts AND
+redeploys** (unlike the JSON-file caches, which still reset on deploy).
+
+| | |
+|---|---|
+| App name | `draftvision-db` (unmanaged Fly Postgres, postgres-flex 18) |
+| Region | `ord` (same as the app) |
+| Size | 1 node, `shared-cpu-1x`, 256MB RAM, 3GB volume |
+| Cost | ~$3-5/mo (cheapest single-node; no HA replica) |
+| Attached to | `draftvision` via `fly postgres attach` — injects the `DATABASE_URL` secret |
+
+`XGBOost.py` auto-detects `DATABASE_URL` at startup and switches from SQLite
+to Postgres (startup log prints `Using Postgres: ...`; `dv_analytics` logs
+`backend postgres`). No code or config changes are needed for this to work —
+if the secret is present, Postgres is used.
+
+### Operations
+
+```bash
+fly postgres list                          # see the cluster
+fly postgres connect -a draftvision-db    # psql shell into the database
+fly status -a draftvision-db               # machine health
+```
+
+- Note: `fly postgres attach` **stages** the `DATABASE_URL` secret; it is not
+  live until the app machines restart with it (`fly secrets deploy -a
+  draftvision` if `fly secrets list` shows it as "Staged").
+- Single-node means no automatic failover and Fly does not manage/support
+  unmanaged Postgres — take occasional snapshots (`fly volumes snapshots
+  list`) if the analytics history becomes precious.
+- Do **not** detach or destroy `draftvision-db`; it holds the only durable
+  copy of analytics/user data.
