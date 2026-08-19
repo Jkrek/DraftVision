@@ -31,10 +31,13 @@ def main():
 
     cache = json.load(open(bpc.OUTPUT_FILE))
     have = {r["team"] for r in cache["prospects"]}
-    seen_names = {r["name"].lower().strip() for r in cache["prospects"]}
+    seen_names = {f"{r['name'].lower().strip()}|{(r.get('team') or '').lower().strip()}"
+                  for r in cache["prospects"]}
 
+    from dv_tiers import classify_college_tier
     teams = bpc.fetch_teams()
-    missing = [t for t in teams if t["name"] not in have]
+    missing = [t for t in teams if t["name"] not in have
+               and classify_college_tier(t["name"]) <= bpc.MAX_CONFERENCE_TIER]
     print(f"cache has {len(have)} teams; ESPN lists {len(teams)}; fetching {len(missing)} missing")
 
     added, skipped_tier = 0, 0
@@ -42,12 +45,13 @@ def main():
         roster = bpc.fetch_roster(team["id"], team["name"])
         kept = 0
         for player in roster:
-            if player["name"].lower().strip() in seen_names:
+            key = f"{player['name'].lower().strip()}|{player['team'].lower().strip()}"
+            if key in seen_names:
                 continue
             result = bpc.call_predict(player, args.api_url)
             if result:
                 if int(result.get("conference_tier") or 10) <= bpc.MAX_CONFERENCE_TIER:
-                    seen_names.add(player["name"].lower().strip())
+                    seen_names.add(key)
                     cache["prospects"].append(result)
                     kept += 1
                 else:

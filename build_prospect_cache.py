@@ -378,8 +378,10 @@ def main():
     parser = argparse.ArgumentParser(description="Build prospect prediction cache.")
     parser.add_argument("--api-url",   default="http://localhost:5001",
                         help="Base URL of the running prediction API")
-    parser.add_argument("--max-teams", type=int, default=250,
-                        help="Max number of FBS teams to process (default: 250 = all)")
+    parser.add_argument("--max-teams", type=int, default=1000,
+                        help="ESPN team-list fetch cap (default 1000 — the list "
+                             "interleaves every division; 250 silently dropped "
+                             "~90 FBS programs TWICE)")
     parser.add_argument("--delay",     type=float, default=0.25,
                         help="Seconds between /predict calls (default: 0.25)")
     args = parser.parse_args()
@@ -423,7 +425,9 @@ def main():
         print(f"[{idx+1:3}/{len(teams)}] {team['name']:<35} {len(roster)} players", end="")
 
         for player in roster:
-            norm = player["name"].lower().strip()
+            # Dedupe by name+team: a bare-name key once skipped South
+            # Carolina's Dylan Stewart because Delaware also has one.
+            norm = f"{player['name'].lower().strip()}|{player['team'].lower().strip()}"
             if norm in seen_names:
                 continue
             seen_names.add(norm)

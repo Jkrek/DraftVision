@@ -1187,6 +1187,13 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
     #    athlete id (the cache builder knows every roster player's id, which
     #    unlocks real season stats for players the DB has never seen).
     db_player = get_player_by_exact_name(player_name)
+    # Same-name collision guard: when the caller supplies an athlete id and
+    # the DB row is a DIFFERENT athlete, trust the caller's identity — the
+    # DB once resolved South Carolina's Dylan Stewart to Delaware's.
+    if (db_player and espn_id_hint
+            and str(db_player.get("espn_id") or "").strip()
+            and str(db_player.get("espn_id")).strip() != espn_id_hint):
+        db_player = None
     if db_player or espn_id_hint:
         if db_player:
             source   = str(db_player.get("source", "db_lookup") or "db_lookup")
@@ -2683,7 +2690,7 @@ def compute_prospect_grade(success_prob: Optional[float], draft_grade_class: Opt
     numbers). Recompute these cutoffs whenever the board is rebuilt after a
     model or feature change: sorted success_probability, value at each
     percentile below.
-        A+ ≥ 98th (top 2%)   → p ≥ 52.2
+        A+ ≥ 98th (top 2%)   → p ≥ 41.9 (v3 model, 2026-08-19 board)
         A  ≥ 95th            → p ≥ 30.6
         A- ≥ 90th            → p ≥ 24.4
         B+ ≥ 80th            → p ≥ 20.7
@@ -2701,15 +2708,15 @@ def compute_prospect_grade(success_prob: Optional[float], draft_grade_class: Opt
     if success_prob is None:
         return "D"  # fallback path with no calibrated probability
     p = float(success_prob)
-    if p >= 52.2: return "A+"
-    if p >= 30.6: return "A"
-    if p >= 24.4: return "A-"
-    if p >= 20.7: return "B+"
-    if p >= 19.8: return "B"
-    if p >= 18.4: return "B-"
-    if p >= 17.0: return "C+"
-    if p >= 14.8: return "C"
-    if p >= 9.8:  return "C-"
+    if p >= 41.9: return "A+"
+    if p >= 33.5: return "A"
+    if p >= 24.0: return "A-"
+    if p >= 17.5: return "B+"
+    if p >= 15.5: return "B"
+    if p >= 13.7: return "B-"
+    if p >= 12.3: return "C+"
+    if p >= 9.8:  return "C"
+    if p >= 4.4:  return "C-"
     return "D"
 
 
