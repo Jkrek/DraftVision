@@ -220,6 +220,17 @@ export default function PlayerPage() {
         <div className="pp-hero-scrim-x" aria-hidden="true" />
         <div className="pp-hero-scrim-y" aria-hidden="true" />
         <div className="pp-hero-inner">
+          {/* ESPN headshot when published; the team logo is the fallback
+              (and stays as the underline mark either way) */}
+          {player.espn_id && (
+            <img
+              className="pp-hero-headshot"
+              src={`https://a.espncdn.com/i/headshots/college-football/players/full/${player.espn_id}.png`}
+              alt=""
+              loading="lazy"
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+          )}
           {player.espn_team_id && (
             <img
               className="pp-hero-logo"

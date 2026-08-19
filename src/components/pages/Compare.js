@@ -325,6 +325,15 @@ export default function Compare() {
     return (
       <div className={`cmp-col${verdict && !verdict.even && verdict.side === side ? ' cmp-col-lead' : ''}`}>
         <div className="cmp-col-head">
+          {p.espn_id && (
+            <img
+              className="cmp-headshot"
+              src={`https://a.espncdn.com/i/headshots/college-football/players/full/${p.espn_id}.png`}
+              alt=""
+              loading="lazy"
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+          )}
           {p.espn_team_id ? (
             <img className="cmp-logo" src={logoUrl(p.espn_team_id)} alt="" loading="lazy" />
           ) : (

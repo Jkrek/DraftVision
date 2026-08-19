@@ -616,3 +616,13 @@
   }
   .cmp-flabel { text-align: left; }
 }
+
+/* ESPN headshot beside the team logo; self-hides when unpublished */
+.cmp-headshot {
+  width: 64px;
+  height: 48px;
+  object-fit: contain;
+  object-position: bottom center;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.4));
+}

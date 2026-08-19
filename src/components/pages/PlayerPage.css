@@ -593,3 +593,17 @@
     flex-basis: 100%;
   }
 }
+
+/* ESPN headshot — transparent-background PNG; hidden onError when a player
+   has no published photo (the team logo then carries the header alone) */
+.pp-hero-headshot {
+  width: 132px;
+  height: 96px;
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
+  flex: 0 0 auto;
+}
+@media (max-width: 560px) {
+  .pp-hero-headshot { width: 96px; height: 72px; }
+}

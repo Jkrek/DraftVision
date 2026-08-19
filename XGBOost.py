@@ -1190,10 +1190,17 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
     # Same-name collision guard: when the caller supplies an athlete id and
     # the DB row is a DIFFERENT athlete, trust the caller's identity — the
     # DB once resolved South Carolina's Dylan Stewart to Delaware's.
-    if (db_player and espn_id_hint
-            and str(db_player.get("espn_id") or "").strip()
-            and str(db_player.get("espn_id")).strip() != espn_id_hint):
-        db_player = None
+    if db_player and espn_id_hint:
+        _db_id = str(db_player.get("espn_id") or "").strip()
+        _db_team = _normalize_team(str(db_player.get("team") or ""))
+        _hint_team = _normalize_team(fallback_team)
+        _id_conflict = _db_id and _db_id != espn_id_hint
+        # id-less DB row at a different school = same-name different athlete
+        _team_conflict = (not _db_id and _hint_team not in ("", "unknown")
+                          and _db_team not in ("", "unknown")
+                          and _db_team != _hint_team)
+        if _id_conflict or _team_conflict:
+            db_player = None
     if db_player or espn_id_hint:
         if db_player:
             source   = str(db_player.get("source", "db_lookup") or "db_lookup")
