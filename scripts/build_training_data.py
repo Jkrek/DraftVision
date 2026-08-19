@@ -1,36 +1,44 @@
 #!/usr/bin/env python
-"""Build training_data/combine_outcomes.csv from REAL public data (no API keys).
+"""Build training_data/combine_outcomes.csv from REAL public data.
+
+This is the PROMOTED v3 dataset build (scripts/experiments/build_data_v3.py,
+the measured "+A+B+C+D" winner config — see models/experiments/RESULTS.md).
 
 Sources
 -------
 1. nflverse draft_picks.csv  — every draft pick w/ career outcomes
    (probowls, seasons_started, w_av, games, `to` = last season played).
 2. nflverse combine.csv      — every combine invitee 2000+ w/ measured forty,
-   pfr_id linkage, and draft round/pick when drafted.
+   raw measurables (height/weight/vertical/bench/broad/cone/shuttle), pfr_id
+   linkage, and draft round/pick when drafted.
 3. sportsdataverse cfbfastR-data player_stats_{season}.csv — PLAY-level CFB
-   participation data (2014+ only). Aggregated to season totals per player to
-   compute the same position-normalized production composite the app uses.
+   participation data (2014+ only), backing the legacy production_score.
+4. CFBD API (key from .env, responses cached under /tmp/dv_training_cache/cfbd/):
+   /recruiting/players (pedigree + non-leaky age proxy), /stats/player/season
+   (all-position final-season + career production), /ratings/sp (SP+).
 
-Scope: draft classes 2010-2020 (>=5 completed NFL seasons through 2025, so
-outcome labels are not right-censored) PLUS combine invitees from those years
-who went undrafted — the structurally-missing negative/UDFA examples that the
-old ESPN-scraped dataset (collect_training_data.py) could never see.
+Scope: draft classes 2000-2026 for the draft-grade label, PLUS undrafted
+combine invitees from those years (the structurally-missing UDFA negatives).
+nfl_success labels are only maturity-safe for classes with >= 5 completed NFL
+seasons (through SUCCESS_LABEL_MATURE_THROUGH); scripts/train_models.py must
+exclude later classes from success training/eval (their labels are
+right-censored — the column is still populated from the partial careers).
+
+Leakage guards kept from the v3 experiments:
+- the 2010-2020 base-column slice is asserted identical to the previous
+  production CSV before the file is overwritten (join/label logic unchanged);
+- drafted-vs-UDFA missingness of every new feature is asserted balanced
+  (ratio within [0.5, 2] wherever coverage > 20%) — the v2 `age` trap
+  (present for 96% of drafted rows, 0% of UDFA) can never recur silently;
+- coverage floors: recruiting NaN pre-2005 classes, offensive production
+  composites NaN below 2010 classes, defensive below 2017 (category starts
+  in the 2016 season), so missingness never encodes era+position.
 
 Honest limitations (reported, not papered over):
-- cfbfastR player stats only exist from the 2014 season, so college production
-  is only computable for draft classes 2015-2020 (final season = class - 1).
-- The play-level data has NO tackle events, so a faithful production composite
-  is only computable for QB/RB/WR/TE (the offensive branches of
-  compute_production_score). Defensive/OL rows get a blank production_score
-  rather than a fabricated one. OL never appear in play-participation data at
-  all, so their games-played proxy is also unobtainable.
-- games_college is left blank for every row: the play-level source only counts
-  games where a player recorded a stat, which systematically undercounts and
-  would corrupt a games-played feature. Blank is honest; the play counts still
-  back the per-game rates inside production_score for skill positions.
+- games_college stays blank (the play-level source undercounts games).
 - Undrafted combine invitees with no NFL record are labeled nfl_success=0.
-  A handful of successful UDFAs (e.g. Malcolm Butler) are therefore false
-  negatives; these files carry no NFL outcome data for undrafted players.
+  A handful of successful UDFAs (e.g. Malcolm Butler) are false negatives.
+- CFBD recruiting is thin before 2002; season stats before 2004 do not exist.
 
 Run with:  .venv/bin/python scripts/build_training_data.py
 """
@@ -38,6 +46,7 @@ Run with:  .venv/bin/python scripts/build_training_data.py
 import os
 import re
 import ssl
+import sys
 import unicodedata
 import urllib.request
 
@@ -63,8 +72,25 @@ CFB_URL_TMPL = (
     "player_stats/csv/player_stats_{season}.csv"
 )
 
-FIRST_CLASS, LAST_CLASS = 2010, 2020
+FIRST_CLASS, LAST_CLASS = 2000, 2026
 CFB_FIRST_SEASON = 2014  # earliest season cfbfastR-data publishes player stats
+
+# Last draft class whose nfl_success label has >= 5 completed NFL seasons
+# (2021 class: 2021-2025). Classes after this carry right-censored success
+# labels — scripts/train_models.py excludes them from success training/eval.
+SUCCESS_LABEL_MATURE_THROUGH = 2021
+
+# CFBD pull windows (identical to scripts/experiments/build_data_v3.py)
+RECRUIT_YEARS = range(1999, 2024)   # recruit classes for draft classes 2000-2026
+STAT_SEASONS = range(2004, 2026)    # college seasons with player season stats
+SP_YEARS = range(1999, 2026)        # SP+ coverage
+
+MEASURABLE_COLS = ["height_in", "weight_lb", "vertical", "bench", "broad_in", "cone", "shuttle"]
+
+FS_STATS = ["pass_yds", "pass_td", "pass_int", "pass_att",
+            "rush_yds", "rush_td", "rush_car",
+            "rec", "rec_yds", "rec_td",
+            "tackles", "tfl", "sacks", "pd", "def_int"]
 
 # ---------------------------------------------------------------------------
 # Tier / speed-score / production logic replicated VERBATIM from XGBOost.py
@@ -279,6 +305,236 @@ def fetch(url: str, fname: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Raw combine measurables (promoted from scripts/experiments/build_data_v2.py)
+# ---------------------------------------------------------------------------
+
+def parse_height(ht) -> float:
+    """'6-4' -> 76.0 inches. NaN otherwise."""
+    if ht is None or (isinstance(ht, float) and np.isnan(ht)):
+        return np.nan
+    s = str(ht).strip()
+    if "-" in s:
+        try:
+            ft, inch = s.split("-", 1)
+            return float(ft) * 12.0 + float(inch)
+        except ValueError:
+            return np.nan
+    try:
+        return float(s)
+    except ValueError:
+        return np.nan
+
+
+def _num(v) -> float:
+    try:
+        f = float(v)
+        return f if np.isfinite(f) else np.nan
+    except (TypeError, ValueError):
+        return np.nan
+
+
+def measurables_from_combine_row(crow) -> dict:
+    if crow is None:
+        return {c: np.nan for c in MEASURABLE_COLS}
+    return {
+        "height_in": parse_height(crow.get("ht")),
+        "weight_lb": _num(crow.get("wt")),
+        "vertical":  _num(crow.get("vertical")),
+        "bench":     _num(crow.get("bench")),
+        "broad_in":  _num(crow.get("broad_jump")),
+        "cone":      _num(crow.get("cone")),
+        "shuttle":   _num(crow.get("shuttle")),
+    }
+
+
+# ---------------------------------------------------------------------------
+# CFBD blocks A-D (promoted verbatim from scripts/experiments/build_data_v3.py)
+# ---------------------------------------------------------------------------
+
+def _cfbd_get(endpoint: str, params: dict):
+    """Cached CFBD GET (key read from .env at runtime, never stored)."""
+    exp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "experiments")
+    if exp_dir not in sys.path:
+        sys.path.insert(0, exp_dir)
+    from cfbd_client import get  # lazy: only data builds need the API
+    return get(endpoint, params)
+
+
+def _team_compatible(a: str, b: str) -> bool:
+    """Prefix/substring compatibility between two normalized team spellings."""
+    if not a or not b:
+        return False
+    return (a == b or a.startswith(b + " ") or b.startswith(a + " ")
+            or a in b or b in a)
+
+
+# recruiting position -> coarse group (ATH matches every group)
+_REC_POS_GROUP = {
+    "QB": "QB", "PRO": "QB", "DUAL": "QB",
+    "RB": "RB", "APB": "RB", "FB": "RB",
+    "WR": "WR", "TE": "TE",
+    "OT": "OL", "OG": "OL", "OC": "OL", "OL": "OL", "C": "OL",
+    "WDE": "DL", "SDE": "DL", "DT": "DL", "DE": "DL", "DL": "DL", "NT": "DL", "EDGE": "DL",
+    "OLB": "LB", "ILB": "LB", "MLB": "LB", "LB": "LB",
+    "CB": "DB", "S": "DB", "DB": "DB", "FS": "DB", "SS": "DB", "ATH": "ATH",
+}
+_DRAFT_POS_GROUP = {
+    "QB": "QB", "RB": "RB", "FB": "RB", "WR": "WR", "TE": "TE",
+    "OT": "OL", "OG": "OL", "C": "OL", "OL": "OL", "G": "OL", "T": "OL", "LS": "OL",
+    "DE": "DL", "DT": "DL", "DL": "DL", "NT": "DL", "EDGE": "DL",
+    "LB": "LB", "ILB": "LB", "OLB": "LB", "MLB": "LB",
+    "CB": "DB", "S": "DB", "DB": "DB", "FS": "DB", "SS": "DB",
+}
+
+
+def load_recruiting():
+    """A/B. norm_name -> recruiting entries (class year, school, stars, …)."""
+    idx = defaultdict(list)
+    for y in RECRUIT_YEARS:
+        for r in _cfbd_get("/recruiting/players", {"year": y}):
+            nm = norm_name(r.get("name"))
+            if not nm:
+                continue
+            idx[nm].append({
+                "year": int(r["year"]),
+                "committed": _normalize_team(r.get("committedTo") or ""),
+                "pos_group": _REC_POS_GROUP.get((r.get("position") or "").upper(), "OTHER"),
+                "hs": (r.get("recruitType") == "HighSchool"),
+                "stars": _num(r.get("stars")),
+                "rating": _num(r.get("rating")),
+                "ranking": _num(r.get("ranking")),
+            })
+    return idx
+
+
+def match_recruit(idx, name, college, pos, draft_year):
+    """Returns (record, match_type) or (None, 'none')."""
+    cands = [c for c in idx.get(norm_name(name), [])
+             if draft_year - 7 <= c["year"] <= draft_year - 3]
+    if not cands:
+        return None, "none"
+    school = _normalize_team(clean_school(college))
+    by_school = [c for c in cands if _team_compatible(c["committed"], school)]
+    if by_school:
+        pick = sorted(by_school, key=lambda c: (not c["hs"], -(c["rating"] or 0)))[0]
+        return pick, "school"
+    grp = _DRAFT_POS_GROUP.get((pos or "").upper())
+    by_pos = [c for c in cands if grp and (c["pos_group"] == grp or c["pos_group"] == "ATH")]
+    if by_pos:
+        pick = sorted(by_pos, key=lambda c: (not c["hs"], -(c["rating"] or 0)))[0]
+        return pick, "pos"
+    return None, "none"
+
+
+# C. per-season CFBD stat index
+_STAT_KEY = {
+    ("passing", "YDS"): "pass_yds", ("passing", "TD"): "pass_td",
+    ("passing", "INT"): "pass_int", ("passing", "ATT"): "pass_att",
+    ("rushing", "YDS"): "rush_yds", ("rushing", "TD"): "rush_td",
+    ("rushing", "CAR"): "rush_car",
+    ("receiving", "REC"): "rec", ("receiving", "YDS"): "rec_yds",
+    ("receiving", "TD"): "rec_td",
+    ("defensive", "TOT"): "tackles", ("defensive", "TFL"): "tfl",
+    ("defensive", "SACKS"): "sacks", ("defensive", "PD"): "pd",
+    ("interceptions", "INT"): "def_int",
+}
+
+
+def load_stats(seasons=STAT_SEASONS):
+    """Returns (by_name, by_pid).
+    by_name: norm_name -> list of (season, pid, norm_team) ;
+    by_pid:  pid -> {season: stats dict}."""
+    by_name = defaultdict(list)
+    by_pid = defaultdict(dict)
+    for y in seasons:
+        recs = _cfbd_get("/stats/player/season", {"year": y})
+        seen = {}
+        for r in recs:
+            key = _STAT_KEY.get((r["category"], r["statType"]))
+            if key is None:
+                continue
+            pid = r["playerId"]
+            if pid not in seen:
+                seen[pid] = (norm_name(r["player"]), _normalize_team(r["team"]))
+            v = _num(r["stat"])
+            if np.isfinite(v):
+                d = by_pid[pid].setdefault(y, {})
+                d[key] = d.get(key, 0.0) + v
+        for pid, (nm, tm) in seen.items():
+            if y in by_pid.get(pid, {}):
+                by_name[nm].append((y, pid, tm))
+    return by_name, by_pid
+
+
+def stats_for(by_name, by_pid, name, college, draft_year):
+    """Final-season (D-1, fallback D-2) + career sums for a prospect.
+    Team must be compatible with the draft-file school when both known."""
+    nm = norm_name(name)
+    school = _normalize_team(clean_school(college))
+    cands = by_name.get(nm, [])
+    pid = None
+    fs = None
+    for season in (draft_year - 1, draft_year - 2):
+        hits = [(p, t) for (s, p, t) in cands if s == season
+                and (not school or _team_compatible(t, school))]
+        if hits:
+            pid = hits[0][0]
+            fs = by_pid[pid].get(season)
+            break
+    if pid is None:
+        # any earlier season with a team match still identifies the player
+        earlier = [(s, p) for (s, p, t) in cands
+                   if s <= draft_year - 1 and school and _team_compatible(t, school)]
+        if earlier:
+            pid = max(earlier)[1]
+    out = {}
+    for k in FS_STATS:
+        out["fs_" + k] = fs.get(k, 0.0) if fs else np.nan
+    car_seasons = 0
+    car = defaultdict(float)
+    if pid is not None:
+        for s, d in by_pid[pid].items():
+            if s <= draft_year - 1:
+                car_seasons += 1
+                for k, v in d.items():
+                    car[k] += v
+    for k in FS_STATS:
+        out["car_" + k] = car.get(k, 0.0) if car_seasons else np.nan
+    out["car_seasons"] = car_seasons if car_seasons else np.nan
+    return out
+
+
+def load_sp():
+    """D. (season, norm_team) -> SP+ rating."""
+    sp = {}
+    for y in SP_YEARS:
+        for r in _cfbd_get("/ratings/sp", {"year": y}):
+            if r.get("team") and r.get("rating") is not None:
+                sp[(y, _normalize_team(r["team"]))] = float(r["rating"])
+    return sp
+
+
+def sp_for(sp, college, draft_year, _cache={}):
+    school = _normalize_team(clean_school(college))
+    if not school:
+        return np.nan
+    for y in (draft_year - 1, draft_year - 2):
+        if (y, school) in sp:
+            return sp[(y, school)]
+        ck = (y, school)
+        if ck not in _cache:
+            hit = np.nan
+            for (yy, t), v in sp.items():
+                if yy == y and _team_compatible(t, school):
+                    hit = v
+                    break
+            _cache[ck] = hit
+        if np.isfinite(_cache[ck]):
+            return _cache[ck]
+    return np.nan
+
+
+# ---------------------------------------------------------------------------
 # College production from cfbfastR play-level data (2014+ seasons only)
 # ---------------------------------------------------------------------------
 
@@ -460,6 +716,18 @@ def draft_grade_for(rnd: int) -> int:
 # Main build
 # ---------------------------------------------------------------------------
 
+BASE_COLS = [
+    "name", "draft_year", "position", "college", "conference_tier",
+    "combine_forty", "combine_speed_score", "games_college",
+    "production_score", "draft_round", "draft_grade", "nfl_success",
+    "experience_years", "pro_bowls", "seasons_started", "career_av",
+]
+NEW_COLS = (["rec_stars", "rec_rating", "rec_ranking", "rec_year",
+             "years_in_college", "early_declare", "rec_match_type", "sp_rating"]
+            + ["fs_" + k for k in FS_STATS] + ["car_" + k for k in FS_STATS]
+            + ["car_seasons"])
+
+
 def main() -> None:
     print("Fetching nflverse data…")
     draft = pd.read_csv(fetch(DRAFT_URL, "draft_picks.csv"))
@@ -481,12 +749,34 @@ def main() -> None:
 
     print("Fetching cfbfastR play-level stats (2014+; earlier seasons not published)…")
     cfb_by_season: Dict[int, Dict[str, dict]] = {}
-    for season in range(CFB_FIRST_SEASON, LAST_CLASS):  # 2014..2019 final seasons
+    for season in range(CFB_FIRST_SEASON, LAST_CLASS):  # 2014..2025 final seasons
         try:
             cfb_by_season[season] = load_cfb_season(season)
             print(f"  {season}: {len(cfb_by_season[season])} players with offense events")
         except Exception as exc:  # noqa: BLE001 — source outage must not kill the build
             print(f"  WARNING: could not load {season} ({exc}); production blank for that season")
+
+    print("Loading CFBD recruiting / season stats / SP+ (cached under /tmp)…")
+    rec_idx = load_recruiting()
+    st_by_name, st_by_pid = load_stats()
+    sp = load_sp()
+    print(f"  recruiting names: {len(rec_idx)}; stat names: {len(st_by_name)}; "
+          f"sp entries: {len(sp)}")
+
+    def cfbd_cols(name, college, pos, year):
+        rec, mtype = match_recruit(rec_idx, name, college, pos, year)
+        out = {
+            "rec_stars": rec["stars"] if rec else np.nan,
+            "rec_rating": rec["rating"] if rec else np.nan,
+            "rec_ranking": rec["ranking"] if rec else np.nan,
+            "rec_year": rec["year"] if rec else np.nan,
+            "years_in_college": (year - rec["year"]) if rec else np.nan,
+            "early_declare": (1.0 if year - rec["year"] <= 3 else 0.0) if rec else np.nan,
+            "rec_match_type": mtype,
+            "sp_rating": sp_for(sp, college, year),
+        }
+        out.update(stats_for(st_by_name, st_by_pid, name, college, year))
+        return out
 
     rows = []
     drafted_pfr_ids = set(draft["pfr_player_id"].dropna())
@@ -542,6 +832,8 @@ def main() -> None:
             "pro_bowls": probowls,
             "seasons_started": sstart,
             "career_av": av,
+            **measurables_from_combine_row(crow),
+            **cfbd_cols(name, college, pos, year),
         })
 
     print("Building undrafted combine-invitee rows…")
@@ -586,14 +878,50 @@ def main() -> None:
             "pro_bowls": 0,
             "seasons_started": 0,
             "career_av": 0.0,
+            **measurables_from_combine_row(r),
+            **cfbd_cols(name, school, pos, year),
         })
 
-    df = pd.DataFrame(rows, columns=[
-        "name", "draft_year", "position", "college", "conference_tier",
-        "combine_forty", "combine_speed_score", "games_college",
-        "production_score", "draft_round", "draft_grade", "nfl_success",
-        "experience_years", "pro_bowls", "seasons_started", "career_av",
-    ])
+    df = pd.DataFrame(rows, columns=BASE_COLS + MEASURABLE_COLS + NEW_COLS)
+
+    # ── Leakage guard 1: base 2010-2020 slice must equal the previous CSV ────
+    # (join/label logic is untouched; only columns and year range grew). Checked
+    # BEFORE overwriting so a logic regression can never silently ship.
+    if os.path.exists(OUT_PATH):
+        prev = pd.read_csv(OUT_PATH)
+        prev_slice = prev[(prev.draft_year >= 2010) & (prev.draft_year <= 2020)]
+        prev_slice = prev_slice[BASE_COLS].reset_index(drop=True)
+        new_slice = df[(df.draft_year >= 2010) & (df.draft_year <= 2020)]
+        new_slice = new_slice[BASE_COLS].reset_index(drop=True)
+        # Compare through the same CSV round-trip the previous file went through
+        import io
+        buf = io.StringIO()
+        new_slice.to_csv(buf, index=False)
+        buf.seek(0)
+        new_rt = pd.read_csv(buf)
+        same = len(prev_slice) == len(new_rt) and new_rt.fillna("__NA__").astype(str).equals(
+            prev_slice.fillna("__NA__").astype(str))
+        assert same, ("2010-2020 base-column slice differs from the existing "
+                      f"{OUT_PATH} — join/label logic drifted; refusing to overwrite")
+        print("Leakage guard 1 OK: 2010-2020 base-column slice identical to previous CSV "
+              f"({len(prev_slice)} rows)")
+
+    # ── Leakage guard 2: drafted-vs-UDFA missingness balance (v2 `age` trap) ──
+    m = df[df.draft_year >= 2010]
+    dd, uu = m[m.draft_round <= 7], m[m.draft_round == 8]
+    print("Missingness balance (2010+, non-NaN %, drafted vs UDFA):")
+    for c in ["rec_stars", "rec_rating", "rec_ranking", "years_in_college",
+              "early_declare", "sp_rating", "fs_pass_yds", "fs_tackles",
+              "car_pass_yds", "car_tackles", "car_seasons"]:
+        d = pd.to_numeric(dd[c], errors="coerce").notna().mean() * 100
+        u = pd.to_numeric(uu[c], errors="coerce").notna().mean() * 100
+        ratio = (d / u) if u else float("inf")
+        print(f"  {c:20s} drafted {d:5.1f}%  udfa {u:5.1f}%  ratio {ratio:5.2f}")
+        assert not (max(d, u) > 20 and (ratio > 2.0 or ratio < 0.5)), (
+            f"{c}: drafted/UDFA missingness ratio {ratio:.2f} — this feature's "
+            "missingness would encode the label (the v2 `age` trap); aborting")
+    print("Leakage guard 2 OK: no feature's missingness separates drafted from UDFA")
+
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     df.to_csv(OUT_PATH, index=False)
 
@@ -604,7 +932,8 @@ def main() -> None:
     print(f"\nWrote {OUT_PATH}")
     print(f"Total rows: {n}  (drafted {drafted}, undrafted {undrafted})")
     print(f"nfl_success overall: {int(df.nfl_success.sum())} / {n} "
-          f"({df.nfl_success.mean() * 100:.1f}%)")
+          f"({df.nfl_success.mean() * 100:.1f}%) — labels only maturity-safe "
+          f"through the {SUCCESS_LABEL_MATURE_THROUGH} class")
     for grade, label in ((0, "R1-2"), (1, "R3-4"), (2, "R5-7"), (3, "UDFA")):
         sub = df[df.draft_grade == grade]
         print(f"  {label}: {int(sub.nfl_success.sum())}/{len(sub)} success "
@@ -616,6 +945,8 @@ def main() -> None:
           f"{prod_matched}/{prod_eligible} matched "
           f"({(prod_matched / prod_eligible * 100) if prod_eligible else 0:.1f}%)")
     print(f"combine_forty coverage: {forty_cov}/{n} ({forty_cov / n * 100:.1f}%)")
+    print("Recruit match type share (2010+):",
+          m.rec_match_type.value_counts(normalize=True).round(3).to_dict())
     print("Rows per draft year:")
     for year, cnt in df.draft_year.value_counts().sort_index().items():
         print(f"  {year}: {cnt}")

@@ -37,13 +37,34 @@ _BASE_FEATURES = [
     "position_db", "position_lb", "position_dl", "position_ol", "position_other",
 ]
 
+# ── v3 feature blocks (promoted from scripts/experiments/harness_v3.py — the
+# "+A+B+C+D | flat | hist" winner: 0.5102 holdout grade accuracy vs the 0.4093
+# base13 production baseline). Names/transforms are kept IDENTICAL to the
+# harness so the measured accuracy transfers.
+#   measurable *_z  — combine measurables, z-scored per position group
+#                     (group = _production_group) with FROZEN reference stats
+#   rec_*           — CFBD recruiting pedigree (stars / rating / national rank)
+#   years_in_college, early_declare — non-leaky age proxy (draft class − recruit class)
+#   prod_fs_z / prod_car_z — final-season / career all-position production
+#                     composites, z-scored per composite group (_composite_group)
+#   car_seasons     — count of college seasons with recorded stats
+#   sp_rating       — SP+ team rating of the (final) college season
+MEASURABLE_COLS = ["height_in", "weight_lb", "vertical", "bench", "broad_in", "cone", "shuttle"]
+MEASURABLE_Z_FEATURES = [c + "_z" for c in MEASURABLE_COLS]
+RECRUITING_FEATURES = ["rec_stars", "rec_rating", "rec_ranking"]
+AGE_FEATURES = ["years_in_college", "early_declare"]
+PRODUCTION_V3_FEATURES = ["prod_fs_z", "prod_car_z", "car_seasons"]
+SP_FEATURES = ["sp_rating"]
+V3_FEATURES = (MEASURABLE_Z_FEATURES + RECRUITING_FEATURES + AGE_FEATURES
+               + PRODUCTION_V3_FEATURES + SP_FEATURES)
+
 # Draft-grade model: predict which bracket a player will be drafted in
 # Output classes: 0=Top50(R1-2), 1=Day2(R3-4), 2=LateRound(R5-7), 3=Undrafted
-DRAFT_GRADE_FEATURES = _BASE_FEATURES
+DRAFT_GRADE_FEATURES = _BASE_FEATURES + V3_FEATURES
 
 # Success model: predict NFL career success from college profile ONLY
 # No draft_round — that's what we're trying to predict
-SUCCESS_FEATURES = _BASE_FEATURES
+SUCCESS_FEATURES = _BASE_FEATURES + V3_FEATURES
 
 DRAFT_GRADE_LABELS = ["Top 50 Pick", "Day 2 Pick", "Late Round Pick", "Undrafted Prospect"]
 
@@ -119,6 +140,107 @@ def _raw_production_to_percentile(group: str, raw: float) -> Optional[float]:
     hi = int(np.searchsorted(arr, raw, side="right"))
     pct = (lo + hi) / 2.0 / arr.size * 100.0
     return float(min(100.0, max(0.0, pct)))
+
+
+# ── v3 production composites (identical to harness_v3.add_composites) ─────────
+# Composite z-group: coarser than the draft-position spellings; ATH/OTHER and
+# OL carry no counting-stat composite (NaN).
+_COMPOSITE_GROUP_BY_POS = {
+    "QB": "QB", "RB": "RB", "FB": "RB", "WR": "WR", "TE": "TE",
+    "OT": "OL", "OG": "OL", "C": "OL", "OL": "OL", "G": "OL", "LS": "OL",
+    "DE": "DL", "DT": "DL", "DL": "DL", "NT": "DL", "EDGE": "DL",
+    "LB": "LB", "ILB": "LB", "OLB": "LB", "MLB": "LB",
+    "CB": "DB", "S": "DB", "DB": "DB", "FS": "DB", "SS": "DB",
+}
+
+# CFBD season-stat coverage floors (harness_v3): offensive season stats are
+# thin before the 2009 season, the defensive category only exists 2016+.
+# Applied by DRAFT CLASS in training; every current serving season is above both.
+OFF_FLOOR_CLASS = 2010
+DEF_FLOOR_CLASS = 2017
+
+
+def _composite_group(position: str) -> str:
+    return _COMPOSITE_GROUP_BY_POS.get((position or "").strip().upper(), "OTHER")
+
+
+def production_composite(group: str, stats: Dict[str, float]) -> float:
+    """Raw fs/car production composite for one player-season (or career sums).
+
+    `stats` keys: pass_yds, pass_td, pass_int, rush_yds, rush_td, rec, rec_yds,
+    rec_td, tackles, tfl, sacks, pd, def_int. Missing/NaN inputs propagate to
+    NaN (a missing season must stay missing, never become a fake 0). Formulas
+    are byte-identical to scripts/experiments/harness_v3.add_composites.
+    """
+    def g(k: str) -> float:
+        v = stats.get(k)
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return float("nan")
+
+    if group == "QB":
+        return (g("pass_yds") + 20 * g("pass_td") - 45 * g("pass_int")
+                + 0.5 * g("rush_yds") + 10 * g("rush_td"))
+    if group == "RB":
+        return g("rush_yds") + 20 * g("rush_td") + g("rec_yds") + 20 * g("rec_td")
+    if group in ("WR", "TE"):
+        return g("rec_yds") + 20 * g("rec_td") + 0.5 * g("rush_yds")
+    if group in ("DL", "LB", "DB"):
+        return (g("tackles") + 3 * g("tfl") + 8 * g("sacks")
+                + 4 * g("pd") + 10 * g("def_int"))
+    return float("nan")  # OL / OTHER — no counting-stat composite
+
+
+# ── Frozen z-score reference stats (written by scripts/train_models.py) ───────
+# Serving MUST standardize with the same mean/std the production models were
+# trained with, so the stats are persisted at final-fit time and loaded here.
+# Schema: {"reference_years": [...],
+#          "measurables": {pos_group: {col: {"mean": m, "std": s}}},
+#          "composites":  {comp_group: {"fs"/"car": {"mean": m, "std": s}}}}
+FEATURE_STATS_PATH = os.path.join(_REPO_ROOT, "models", "feature_stats.json")
+
+
+def _load_feature_stats() -> Dict:
+    try:
+        with open(FEATURE_STATS_PATH) as fh:
+            return json.load(fh)
+    except Exception as exc:
+        print(f"Feature z-score stats unavailable ({exc}) — z features will be NaN")
+        return {}
+
+
+_FEATURE_STATS = _load_feature_stats()
+
+
+def reload_feature_stats() -> None:
+    """Re-read models/feature_stats.json (after a retrain, without restart)."""
+    global _FEATURE_STATS
+    _FEATURE_STATS = _load_feature_stats()
+
+
+def _z_from(table: Optional[Dict], value: float) -> float:
+    if table is None:
+        return float("nan")
+    try:
+        v = float(value)
+        mu = float(table["mean"])
+        sd = float(table["std"])
+    except (TypeError, ValueError, KeyError):
+        return float("nan")
+    if not (np.isfinite(v) and np.isfinite(mu) and np.isfinite(sd)) or sd == 0:
+        return float("nan")
+    return (v - mu) / sd
+
+
+def measurable_z(pos_group: str, col: str, value: float) -> float:
+    """Frozen z-score of a raw combine measurable within its position group."""
+    return _z_from(((_FEATURE_STATS.get("measurables") or {}).get(pos_group) or {}).get(col), value)
+
+
+def composite_z(comp_group: str, prefix: str, value: float) -> float:
+    """Frozen z-score of a raw fs/car production composite within its group."""
+    return _z_from(((_FEATURE_STATS.get("composites") or {}).get(comp_group) or {}).get(prefix), value)
 
 
 # ── Real historical players — hand-curated ground truth seed rows ─────────────

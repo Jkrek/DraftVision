@@ -31,7 +31,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 
 from dv_features import (
-    SUCCESS_FEATURES,
+    _BASE_FEATURES,  # base-13 pinned: SUCCESS_FEATURES now includes the promoted v3 blocks
     SEED_TRAINING_PLAYERS,
     position_flags,
     _production_group,
@@ -305,7 +305,7 @@ def main() -> int:
     for m in MEASURABLES:
         seeds[m + "_z"] = float("nan")
 
-    base = list(SUCCESS_FEATURES)
+    base = list(_BASE_FEATURES)
     raw_meas = base + MEASURABLES
     norm_meas = base + [m + "_z" for m in MEASURABLES]
     raw_meas_age = raw_meas + ["age"]

@@ -406,7 +406,12 @@ def main():
 
     print("Fetching FBS teams from ESPN…")
     teams = fetch_teams(args.max_teams)
-    print(f"Found {len(teams)} teams\n")
+    # Local pre-filter: ESPN's list interleaves every division; grading a
+    # sub-FBS roster costs ~90 pointless /predict round-trips per team.
+    from dv_tiers import classify_college_tier
+    before = len(teams)
+    teams = [t for t in teams if classify_college_tier(t["name"]) <= MAX_CONFERENCE_TIER]
+    print(f"Found {before} teams; {len(teams)} classify as FBS (tier ≤ {MAX_CONFERENCE_TIER})\n")
 
     all_prospects = []
     seen_names    = set()

@@ -16,6 +16,7 @@ import sqlite3
 import time
 import hashlib
 import threading
+import unicodedata
 from typing import Dict, Optional, Tuple
 
 import joblib
@@ -33,9 +34,13 @@ from dv_features import (
     DRAFT_GRADE_FEATURES,
     SUCCESS_FEATURES,
     DRAFT_GRADE_LABELS,
+    MEASURABLE_COLS,
     position_flags,
     _production_group,
+    _composite_group,
     _raw_production_to_percentile,
+    measurable_z,
+    composite_z,
 )
 from dv_heuristics import (  # noqa: F401 — rule-based fallback + baseline source of truth
     success_prob_from_college_profile,
@@ -63,6 +68,7 @@ TRAINING_DATA_PATH         = "training_data/combine_outcomes.csv"
 PROSPECT_CACHE_PATH        = "training_data/prospect_cache.json"
 MOCK_DRAFT_PATH            = "mock_draft.json"
 HS_PROSPECT_CACHE_PATH     = "training_data/hs_prospect_cache.json"
+ENRICHMENT_PATH            = "training_data/enrichment.json"    # scripts/build_enrichment.py
 BOARD_MOVERS_PATH          = "training_data/board_movers.json"
 BIG_BOARDS_PATH            = "training_data/big_boards.json"     # hand-ordered per-class boards
 CFBD_API_KEY               = os.environ.get("CFBD_API_KEY", "")
@@ -93,106 +99,11 @@ POWER5_SCHOOLS = {
     "oregon state", "washington state", "cal poly",
 }
 
-# NFL franchise full names — a record stored with one of these teams is an
-# active pro, not a college program. Matched exactly, never by substring:
-# mascot keywords ("Bears", "Cardinals") collide with Baylor, Louisville,
-# Brown, Columbia and dozens of other college programs.
-NFL_FRANCHISE_NAMES = {
-    "arizona cardinals", "atlanta falcons", "baltimore ravens", "buffalo bills",
-    "carolina panthers", "chicago bears", "cincinnati bengals", "cleveland browns",
-    "dallas cowboys", "denver broncos", "detroit lions", "green bay packers",
-    "houston texans", "indianapolis colts", "jacksonville jaguars",
-    "kansas city chiefs", "las vegas raiders", "los angeles chargers",
-    "los angeles rams", "miami dolphins", "minnesota vikings",
-    "new england patriots", "new orleans saints", "new york giants",
-    "new york jets", "philadelphia eagles", "pittsburgh steelers",
-    "san francisco 49ers", "seattle seahawks", "tampa bay buccaneers",
-    "tennessee titans", "washington commanders",
-}
-
-
-def _normalize_team(team: str) -> str:
-    t = (team or "").lower().strip()
-    for ch in ("’", "'", "."):
-        t = t.replace(ch, "")
-    return t.replace("é", "e")  # San José State
-
-
-def is_nfl_franchise(team: str) -> bool:
-    return _normalize_team(team) in NFL_FRANCHISE_NAMES
-
-
-# School → tier, matched against ESPN display names ("Michigan State Spartans")
-# by longest prefix on a word boundary, so "michigan state" wins over "michigan"
-# and mascots never participate in matching.
-_TIER_SCHOOLS = {
-    1: {"alabama", "ohio state", "georgia", "clemson", "lsu", "michigan"},
-    2: {"texas", "oklahoma", "florida", "penn state", "notre dame", "florida state",
-        "tennessee", "texas a&m", "usc", "oregon", "miami", "auburn", "washington"},
-    3: {"north carolina", "virginia tech", "pittsburgh", "wisconsin", "iowa",
-        "michigan state", "nebraska", "oklahoma state", "baylor", "tcu", "arkansas",
-        "ole miss", "mississippi state", "south carolina", "stanford", "utah",
-        "arizona state", "colorado", "georgia tech"},
-    4: {"west virginia", "kansas state", "iowa state", "texas tech", "kentucky",
-        "vanderbilt", "missouri", "arizona", "cal", "california", "oregon state",
-        "washington state", "indiana", "purdue", "illinois", "minnesota",
-        "maryland", "rutgers", "louisville", "virginia", "nc state", "duke",
-        "wake forest", "syracuse", "boston college", "cincinnati", "ucf"},
-    5: {"ucla", "northwestern", "navy", "army", "air force", "liberty", "byu",
-        "western kentucky", "louisiana tech"},
-    6: {"memphis", "houston", "smu", "tulane", "east carolina", "south florida",
-        "temple", "connecticut", "uconn", "tulsa", "rice", "utep", "uab"},
-    7: {"boise state", "fresno state", "hawaii", "san diego state", "wyoming",
-        "utah state", "nevada", "colorado state", "new mexico", "san jose state"},
-    8: {"appalachian state", "app state", "coastal carolina", "marshall", "utsa",
-        "troy", "louisiana", "james madison", "buffalo", "kent state", "ohio",
-        "miami (oh)", "western michigan", "central michigan", "eastern michigan",
-        "northern illinois", "ball state", "toledo",
-        # FBS programs previously absent from the tables entirely — they fell
-        # to tier 10 and were silently excluded from the board
-        "north texas", "old dominion", "charlotte", "middle tennessee",
-        "southern miss", "south alabama", "akron", "bowling green", "umass",
-        "jacksonville state", "sam houston", "kennesaw state", "missouri state",
-        "arkansas state", "georgia southern", "georgia state", "texas state",
-        "florida atlantic", "fiu", "florida international", "unlv", "delaware"},
-    9: {"north dakota state", "montana", "south dakota state", "furman",
-        "villanova", "richmond", "sacramento state",
-        "central arkansas", "cal poly"},
-    # Prefix-collision guards: sub-FBS schools whose names START WITH a power
-    # school's name inherit its tier without these ("north carolina a&t" ->
-    # "north carolina" tier 3, "georgia southern" -> "georgia" tier 1).
-    # Longest-key-first matching makes these explicit entries win; tier 10
-    # keeps them off the FBS board.
-    10: {"north carolina a&t", "north carolina central", "south carolina state",
-         "texas southern", "texas a&m commerce", "texas a&m kingsville",
-         "florida a&m", "alabama a&m", "alabama state", "houston christian",
-         "tennessee state", "tennessee tech", "tennessee martin",
-         "illinois state", "indiana state", "virginia state", "virginia union",
-         "arkansas pine bluff", "utah tech", "minnesota state",
-         "mississippi valley state", "delaware state"},
-}
-
-_SCHOOL_TIERS: Dict[str, int] = {
-    school: tier for tier, schools in _TIER_SCHOOLS.items() for school in schools
-}
-_SCHOOL_KEYS = sorted(_SCHOOL_TIERS, key=len, reverse=True)
-
-
-def classify_college_tier(team: str) -> int:
-    """10-tier conference classification. 1=SEC/OSU elite, 10=FCS lower/unknown.
-
-    Exact NFL franchise names → tier 1 (an NFL record implies a major-program
-    background). School names match by longest word-boundary prefix.
-    """
-    t = _normalize_team(team)
-    if not t:
-        return 10
-    if t in NFL_FRANCHISE_NAMES:
-        return 1
-    for key in _SCHOOL_KEYS:
-        if t == key or t.startswith(key + " "):
-            return _SCHOOL_TIERS[key]
-    return 10
+# Tier classification lives in dv_tiers.py (shared with the cache builder).
+from dv_tiers import (  # noqa: F401
+    NFL_FRANCHISE_NAMES, _normalize_team, is_nfl_franchise,
+    _TIER_SCHOOLS, _SCHOOL_TIERS, _SCHOOL_KEYS, classify_college_tier,
+)
 
 
 def forty_to_speed_score(position: str, forty: float) -> float:
@@ -1354,6 +1265,13 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
             # Recompute production_score with updated real stats
             profile["production_score"] = round(compute_production_score(
                 profile["position"], profile), 1)
+            # Speed-score guard (same rule as _neutralize_fabricated): the base
+            # profile inherits a HASH-FABRICATED combine_speed_score from
+            # generate_estimated_profile. Unless real combine data was merged
+            # above (physical_is_real / a real forty), the model must see NaN,
+            # not an invented number. Real production/games from ESPN stay.
+            if not (profile.get("physical_is_real") or profile.get("combine_forty")):
+                profile["combine_speed_score"] = float("nan")
             return profile, "espn_live"
 
         # No real ESPN stats — try combine measurables anyway
@@ -1409,16 +1327,116 @@ def _neutralize_fabricated(profile: Dict[str, object]) -> Dict[str, object]:
 # position_flags and the position-group sets now live in dv_features.py.
 
 
+# ── CFBD enrichment for current players (training_data/enrichment.json) ──────
+# Built by scripts/build_enrichment.py; maps "Name|Team" → recruiting pedigree,
+# recruit_year (for the years-in-college proxy), SP+ and raw CFBD production
+# composites. Hot-reloaded by file mtime like the prospect cache, so an
+# enrichment rebuild is picked up without restarting workers.
+
+_ENRICHMENT_INDEX: Dict[str, list] = {}   # norm name -> [(norm team, entry), ...]
+_ENRICHMENT_MTIME: float = 0.0
+_enrichment_lock = threading.Lock()
+
+_NAME_SUFFIXES = {"jr", "sr", "ii", "iii", "iv", "v"}
+
+
+def _enrich_norm_name(name: str) -> str:
+    """Lowercase, de-accent, strip punctuation + generational suffixes
+    (identical to scripts/build_training_data.norm_name)."""
+    n = unicodedata.normalize("NFKD", str(name or ""))
+    n = "".join(c for c in n if not unicodedata.combining(c)).lower()
+    for ch in ".'’,-":
+        n = n.replace(ch, " ")
+    return " ".join(w for w in n.split() if w not in _NAME_SUFFIXES)
+
+
+def _enrich_teams_compatible(a: str, b: str) -> bool:
+    if not a or not b:
+        return False
+    return (a == b or a.startswith(b + " ") or b.startswith(a + " ")
+            or a in b or b in a)
+
+
+def load_enrichment() -> None:
+    global _ENRICHMENT_INDEX, _ENRICHMENT_MTIME
+    try:
+        mtime = os.path.getmtime(ENRICHMENT_PATH)  # capture BEFORE reading
+        with open(ENRICHMENT_PATH) as fh:
+            players = json.load(fh).get("players", {}) or {}
+        index: Dict[str, list] = {}
+        for key, entry in players.items():
+            name, _, team = key.partition("|")
+            index.setdefault(_enrich_norm_name(name), []).append(
+                (_normalize_team(team), entry))
+        _ENRICHMENT_INDEX = index
+        _ENRICHMENT_MTIME = mtime
+        print(f"Enrichment loaded: {len(players)} players ({ENRICHMENT_PATH})")
+    except Exception as exc:
+        # mtime NOT updated on failure (e.g. file missing/mid-rewrite) → retried
+        print(f"Enrichment unavailable ({exc}) — new features degrade to NaN")
+
+
+def _maybe_reload_enrichment() -> None:
+    global _ENRICHMENT_MTIME
+    try:
+        mtime = os.path.getmtime(ENRICHMENT_PATH)
+    except OSError:
+        return
+    if mtime == _ENRICHMENT_MTIME:
+        return
+    with _enrichment_lock:
+        if mtime == _ENRICHMENT_MTIME:  # another thread already reloaded
+            return
+        load_enrichment()
+
+
+def enrichment_for(name: str, team: str) -> Optional[dict]:
+    """Entry for this player, or None. Team disambiguates same-named players;
+    a unique name match is accepted even when team spellings disagree."""
+    _maybe_reload_enrichment()
+    cands = _ENRICHMENT_INDEX.get(_enrich_norm_name(name))
+    if not cands:
+        return None
+    t = _normalize_team(team)
+    for ct, entry in cands:
+        if ct == t:
+            return entry
+    for ct, entry in cands:
+        if _enrich_teams_compatible(ct, t):
+            return entry
+    if len(cands) == 1:
+        return cands[0][1]
+    return None
+
+
+def _upcoming_draft_year(now_struct=None) -> int:
+    """The next NFL draft's class year (draft is late April: May+ → next year)."""
+    t = now_struct or time.gmtime()
+    return t.tm_year + 1 if t.tm_mon >= 5 else t.tm_year
+
+
 def build_success_features(player_stats: Dict[str, object]) -> pd.DataFrame:
-    """Build feature vector aligned with SUCCESS_FEATURES / _BASE_FEATURES.
+    """Build the SUCCESS_FEATURES vector (base 13 + the v3 feature blocks).
     No draft_round — that is an output, not an input.
 
     Missing values become NaN (XGBoost/CatBoost handle them natively) instead of
     fake defaults — an unknown 40 time is not a 50.0, an unknown season is not
     13 games. Explicit `is None` checks so legitimate zeros are never swallowed.
+
+    v3 blocks:
+    - measurable *_z: only REAL physical data (physical_is_real) is z-scored,
+      with the FROZEN training stats in models/feature_stats.json; estimated
+      heights/weights and ESPN zero-placeholders stay NaN.
+    - recruiting / age proxy / production composites / SP+: merged from
+      training_data/enrichment.json by name+team. years_in_college is anchored
+      to the next draft the player is eligible for (recruit class + 3), NaN for
+      players not yet draft-eligible — mirroring the training match window.
+    Players absent from the enrichment file (or any missing piece) degrade
+    gracefully: the column is NaN, exactly how unmatched training rows look.
     """
     position = str(player_stats.get("position", "Unknown"))
     team     = str(player_stats.get("team", "") or "")
+    name     = str(player_stats.get("name", "") or "")
     flags    = position_flags(position)
 
     def _value(key: str):
@@ -1429,6 +1447,14 @@ def build_success_features(player_stats: Dict[str, object]) -> pd.DataFrame:
         # Counting stats: absent means the category doesn't apply (0), not unknown.
         v = player_stats.get(key)
         return float(v) if v is not None else 0.0
+
+    def _pos_float(v) -> float:
+        # Enrichment/physical values: None/0 placeholders → NaN.
+        try:
+            f = float(v)
+        except (TypeError, ValueError):
+            return float("nan")
+        return f if math.isfinite(f) and f > 0 else float("nan")
 
     games_played = _value("games_played")
 
@@ -1467,6 +1493,48 @@ def build_success_features(player_stats: Dict[str, object]) -> pd.DataFrame:
         "conference_tier":     conference_tier,
         **flags,
     }
+
+    # ── Measurable z-scores (real physical data only, frozen training stats) ──
+    pos_group = _production_group(position)
+    raw_meas = {c: float("nan") for c in MEASURABLE_COLS}
+    if player_stats.get("physical_is_real"):
+        raw_meas["height_in"] = _pos_float(player_stats.get("height_inches"))
+        raw_meas["weight_lb"] = _pos_float(player_stats.get("weight_lbs"))
+        raw_meas["vertical"]  = _pos_float(player_stats.get("combine_vertical"))
+        raw_meas["bench"]     = _pos_float(player_stats.get("combine_bench"))
+        raw_meas["broad_in"]  = _pos_float(player_stats.get("combine_broad"))
+        raw_meas["cone"]      = _pos_float(player_stats.get("combine_3cone"))
+        raw_meas["shuttle"]   = _pos_float(player_stats.get("combine_shuttle"))
+    for c in MEASURABLE_COLS:
+        row[c + "_z"] = measurable_z(pos_group, c, raw_meas[c])
+
+    # ── CFBD enrichment (recruiting / age proxy / production / SP+) ──────────
+    e = enrichment_for(name, team) or {}
+    row["rec_stars"]   = _pos_float(e.get("stars"))
+    row["rec_rating"]  = _pos_float(e.get("rating"))
+    row["rec_ranking"] = _pos_float(e.get("national_rank"))
+
+    years_in_college = float("nan")
+    early_declare = float("nan")
+    ry = e.get("recruit_year")
+    if ry:
+        dy = _upcoming_draft_year()
+        if dy - int(ry) >= 3:  # draft-eligible: same 3+ year floor as training
+            years_in_college = float(min(dy - int(ry), 7))
+            early_declare = 1.0 if years_in_college <= 3 else 0.0
+    row["years_in_college"] = years_in_college
+    row["early_declare"]    = early_declare
+
+    comp_group = _composite_group(position)
+    row["prod_fs_z"]  = composite_z(comp_group, "fs", e.get("prod_fs_raw"))
+    row["prod_car_z"] = composite_z(comp_group, "car", e.get("prod_car_raw"))
+    row["car_seasons"] = _pos_float(e.get("car_seasons"))
+    sp = e.get("sp_plus")  # SP+ is a real-valued rating — negative is meaningful
+    try:
+        row["sp_rating"] = float(sp) if sp is not None and math.isfinite(float(sp)) else float("nan")
+    except (TypeError, ValueError):
+        row["sp_rating"] = float("nan")
+
     return pd.DataFrame([row], columns=SUCCESS_FEATURES)
 
 
@@ -1726,6 +1794,23 @@ FEATURE_DISPLAY_NAMES = {
     "position_dl":          "Position: DL",
     "position_ol":          "Position: OL",
     "position_other":       "Position: Other",
+    # v3 feature blocks
+    "height_in_z":          "Height (vs position)",
+    "weight_lb_z":          "Weight (vs position)",
+    "vertical_z":           "Vertical Jump (vs position)",
+    "bench_z":              "Bench Press (vs position)",
+    "broad_in_z":           "Broad Jump (vs position)",
+    "cone_z":               "3-Cone Drill (vs position)",
+    "shuttle_z":            "Shuttle Drill (vs position)",
+    "rec_stars":            "Recruiting Stars",
+    "rec_rating":           "Recruiting Rating",
+    "rec_ranking":          "Recruiting National Rank",
+    "years_in_college":     "Years in College",
+    "early_declare":        "Early Declare",
+    "prod_fs_z":            "Final-Season Production (all positions)",
+    "prod_car_z":           "Career Production (all positions)",
+    "car_seasons":          "College Seasons Played",
+    "sp_rating":            "Team SP+ Rating",
 }
 
 
@@ -3277,6 +3362,7 @@ load_position_model_artifacts()
 load_success_models()
 load_draft_grade_models()
 load_prospect_cache()
+load_enrichment()
 load_board_movers()
 load_mock_draft()
 load_hs_prospect_cache()

@@ -30,7 +30,7 @@ import pandas as pd
 
 import harness as h  # v2 harness: models, metrics, seeds, calibration
 from dv_features import (
-    SUCCESS_FEATURES,
+    _BASE_FEATURES,  # base-13 pinned: SUCCESS_FEATURES now includes the promoted v3 blocks
     position_flags,
     _production_group,
     _raw_production_to_percentile,
@@ -237,7 +237,7 @@ def main() -> int:
 
     missingness_report(df_frozen)
 
-    base = list(SUCCESS_FEATURES)
+    base = list(_BASE_FEATURES)
     v2w = base + [m + "_z" for m in MEASURABLES]          # v2 winner features
     fs = {
         "v2winner":        v2w,
