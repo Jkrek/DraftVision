@@ -133,3 +133,16 @@ Opponent-adjusted per-player efficiency + usage share, from the API key we alrea
 - Sports-Reference policy: https://www.sports-reference.com/bot-traffic.html · https://www.sports-reference.com/data_use.html
 - Big Data Bowl: https://operations.nfl.com/programs-initiatives/innovation/big-data-bowl · https://www.kaggle.com/competitions/nfl-big-data-bowl-2026-prediction
 - On3 RPM: https://www.on3.com/news/on3-releases-recruiting-prediction-machine-rpm/
+
+---
+
+## Relationship to docs/RESEARCH_ROADMAP.md
+
+The owner's master research roadmap (RESEARCH_ROADMAP.md) is the long-term
+vision; this document is the verified near-term supply. Mapping: roadmap §2
+Recruiting + §4 Snap/Usage + §8 Opponent Quality are servable TODAY from the
+sources above (CFBD recruiting/usage/PPA, nflverse snap counts, SP+/SOS);
+§3 Transfer Portal is one verified CFBD endpoint away; §1 consensus/tracking
+and §9 pressure metrics map to the Top-3 recommendation; §5 Injuries, §6
+Coaching, §10 CV, §11 Environment, and §14 Character have no verified free
+bulk source yet and are original-data-collection projects, not integrations.
