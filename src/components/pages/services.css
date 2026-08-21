@@ -263,4 +263,9 @@
   .col-rank {
     flex-basis: 34px;
   }
+
+  /* Fitts: the load-more CTA goes full-width in the thumb zone */
+  .stars-more .btn {
+    width: 100%;
+  }
 }

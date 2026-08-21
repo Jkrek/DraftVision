@@ -369,4 +369,10 @@
   .hsp-col-year { display: none; }
   .hsp-col-stars { flex: 0 0 84px; }
   .hsp-col-rating { flex: 0 0 72px; font-size: 16px; }
+
+  /* Fitts: ~40px minimum hit areas for touch */
+  .hsp-seg-btn { padding: 11px 13px; min-height: 40px; }
+  .hsp-select { min-height: 42px; }
+  .hsp-clear { padding: 8px 10px; }
+  .hsp-more .btn { width: 100%; }
 }

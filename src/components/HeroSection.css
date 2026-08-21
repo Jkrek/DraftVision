@@ -205,7 +205,9 @@
   gap: 10px;
 }
 
-/* Outlined CTAs — shared with the CTA band in Cards.js. Never solid-filled. */
+/* Outlined CTAs — shared with the CTA band in Cards.js. Never solid-filled.
+   The non-ghost CTA is the screen's ONE primary action (Von Restorff):
+   accent border + tint + soft glow — still an outline, just the loud one. */
 .dv-cta {
   display: inline-block;
   padding: 13px 26px;
@@ -213,24 +215,39 @@
   border-radius: var(--radius-md);
   font-size: 14px;
   letter-spacing: 0.01em;
-  color: var(--color-accent-200);
-  background: transparent;
+  color: var(--color-accent-100);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent),
+    0 0 22px color-mix(in srgb, var(--color-accent) 20%, transparent);
   text-decoration: none;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 .dv-cta:hover {
-  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
-  color: var(--color-accent-200);
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  color: var(--color-accent-100);
 }
 .dv-cta-ghost {
   border-color: var(--color-neutral-800);
   color: var(--color-neutral-300);
+  background: transparent;
+  box-shadow: none;
 }
 .dv-cta-ghost:hover {
   background: transparent;
   border-color: var(--color-neutral-600);
   color: var(--color-neutral-300);
+}
+
+/* Fitts: full-width CTAs in the thumb zone on phones */
+@media (max-width: 640px) {
+  .hero-ctas .dv-cta,
+  .ctaband-ctas .dv-cta {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
 }
 
 /* — right column: live model card — */

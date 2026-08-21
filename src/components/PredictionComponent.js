@@ -1,12 +1,22 @@
 import React, {
   useCallback, useEffect, useRef, useState,
 } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { anonFetch } from '../lib/api';
 import './PredictionComponent.css';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const img = (file) => `${process.env.PUBLIC_URL}/images/CFB Content/${file}`;
+
+// "Name-Team" → player-page / compare slug (same encoding the boards use).
+const slugify = (name, team) =>
+  `${name || ''}-${team || ''}`
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+
+// One-tap starters for the empty state — recognizable names beat a blank box.
+const SUGGESTED_PLAYERS = ['Jeremiah Smith', 'Arch Manning', 'Julian Sayin'];
 
 // ── Main component ─────────────────────────────────────────────────────────
 export default function PredictionComponent() {
@@ -19,6 +29,7 @@ export default function PredictionComponent() {
   const [acOpen, setAcOpen]         = useState(false);
   const acRef                       = useRef(null);
   const acTimer                     = useRef(null);
+  const inputRef                    = useRef(null);
 
   // data
   const [allPlayers, setAllPlayers]         = useState([]);
@@ -144,6 +155,16 @@ export default function PredictionComponent() {
     }
   }, [location.search, runPrediction]);
 
+  // ── auto-focus the search box — this page's one job is search. Skipped
+  // when arriving via ?name= (auto-predict is already running) and on
+  // narrow viewports, where focus would pop the keyboard over the page. ──
+  useEffect(() => {
+    const name = new URLSearchParams(window.location.search).get('name');
+    if (!name && window.innerWidth >= 768 && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
   // ── render ────────────────────────────────────────────────────
   return (
     <main className="predict-page">
@@ -156,6 +177,7 @@ export default function PredictionComponent() {
             <input
               type="text"
               className="predict-input"
+              ref={inputRef}
               value={acQuery}
               onChange={handleAcChange}
               onKeyDown={(e) => { if (e.key === 'Enter') handleRun(); }}
@@ -234,6 +256,19 @@ export default function PredictionComponent() {
               Type any FBS player and run the ensemble — engineered production, athleticism
               and competition features scored by the ML models behind the board.
             </p>
+            <div className="predict-try" role="group" aria-label="Suggested players">
+              <span className="predict-try-label">Try:</span>
+              {SUGGESTED_PLAYERS.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  className="predict-try-chip"
+                  onClick={() => runPrediction({ name, position: 'UNK', team: '' })}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
             <p className="predict-empty-meta">
               {loadingPlayers
                 ? 'Loading prospect pool…'
@@ -363,6 +398,24 @@ export default function PredictionComponent() {
                   </div>
                 )}
               </section>
+
+              {/* Next actions — the report should end somewhere, not just stop */}
+              <div className="report-next">
+                <span className="report-next-label">Next</span>
+                {team && (
+                  <Link className="report-next-btn" to={`/player/${slugify(name, team)}`}>
+                    View full profile
+                  </Link>
+                )}
+                {team && (
+                  <Link className="report-next-btn" to={`/compare?a=${slugify(name, team)}`}>
+                    Compare him
+                  </Link>
+                )}
+                <Link className="report-next-btn report-next-quiet" to="/leaderboard">
+                  Back to the board
+                </Link>
+              </div>
 
               {/* Meta footer */}
               <div className="report-meta">

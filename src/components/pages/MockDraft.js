@@ -339,6 +339,13 @@ export default function MockDraft() {
     [haul]
   );
 
+  /* ── Overall haul grade — the end-of-draft reveal (avg pick delta) ── */
+  const haulGrade = useMemo(() => {
+    const deltas = haul.map((pk) => pk.delta).filter(Number.isFinite);
+    if (deltas.length === 0) return null;
+    return deltaLetter(deltas.reduce((s, d) => s + d, 0) / deltas.length);
+  }, [haul]);
+
   /* ── Plaintext exports ── */
   const exportOrderLen = sim
     ? sim.order.length
@@ -570,7 +577,7 @@ export default function MockDraft() {
 
             <div className="sim-btn-row">
               <button
-                className="sim-btn sim-btn-accent sim-start"
+                className="sim-btn sim-btn-accent sim-start sim-primary"
                 disabled={!canStart}
                 onClick={() =>
                   startDraft({
@@ -725,6 +732,17 @@ export default function MockDraft() {
                       {' · '}net value {haulValue >= 0 ? '+' : ''}{haulValue}
                     </div>
                   </div>
+                  {haulGrade && (
+                    <div
+                      className="sim-haul-overall"
+                      title="Average pick value vs the DraftVision board"
+                    >
+                      <span className="sim-haul-overall-label">Draft grade</span>
+                      <span className={`sim-haul-overall-letter is-${haulGrade.toLowerCase()}`}>
+                        {haulGrade}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="sim-summary-rows">
                   {haul.map((pk) => {
@@ -768,7 +786,7 @@ export default function MockDraft() {
             )}
             <div className="sim-btn-row">
               <button
-                className="sim-btn sim-btn-accent"
+                className="sim-btn sim-btn-accent sim-primary"
                 disabled={!poolRows || poolRows.length === 0}
                 onClick={() =>
                   startDraft({
@@ -790,14 +808,14 @@ export default function MockDraft() {
                 className="sim-btn"
                 onClick={() => copyPicks(view.picks, 'draft')}
               >
-                {copied === 'draft' ? 'Copied' : 'Copy draft'}
+                {copied === 'draft' ? 'Copied ✓' : 'Copy draft'}
               </button>
               {haul.length > 0 && (
                 <button
                   className="sim-btn"
                   onClick={() => copyPicks(haul, 'haul')}
                 >
-                  {copied === 'haul' ? 'Copied' : 'Copy my haul'}
+                  {copied === 'haul' ? 'Copied ✓' : 'Copy my haul'}
                 </button>
               )}
             </div>

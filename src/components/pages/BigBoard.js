@@ -93,7 +93,7 @@ function BoardRow({ p, rank, curated, onOpen }) {
   const sp = p.success_probability;
   return (
     <div
-      className={`bb-row${curated ? ' bb-curated' : ''}`}
+      className={`bb-row${curated ? ' bb-curated' : ''}${curated && rank === 1 ? ' bb-row-no1' : ''}`}
       role="button"
       tabIndex={0}
       onClick={onOpen}
@@ -148,6 +148,7 @@ export default function BigBoard() {
   const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+  const [justSaved, setJustSaved] = useState(false); // transient "Saved ✓" confirmation
   const [keyPrompt, setKeyPrompt] = useState({ open: false, restore: false });
   const [keyInput, setKeyInput] = useState('');
 
@@ -413,6 +414,8 @@ export default function BigBoard() {
       writeMirror(classTab, keys);
       setDraft(null);
       setSearch('');
+      setJustSaved(true);
+      window.setTimeout(() => setJustSaved(false), 4000);
       setReload((n) => n + 1);
     } catch {
       setSaveError('Could not save the board — the server did not respond. Your edits are still here.');
@@ -544,6 +547,9 @@ export default function BigBoard() {
             <button type="button" className="bb-edit-toggle" onClick={() => requestEdit(false)}>
               Edit board
             </button>
+          )}
+          {justSaved && (
+            <span className="bb-saved-note" role="status">Board saved ✓</span>
           )}
         </div>
 
@@ -701,7 +707,7 @@ export default function BigBoard() {
                   : dirty ? 'Unsaved changes' : 'No changes yet'}
               </span>
               <div className="bb-savebar-actions">
-                <button type="button" className="bb-btn" onClick={save} disabled={saving || !dirty}>
+                <button type="button" className="bb-btn bb-save" onClick={save} disabled={saving || !dirty}>
                   {saving ? 'Saving…' : 'Save'}
                 </button>
                 <button type="button" className="bb-btn bb-btn-quiet" onClick={discard} disabled={saving}>

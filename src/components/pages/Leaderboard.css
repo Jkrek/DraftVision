@@ -115,7 +115,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  align-items: center;
+  align-items: flex-end; /* seg labels sit above; controls share a baseline */
   margin-bottom: 26px;
 }
 
@@ -138,6 +138,21 @@
 .lb-search:focus-visible {
   border-color: var(--color-accent);
   outline: none;
+}
+
+/* Proximity: each seg carries its own micro-label so the two identical-
+   looking pill groups (position vs draft class) read as distinct filters */
+.lb-seg-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.lb-seg-label {
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+  padding-left: 4px;
 }
 
 .lb-seg {
@@ -792,5 +807,14 @@
   .lb-count {
     margin-left: 0;
     text-align: left;
+  }
+
+  /* Fitts: ~40px minimum hit areas for touch */
+  .lb-seg-btn {
+    padding: 11px 13px;
+    min-height: 40px;
+  }
+  .lb-more .btn {
+    width: 100%;
   }
 }

@@ -49,20 +49,25 @@
   outline: none;
 }
 
-/* Outlined "Run model" button — Nocturne buttons are never solid-filled */
+/* Outlined "Run model" button — Nocturne buttons are never solid-filled.
+   The page's ONE primary action: accent border + tint + soft glow so it
+   reads above every other outlined control on the screen. */
 .predict-run-btn {
   padding: 12px 24px;
-  background: transparent;
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
   border: 1px solid var(--color-accent);
   border-radius: var(--radius-md);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent),
+    0 0 20px color-mix(in srgb, var(--color-accent) 20%, transparent);
   font-size: 13.5px;
   font-family: var(--font-body);
   font-weight: 500;
-  color: var(--color-accent-200);
+  color: var(--color-accent-100);
   cursor: pointer;
 }
 .predict-run-btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
 }
 .predict-run-btn:active:not(:disabled) {
   background: color-mix(in srgb, var(--color-accent) 22%, transparent);
@@ -162,6 +167,37 @@
   font-size: 15px;
   line-height: 1.6;
   color: var(--color-neutral-300);
+}
+
+/* One-tap starter chips — a recommended default beats an empty box */
+.predict-try {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.predict-try-label {
+  font-size: 12.5px;
+  color: var(--color-neutral-500);
+}
+.predict-try-chip {
+  appearance: none;
+  margin: 0;
+  padding: 9px 15px;
+  min-height: 38px;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-radius: 99px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-accent-300);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.predict-try-chip:hover {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-color: var(--color-accent);
 }
 
 .predict-empty-meta {
@@ -464,6 +500,46 @@
     transparent 70%);
 }
 
+/* Next actions — the end of the report points somewhere */
+.report-next {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 26px;
+}
+.report-next-label {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+  margin-right: 4px;
+}
+.report-next-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  min-height: 40px;
+  border: 1px solid var(--color-accent-700);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: var(--color-accent-300);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.report-next-btn:hover {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-color: var(--color-accent);
+}
+.report-next-quiet {
+  border-color: var(--color-neutral-800);
+  color: var(--color-neutral-400);
+}
+.report-next-quiet:hover {
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  border-color: var(--color-neutral-600);
+}
+
 /* Meta footer */
 .report-meta {
   display: flex;
@@ -517,6 +593,10 @@
 /* ── Small screens ──────────────────────────────────────────── */
 @media (max-width: 640px) {
   .predict-shell { padding: 40px 18px 72px; }
+  /* Fitts: the primary CTA goes full-width in the thumb zone */
+  .predict-search-box { max-width: none; }
+  .predict-run-btn { flex: 1 1 100%; padding: 13px 24px; }
+  .report-next-btn { flex: 1 1 100%; justify-content: center; }
   .report-hero-content {
     padding: 48px 22px 42px;
     gap: 30px;

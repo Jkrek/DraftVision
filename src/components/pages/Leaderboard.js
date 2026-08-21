@@ -325,32 +325,38 @@ export default function Leaderboard() {
             placeholder="Search player, position or school"
             aria-label="Search player, position or school"
           />
-          <div className="lb-seg" role="group" aria-label="Filter by position">
-            {posTabs.map(pos => (
-              <button
-                key={pos}
-                type="button"
-                className={`lb-seg-btn${posTab === pos ? ' active' : ''}`}
-                aria-pressed={posTab === pos}
-                onClick={() => selectPos(pos)}
-              >
-                {pos}
-              </button>
-            ))}
-          </div>
-          {classTabs.length > 0 && (
-            <div className="lb-seg" role="group" aria-label="Filter by draft class">
-              {classTabs.map(y => (
+          <div className="lb-seg-group">
+            <span className="lb-seg-label" aria-hidden="true">Position</span>
+            <div className="lb-seg" role="group" aria-label="Filter by position">
+              {posTabs.map(pos => (
                 <button
-                  key={y}
+                  key={pos}
                   type="button"
-                  className={`lb-seg-btn${classTab === y ? ' active' : ''}`}
-                  aria-pressed={classTab === y}
-                  onClick={() => selectClass(y)}
+                  className={`lb-seg-btn${posTab === pos ? ' active' : ''}`}
+                  aria-pressed={posTab === pos}
+                  onClick={() => selectPos(pos)}
                 >
-                  {y === 'ALL' ? 'All classes' : `’${String(y).slice(2)}`}
+                  {pos}
                 </button>
               ))}
+            </div>
+          </div>
+          {classTabs.length > 0 && (
+            <div className="lb-seg-group">
+              <span className="lb-seg-label" aria-hidden="true">Draft class</span>
+              <div className="lb-seg" role="group" aria-label="Filter by draft class">
+                {classTabs.map(y => (
+                  <button
+                    key={y}
+                    type="button"
+                    className={`lb-seg-btn${classTab === y ? ' active' : ''}`}
+                    aria-pressed={classTab === y}
+                    onClick={() => selectClass(y)}
+                  >
+                    {y === 'ALL' ? 'All classes' : `’${String(y).slice(2)}`}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
