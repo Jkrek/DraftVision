@@ -153,7 +153,9 @@ export default function MockDraft() {
 
   // setup
   const [draftYear, setDraftYear]   = useState(2027);
-  const [rounds, setRounds]         = useState(1);
+  // Default to the full 3-round experience: a 1-round default ended drafts
+  // after the user's first pick and read as "the simulator broke".
+  const [rounds, setRounds]         = useState(3);
   const [userTeam, setUserTeam]     = useState(null);
   const [controlAll, setControlAll] = useState(false);
   const [order, setOrder]           = useState(() => DRAFT_ORDER_2027.slice());
@@ -438,7 +440,7 @@ export default function MockDraft() {
           )}
           {phase === 'done' && view && (
             <p className="mock-meta">
-              Draft complete · {view.picks.length} picks
+              {view.rounds || 1}-round draft complete · {view.picks.length} picks
               {view.completedAt && ` · ${new Date(view.completedAt).toLocaleDateString()}`}
             </p>
           )}
@@ -777,9 +779,12 @@ export default function MockDraft() {
             ) : (
               <div className="sim-summary-head">
                 <div>
-                  <div className="sim-summary-title">Draft complete</div>
+                  <div className="sim-summary-title">
+                    {view.rounds || 1}-round draft complete
+                  </div>
                   <div className="sim-summary-sub">
                     You called all {view.picks.length} picks.
+                    {(view.rounds || 1) < 3 && ' Want more rounds? Run it back and pick 3.'}
                   </div>
                 </div>
               </div>
