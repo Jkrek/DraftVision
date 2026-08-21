@@ -547,6 +547,29 @@ def main():
         print(f"  → {team_prospects} cached")
         time.sleep(0.05)
 
+    # Identity normalization: /predict can reassign a player's team (transfers,
+    # or a same-name player elsewhere resolving to this identity). Re-key
+    # espn_team_id to the RESOLVED team and drop hijack-duplicates, preferring
+    # rows whose roster origin matches their resolved team (Jeremiah Smith of
+    # Louisiana Tech once shipped wearing Ohio State's identity with a LA Tech
+    # logo id).
+    team_id_by_name = {t["name"]: t["id"] for t in teams}
+    all_prospects.sort(
+        key=lambda p: 0 if team_id_by_name.get(p["team"]) == p.get("espn_team_id") else 1)
+    seen_final, cleaned = set(), []
+    for p in all_prospects:
+        key = (p["name"].lower().strip(), p["team"].lower().strip())
+        if key in seen_final:
+            continue
+        seen_final.add(key)
+        want = team_id_by_name.get(p["team"])
+        if want:
+            p["espn_team_id"] = want
+        cleaned.append(p)
+    if len(cleaned) != len(all_prospects):
+        print(f"  identity cleanup: dropped {len(all_prospects) - len(cleaned)} hijack-duplicates")
+    all_prospects = cleaned
+
     # Sort by grade then success probability
     all_prospects.sort(key=lambda p: (
         GRADE_ORDER.get(p.get("grade"), 9),
