@@ -1,62 +1,79 @@
-/* Nocturne — design-system tokens and component classes. This file is the source of truth for the system's look; retune it here and see readme.md. */
+/* Gameday — design-system tokens and component classes (formerly Nocturne).
+   This file is the source of truth for the system's look; retune it here.
+
+   THEMES — "Gameday Light" is the default (:root); the dark theme lives
+   under html[data-theme="dark"], which public/index.html sets before paint
+   (localStorage 'dv_theme' → prefers-color-scheme → light).
+
+   RAMP CONVENTION — steps are CONTRAST-INDEXED against the ground, not
+   fixed lightnesses: step 100 always carries the *highest* contrast vs the
+   page background (near-ink in light, near-white in dark) and step 900 sits
+   closest to the ground. The codebase was authored dark-first with
+   "100 = lightest = strongest"; keeping that functional meaning is what
+   lets every existing token consumer re-skin automatically in light mode.
+
+   ACCENT — JK Football red, sampled from public/brand/jk-mark-96.png
+   (dominant pixel cluster #A80B10–#AE0B11, average #AE1015, hue ≈ 358°).
+   The light accent IS the sampled logo red; the dark accent is the same
+   hue lifted for the dark ground. */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --color-bg: #161826;
-  --color-surface: #232532;
-  --color-text: #e9e9ed;
-  --color-accent: #9184d9; /* review round 7 (Barron): the accent moves to
-     the product's blurple — OKLCH hue 289.2, the hue of the app's own Pro
-     accent (#9a8fe0, --om-accent-pro) — at the same lightness the steel
-     accent held (L 0.660, so the documented ratios survive) and chroma
-     in the product blurple's own range (its token sits at C 0.118; the
-     accent takes 0.125, from the old steel's 0.030):
-     the accent now reads as an accent rather than another neutral. */
-  --color-accent-2: #a7a1db; /* the machine-derived stand-in follows: same
-     hue, same L 0.734, chroma at the same 2:3 proportion it held */
-  --color-divider: color-mix(in srgb, #e9e9ed 16%, transparent);
+  color-scheme: light;
 
-  /* Tonal ramps — generated in OKLCH on one shared lightness scale, so the
-     same step of any role matches the others in visual value. */
-  --color-neutral-100: #f3f5fe;
-  --color-neutral-200: #e4e7f5;
-  --color-neutral-300: #cfd3e5;
-  --color-neutral-400: #b2b6ca;
-  --color-neutral-500: #9397ab;
-  --color-neutral-600: #75798c;
-  --color-neutral-700: #595d6c;
-  --color-neutral-800: #3f424d;
-  --color-neutral-900: #292b31;
+  --color-bg: #FAFAF7;       /* warm white ground */
+  --color-surface: #FFFFFF;
+  --color-text: #16181D;     /* ink */
+  --color-accent: #AE1015;   /* JK red — sampled logo average */
+  --color-accent-2: #B54A42; /* muted brick red — the "down"/negative family */
+  --color-divider: #E8E6E1;
 
-  --color-accent-100: #f5f4ff;
-  --color-accent-200: #e7e5fe;
-  --color-accent-300: #d2cefd;
-  --color-accent-400: #b5abfc;
-  --color-accent-500: #968ae0;
-  --color-accent-600: #796cbf;
-  --color-accent-700: #5d5294;
-  --color-accent-800: #423a6a;
-  --color-accent-900: #2b2741;
+  /* Semantic — trends and grade tinting */
+  --color-up: #1E8E5A;       /* positive / rising */
+  --color-down: #B54A42;     /* negative / falling — muted, distinct from accent */
+  --color-gold: #C99A2E;     /* warm gold — A-grade tinting */
+  --color-up-soft:   color-mix(in srgb, var(--color-up) 12%, transparent);
+  --color-down-soft: color-mix(in srgb, var(--color-down) 12%, transparent);
+  --color-gold-soft: color-mix(in srgb, var(--color-gold) 14%, transparent);
 
-  --color-accent-2-100: #f5f4ff;
-  --color-accent-2-200: #e7e5fe;
-  --color-accent-2-300: #d2cefd;
-  --color-accent-2-400: #b5afe8;
-  --color-accent-2-500: #9690c9;
-  --color-accent-2-600: #7972a9;
-  --color-accent-2-700: #5c5783;
-  --color-accent-2-800: #423e5d;
-  --color-accent-2-900: #2b293a;
+  /* Tonal ramps — contrast-indexed (see header). Warm neutral grays. */
+  --color-neutral-100: #16181D;
+  --color-neutral-200: #2B2F36;
+  --color-neutral-300: #414751;
+  --color-neutral-400: #5B6470;
+  --color-neutral-500: #79818C;
+  --color-neutral-600: #99A0A9;
+  --color-neutral-700: #BCC0C6;
+  --color-neutral-800: #DDDBD6;
+  --color-neutral-900: #EFEEEA;
 
-  /* Deck section-divider ground — review round 3: saturation as presence.
-     Dividers take a saturated deep indigo (hue 277, the neutral ramp's own
-     family; C 0.094 — written when the accent held C 0.030, before the
-     round-7 blurple raised it past the ground's) with a lighter bloom and
-     a ghost tint of the same hue, while the slide grounds stay
-     desaturated. Deck-scale fills only — not interface colors. */
-  --color-section: #262a60;
-  --color-section-glow: #353b80;
-  --color-section-ghost: #4c5397;
+  /* JK-red ramp, hue 358. Step 300 is the logo red itself. */
+  --color-accent-100: #66090C;
+  --color-accent-200: #8C0D11;
+  --color-accent-300: #AE1015;
+  --color-accent-400: #C93832;
+  --color-accent-500: #DA5F57;
+  --color-accent-600: #E8867E;
+  --color-accent-700: #F2ACA6;
+  --color-accent-800: #F9CFCB;
+  --color-accent-900: #FCE8E6;
+
+  /* Muted brick ramp — trend-down / secondary red. */
+  --color-accent-2-100: #63241E;
+  --color-accent-2-200: #8A342C;
+  --color-accent-2-300: #B54A42;
+  --color-accent-2-400: #C66A61;
+  --color-accent-2-500: #D2837A;
+  --color-accent-2-600: #DEA098;
+  --color-accent-2-700: #EABEB8;
+  --color-accent-2-800: #F4D9D5;
+  --color-accent-2-900: #FAEDEB;
+
+  /* Section-divider grounds — JK black: deep ink bands that carry the
+     brand's black against the warm-white page. Deck-scale fills only. */
+  --color-section: #1B1D22;
+  --color-section-glow: #2A2D34;
+  --color-section-ghost: #3E434C;
 
   --font-heading: "Inter", system-ui, sans-serif;
   --font-heading-weight: 500;
@@ -73,11 +90,75 @@
   --radius-md: 8px;
   --radius-lg: 14px;
 
-  /* Elevation — derived from the ground: soft ink-tinted shadows on a
-     light theme, a hairline edge + ambient darkness on a dark one. */
-  --shadow-sm: 0 0 0 1px #3f424d;
-  --shadow-md: 0 0 0 1px #595d6c, 0 6px 18px rgba(0,0,0,0.55);
-  --shadow-lg: 0 0 0 1px #9397ab, 0 16px 40px rgba(0,0,0,0.65);
+  /* Tiny halo behind team/brand marks so pale logo edges keep definition
+     against the ground — ink-toned here, glow-toned in dark. */
+  --halo-logo: drop-shadow(0 0 1px rgba(22, 24, 29, 0.28));
+
+  /* Elevation — soft, low-opacity ink on the light ground. */
+  --shadow-sm: 0 1px 2px rgba(22, 24, 29, 0.08), 0 0 0 1px rgba(22, 24, 29, 0.05);
+  --shadow-md: 0 2px 6px rgba(22, 24, 29, 0.06), 0 10px 24px rgba(22, 24, 29, 0.09);
+  --shadow-lg: 0 6px 16px rgba(22, 24, 29, 0.08), 0 24px 48px rgba(22, 24, 29, 0.13);
+}
+
+/* ── Dark theme — brightened slate, no purple. A new look, not old Nocturne. */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #232A36;
+  --color-surface: #2B3341;
+  --color-text: #E8EBEF;
+  --color-accent: #E4574F;   /* JK red lifted for the dark ground */
+  --color-accent-2: #D97B72;
+  --color-divider: #3B4250;
+
+  --color-up: #3DB47F;
+  --color-down: #E08B82;
+  --color-gold: #E3B54F;
+  --color-up-soft:   color-mix(in srgb, var(--color-up) 16%, transparent);
+  --color-down-soft: color-mix(in srgb, var(--color-down) 16%, transparent);
+  --color-gold-soft: color-mix(in srgb, var(--color-gold) 18%, transparent);
+
+  /* Cool slate neutrals, contrast-indexed (100 = lightest here). */
+  --color-neutral-100: #F1F3F6;
+  --color-neutral-200: #DCE0E6;
+  --color-neutral-300: #C0C6CF;
+  --color-neutral-400: #9CA4B0;
+  --color-neutral-500: #7E8794;
+  --color-neutral-600: #636C79;
+  --color-neutral-700: #4C5462;
+  --color-neutral-800: #3A414E;
+  --color-neutral-900: #2C333F;
+
+  --color-accent-100: #FDEEEC;
+  --color-accent-200: #FAD5D1;
+  --color-accent-300: #F5AFA9;
+  --color-accent-400: #EE837B;
+  --color-accent-500: #E45A51;
+  --color-accent-600: #C93A34;
+  --color-accent-700: #A62521;
+  --color-accent-800: #7C1714;
+  --color-accent-900: #520F0D;
+
+  --color-accent-2-100: #FBEFED;
+  --color-accent-2-200: #F6DAD6;
+  --color-accent-2-300: #ECB4AD;
+  --color-accent-2-400: #E18F86;
+  --color-accent-2-500: #D97B72;
+  --color-accent-2-600: #BF5F55;
+  --color-accent-2-700: #9C4740;
+  --color-accent-2-800: #74332D;
+  --color-accent-2-900: #4E211D;
+
+  --color-section: #1B212B;
+  --color-section-glow: #2E3644;
+  --color-section-ghost: #454F60;
+
+  --halo-logo: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+
+  /* Elevation — hairline edge + ambient darkness. */
+  --shadow-sm: 0 0 0 1px #3A414E;
+  --shadow-md: 0 0 0 1px #454D5B, 0 6px 18px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 0 0 1px #5A6373, 0 16px 40px rgba(0, 0, 0, 0.55);
 }
 
 body {
@@ -87,7 +168,15 @@ body {
 }
 h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
 
-.lighten{mix-blend-mode:lighten;background-color:transparent}
+/* .lighten only makes sense over a dark ground; it is a no-op in light. */
+[data-theme="dark"] .lighten{mix-blend-mode:lighten;background-color:transparent}
+
+/* — brand mark (Logo.js) — the black K needs no halo on the light ground;
+   dark restores the faint edge glow and lifts the muted footer variant. */
+.logo-mark { filter: none; }
+.logo-mark--muted { filter: grayscale(1) opacity(0.5); }
+[data-theme="dark"] .logo-mark { filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.2)); }
+[data-theme="dark"] .logo-mark--muted { filter: grayscale(1) brightness(1.6) opacity(0.55); }
 
 /* ══════════════════════════════════════════════════════════════════════════
    Components — built with the tokens above. Plain CSS
@@ -278,7 +367,8 @@ textarea.input { min-height: 90px; resize: vertical; }
 .dialog-backdrop {
   position: fixed; inset: 0; display: grid; place-items: center;
   padding: var(--space-4);
-  background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
+  /* fixed ink scrim — correct over both themes */
+  background: rgba(11, 13, 18, 0.55);
 }
 .dialog {
   width: min(440px, 100%); display: flex; flex-direction: column; gap: var(--space-3);

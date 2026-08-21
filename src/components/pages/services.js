@@ -7,6 +7,12 @@ const PAGE_SIZE   = 100;
 const FIRST_PAGE  = 300;  // small first fetch → fast first paint
 const FETCH_CHUNK = 2000; // server max per request while streaming the rest
 
+// Grade letter -> tier class for the pill tinting (a/b/c/d).
+function gradeTier(grade) {
+  const c = (grade || '').charAt(0).toUpperCase();
+  return c === 'A' ? 'a' : c === 'B' ? 'b' : c === 'C' ? 'c' : c === 'D' ? 'd' : '';
+}
+
 function formatProb(value) {
   const n = typeof value === 'number' ? value : parseFloat(value);
   if (isNaN(n)) return null;
@@ -204,7 +210,7 @@ export default function Services() {
               <div className="col-school">{p.team || '—'}</div>
               <div className="col-proj">{p.draft_grade || '—'}</div>
               <div className="col-grade">
-                <span className="grade-pill">{p.grade || '—'}</span>
+                <span className={`grade-pill${gradeTier(p.grade) ? ` grade-pill--${gradeTier(p.grade)}` : ''}`}>{p.grade || '—'}</span>
               </div>
               <div className="col-prob">
                 {prob === null ? '—' : (<>{prob}<span className="col-prob-unit">%</span></>)}

@@ -29,8 +29,13 @@
   height: 100%;
   object-fit: cover;
   object-position: 50% 28%;
+  /* light: near-natural photo; the dark cinematic crush is theme-scoped below */
+  filter: saturate(1.15) contrast(1.04) brightness(0.97);
+}
+[data-theme="dark"] .hsp-hero-media img {
   filter: saturate(1.5) contrast(1.1) brightness(0.82);
 }
+
 /* dark left scrim into the page ground */
 .hsp-hero-scrim-x {
   position: absolute;

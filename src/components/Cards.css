@@ -124,8 +124,13 @@
   height: 100%;
   object-fit: cover;
   object-position: 50% 30%;
+  /* light: near-natural photo; the dark cinematic crush is theme-scoped below */
+  filter: saturate(1.15) contrast(1.04) brightness(0.98);
+}
+[data-theme="dark"] .ctaband-media img {
   filter: saturate(1.6) contrast(1.1) brightness(0.8);
 }
+
 .ctaband-scrim {
   position: absolute;
   inset: 0;

@@ -96,6 +96,13 @@
 .bt-divider::before {
   background: linear-gradient(90deg, transparent, var(--color-divider));
 }
+/* phones: the long label must wrap instead of dragging the page wider */
+@media (max-width: 640px) {
+  .bt-divider {
+    white-space: normal;
+    text-align: center;
+  }
+}
 .bt-divider::after {
   background: linear-gradient(90deg, var(--color-divider), transparent);
 }

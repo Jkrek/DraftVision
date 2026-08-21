@@ -3,7 +3,7 @@
   position: sticky;
   top: 0;
   z-index: 60;
-  background: rgba(22, 24, 38, 0.72);
+  background: color-mix(in srgb, var(--color-bg) 78%, transparent);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--color-divider);
@@ -26,7 +26,7 @@
 }
 
 .navbar-condensed {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--color-neutral-100) 14%, transparent);
 }
 
 /* ── Scroll progress line ── */
@@ -95,7 +95,7 @@
 .nav-link-active,
 .nav-link-active:hover {
   color: var(--color-accent-300);
-  background: rgba(145, 132, 217, 0.12);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
 /* ── Right side ── */
@@ -136,7 +136,34 @@
 }
 
 .nav-cta:hover {
-  background: rgba(145, 132, 217, 0.12);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+
+/* ── Theme toggle (sun/moon) ── */
+.theme-toggle,
+.nav-right .theme-toggle,
+.nav-menu-mobile-auth .theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Fitts: ≥44px hit area */
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.theme-toggle:hover,
+.nav-right .theme-toggle:hover,
+.nav-menu-mobile-auth .theme-toggle:hover {
+  color: var(--color-neutral-200);
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
 }
 
 /* ── Hamburger ── */
@@ -176,7 +203,7 @@
     overflow: hidden;
     max-height: 0;
     padding: 0 24px;
-    background: rgba(22, 24, 38, 0.96);
+    background: color-mix(in srgb, var(--color-bg) 97%, transparent);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid transparent;
@@ -220,5 +247,5 @@
   transition: color 0.15s;
 }
 .nav-yt:hover {
-  color: #ff6b66; /* a nod to the JK brand red, softened for the dark ground */
+  color: var(--color-accent); /* the JK brand red, theme-tuned */
 }

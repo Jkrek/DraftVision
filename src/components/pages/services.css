@@ -105,11 +105,11 @@
   align-items: center;
   padding: 13px 22px;
   font-size: 13.5px;
-  border-top: 1px solid rgba(233, 233, 237, 0.07);
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 7%, transparent);
   transition: background 0.2s;
 }
 .stars-row:hover {
-  background: rgba(145, 132, 217, 0.09);
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
 }
 .stars-row--top {
   padding-top: 18px;
@@ -146,7 +146,7 @@
   width: 20px;
   height: 20px;
   object-fit: contain;
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 .stars-row .col-player {
   color: var(--color-neutral-100);
@@ -200,6 +200,16 @@
   border-radius: 99px;
   color: var(--color-accent-300);
 }
+/* tier tinting — A-range earns the gold; B stays accent; C/D go muted */
+.grade-pill--a {
+  border-color: color-mix(in srgb, var(--color-gold) 65%, transparent);
+  color: color-mix(in srgb, var(--color-gold) 72%, var(--color-text));
+  background: var(--color-gold-soft);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-gold) 28%, transparent);
+}
+.grade-pill--b { border-color: var(--color-accent-600); color: var(--color-accent-300); }
+.grade-pill--c { border-color: var(--color-accent-800); color: var(--color-neutral-400); }
+.grade-pill--d { border-color: var(--color-neutral-800); color: var(--color-neutral-600); }
 .col-prob {
   flex: 0 0 86px;
   text-align: right;
@@ -228,8 +238,8 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.col-trend.up   { color: color-mix(in srgb, #7dd3a8 62%, var(--color-neutral-300)); }
-.col-trend.down { color: color-mix(in srgb, #d3837d 62%, var(--color-neutral-300)); }
+.col-trend.up   { color: var(--color-up); }
+.col-trend.down { color: var(--color-down); }
 
 /* — states + load more — */
 .stars-state {
@@ -237,7 +247,7 @@
   text-align: center;
   font-size: 13.5px;
   color: var(--color-neutral-500);
-  border-top: 1px solid rgba(233, 233, 237, 0.07);
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 7%, transparent);
 }
 .stars-more {
   display: flex;

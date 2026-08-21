@@ -100,10 +100,10 @@
 .ins-error {
   margin: 16px 0 0;
   padding: 10px 14px;
-  border: 1px solid color-mix(in srgb, #d3837d 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-down) 45%, transparent);
   border-radius: var(--radius-md);
   font-size: 12.5px;
-  color: color-mix(in srgb, #d3837d 70%, var(--color-neutral-200));
+  color: var(--color-down);
 }
 
 /* ── Dashboard header ── */

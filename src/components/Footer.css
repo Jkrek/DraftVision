@@ -58,7 +58,7 @@
 }
 
 .footer-link-yt:hover {
-  color: #ff6b66; /* JK brand red accent on hover */
+  color: var(--color-accent); /* JK brand red accent on hover */
 }
 
 /* Phones: comfortable tap targets for the link row + home-indicator room */

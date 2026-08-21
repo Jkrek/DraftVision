@@ -25,8 +25,10 @@ export default function Products() {
     !search || p.name.toLowerCase().includes(search.toLowerCase()) || (p.team || '').toLowerCase().includes(search.toLowerCase())
   );
 
+  // Legacy page kept routed at /products — styles lean on the theme tokens
+  // so it reads correctly on both the light and dark grounds.
   const backgroundStyle = {
-    backgroundImage: `linear-gradient(120deg, rgba(11,23,42,0.92), rgba(15,23,42,0.98)), url(${process.env.PUBLIC_URL}/images/ctjspicture.png)`,
+    backgroundImage: `linear-gradient(120deg, color-mix(in srgb, var(--color-bg) 92%, transparent), color-mix(in srgb, var(--color-bg) 98%, transparent)), url(${process.env.PUBLIC_URL}/images/ctjspicture.png)`,
     backgroundPosition: 'center',
     backgroundSize: 'cover',
     minHeight: '100vh',
@@ -35,8 +37,8 @@ export default function Products() {
   };
 
   const glassCard = {
-    background: 'rgba(30,41,59,0.8)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: 'color-mix(in srgb, var(--color-surface) 82%, transparent)',
+    border: '1px solid var(--color-divider)',
     borderRadius: '10px',
   };
 
@@ -44,8 +46,8 @@ export default function Products() {
     <div style={backgroundStyle}>
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 20px' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ color: '#f1f5f9', fontSize: '2.2rem', fontWeight: 800, margin: 0 }}>College Stars</h1>
-          <p style={{ color: '#94a3b8', marginTop: '0.5rem' }}>
+          <h1 style={{ color: 'var(--color-neutral-100)', fontSize: '2.2rem', fontWeight: 800, margin: 0 }}>College Stars</h1>
+          <p style={{ color: 'var(--color-neutral-400)', marginTop: '0.5rem' }}>
             {prospects.length} synced prospects · Browse and discover rising talent
           </p>
         </div>
@@ -58,17 +60,17 @@ export default function Products() {
             onChange={e => setSearch(e.target.value)}
             style={{
               width: '100%', padding: '10px 14px', borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(15,23,42,0.7)',
-              color: '#e2e8f0', fontSize: '14px', outline: 'none', boxSizing: 'border-box',
+              border: '1px solid var(--color-divider)', background: 'var(--color-surface)',
+              color: 'var(--color-text)', fontSize: '14px', outline: 'none', boxSizing: 'border-box',
             }}
           />
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', color: '#64748b', padding: '4rem' }}>Loading college prospects…</div>
+          <div style={{ textAlign: 'center', color: 'var(--color-neutral-500)', padding: '4rem' }}>Loading college prospects…</div>
         ) : (
           <>
-            <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '0.75rem' }}>
+            <p style={{ color: 'var(--color-neutral-500)', fontSize: '13px', marginBottom: '0.75rem' }}>
               Showing {filtered.length} of {prospects.length} prospects
             </p>
             <div style={{
@@ -89,15 +91,15 @@ export default function Products() {
                       {p.position || '?'}
                     </div>
                     <div style={{ overflow: 'hidden' }}>
-                      <p style={{ color: '#e2e8f0', fontWeight: 600, fontSize: '0.85rem', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
-                      <p style={{ color: '#64748b', fontSize: '0.75rem', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.team}</p>
+                      <p style={{ color: 'var(--color-neutral-100)', fontWeight: 600, fontSize: '0.85rem', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
+                      <p style={{ color: 'var(--color-neutral-500)', fontSize: '0.75rem', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.team}</p>
                     </div>
                   </div>
                 );
               })}
             </div>
             {filtered.length === 0 && (
-              <div style={{ textAlign: 'center', color: '#64748b', padding: '3rem' }}>No prospects match your search.</div>
+              <div style={{ textAlign: 'center', color: 'var(--color-neutral-500)', padding: '3rem' }}>No prospects match your search.</div>
             )}
           </>
         )}

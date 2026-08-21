@@ -1,8 +1,8 @@
 /* ── Board movers ticker — Nocturne ─────────────────────────────────────────── */
 .ticker {
   /* Trend tones — desaturated toward the neutral ramp; no stoplight colors. */
-  --trend-up:   color-mix(in srgb, #7dd3a8 62%, var(--color-neutral-300));
-  --trend-down: color-mix(in srgb, #d3837d 62%, var(--color-neutral-300));
+  --trend-up:   var(--color-up);
+  --trend-down: var(--color-down);
   display: flex;
   align-items: stretch;
   background: var(--color-neutral-900);

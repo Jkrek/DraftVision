@@ -26,8 +26,13 @@
   height: 100%;
   object-fit: cover;
   object-position: 50% 24%;
+  /* light: near-natural photo; the dark cinematic crush is theme-scoped below */
+  filter: saturate(1.15) contrast(1.04) brightness(0.97);
+}
+[data-theme="dark"] .bb-hero-media img {
   filter: saturate(1.5) contrast(1.1) brightness(0.82);
 }
+
 
 /* dark left scrim into the page ground */
 .bb-hero-scrim-x {
@@ -227,7 +232,7 @@
 }
 
 .bb-error {
-  color: color-mix(in srgb, #d3837d 70%, var(--color-neutral-200));
+  color: var(--color-down);
 }
 
 /* ── Admin key gate ── */
@@ -471,7 +476,7 @@
   width: 20px;
   height: 20px;
   object-fit: contain;
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 
 .bb-est {
@@ -504,6 +509,16 @@
   border-radius: 99px;
   color: var(--color-accent-300);
 }
+/* tier tinting — A-range earns the gold; B stays accent; C/D go muted */
+.bb-grade > .bb-grade-a {
+  border-color: color-mix(in srgb, var(--color-gold) 65%, transparent);
+  color: color-mix(in srgb, var(--color-gold) 72%, var(--color-text));
+  background: var(--color-gold-soft);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-gold) 28%, transparent);
+}
+.bb-grade > .bb-grade-b { border-color: var(--color-accent-600); color: var(--color-accent-300); }
+.bb-grade > .bb-grade-c { border-color: var(--color-accent-800); color: var(--color-neutral-400); }
+.bb-grade > .bb-grade-d { border-color: var(--color-neutral-800); color: var(--color-neutral-600); }
 
 .bb-prob {
   font-size: 17px;
@@ -603,9 +618,9 @@
   cursor: default;
 }
 .bb-ctl-remove:hover:not(:disabled) {
-  color: color-mix(in srgb, #d3837d 70%, var(--color-neutral-200));
-  border-color: color-mix(in srgb, #d3837d 45%, var(--color-neutral-800));
-  background: color-mix(in srgb, #d3837d 8%, transparent);
+  color: var(--color-down);
+  border-color: color-mix(in srgb, var(--color-down) 45%, var(--color-neutral-800));
+  background: var(--color-down-soft);
 }
 
 .bb-add {

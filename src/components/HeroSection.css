@@ -21,9 +21,14 @@
   height: 100%;
   object-fit: cover;
   object-position: 52% 20%;
-  filter: saturate(1.6) contrast(1.16) brightness(0.84);
+  /* light: near-natural photo; the dark cinematic crush is theme-scoped below */
+  filter: saturate(1.18) contrast(1.05) brightness(0.97);
   transform: scale(1.04);
 }
+[data-theme="dark"] .hero-media img {
+  filter: saturate(1.6) contrast(1.16) brightness(0.84);
+}
+
 
 /* Background video — an enhancement layered over the photo once it can play.
    Same framing/treatment as the img so the crossfade is invisible; sits above
@@ -55,7 +60,27 @@
 .hero.has-video .hero-tint {
   opacity: 0.12;
 }
+/* Light default: ink copy over true-color footage needs a firmer white
+   fade than the dark theme's glass — dark restores its lighter scrims. */
 .hero.has-video .hero-scrim-v {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-bg) 30%, transparent) 0%,
+    transparent 30%,
+    color-mix(in srgb, var(--color-bg) 55%, transparent) 78%,
+    var(--color-bg) 100%
+  );
+}
+.hero.has-video .hero-scrim-h {
+  background: linear-gradient(
+    96deg,
+    color-mix(in srgb, var(--color-bg) 92%, transparent) 0%,
+    color-mix(in srgb, var(--color-bg) 74%, transparent) 32%,
+    color-mix(in srgb, var(--color-bg) 28%, transparent) 55%,
+    transparent 72%
+  );
+}
+[data-theme="dark"] .hero.has-video .hero-scrim-v {
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--color-bg) 18%, transparent) 0%,
@@ -64,7 +89,7 @@
     var(--color-bg) 100%
   );
 }
-.hero.has-video .hero-scrim-h {
+[data-theme="dark"] .hero.has-video .hero-scrim-h {
   background: linear-gradient(
     96deg,
     color-mix(in srgb, var(--color-bg) 82%, transparent) 0%,
@@ -122,6 +147,29 @@
     color-mix(in srgb, var(--color-bg) 34%, transparent) 58%,
     transparent 82%
   );
+}
+
+/* Phones: the copy spans the full width, so in light mode the ink text
+   needs a firmer white wash across the whole lower photo. Dark keeps its
+   crushed-photo treatment and needs no extra help. */
+@media (max-width: 640px) {
+  :root:not([data-theme="dark"]) .hero-scrim-v {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-bg) 55%, transparent) 0%,
+      color-mix(in srgb, var(--color-bg) 48%, transparent) 26%,
+      color-mix(in srgb, var(--color-bg) 92%, transparent) 66%,
+      var(--color-bg) 100%
+    );
+  }
+  :root:not([data-theme="dark"]) .hero-scrim-h {
+    background: linear-gradient(
+      96deg,
+      color-mix(in srgb, var(--color-bg) 80%, transparent) 0%,
+      color-mix(in srgb, var(--color-bg) 62%, transparent) 50%,
+      color-mix(in srgb, var(--color-bg) 45%, transparent) 100%
+    );
+  }
 }
 
 .hero-inner {

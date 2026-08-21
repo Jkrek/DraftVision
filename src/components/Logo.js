@@ -16,22 +16,19 @@ const SRC = process.env.PUBLIC_URL + '/brand/jk-mark-96.png';
 // The art is slightly taller than wide (924x974); scale by height.
 const ASPECT = 924 / 974;
 
+/* Treatment lives in CSS (.logo-mark / .logo-mark--muted + their
+   [data-theme="dark"] variants in nocturne.css) so each theme can tune it:
+   the black K needs no halo on the light ground. */
 function LogoMark({ size = 26, muted = false, className }) {
   return (
     <img
-      className={className}
+      className={['logo-mark', muted ? 'logo-mark--muted' : '', className].filter(Boolean).join(' ')}
       src={SRC}
       alt=""
       aria-hidden="true"
       height={size}
       width={Math.round(size * ASPECT)}
-      style={{
-        display: 'block',
-        objectFit: 'contain',
-        filter: muted
-          ? 'grayscale(1) brightness(1.6) opacity(0.55)'
-          : 'drop-shadow(0 0 1px rgba(233, 233, 237, 0.2))',
-      }}
+      style={{ display: 'block', objectFit: 'contain' }}
     />
   );
 }

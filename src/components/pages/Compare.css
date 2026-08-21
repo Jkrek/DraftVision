@@ -154,7 +154,7 @@
   width: 24px;
   height: 24px;
   object-fit: contain;
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 .cmp-picked-main { min-width: 0; }
 .cmp-picked-name {
@@ -263,7 +263,7 @@
   width: 34px;
   height: 34px;
   object-fit: contain;
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 .cmp-logo-blank {
   display: block;
@@ -288,7 +288,7 @@
   color: var(--color-neutral-500);
 }
 
-/* grade pill — mono accent ramp tiers, same treatment as the board */
+/* grade pill — same tier treatment as the board: A gold, B accent, C/D muted */
 .cmp-grade {
   margin-left: auto;
   flex: none;
@@ -300,10 +300,10 @@
   font-variant-numeric: tabular-nums;
 }
 .cmp-grade-a {
-  border-color: var(--color-accent-300);
-  color: var(--color-accent-200);
-  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold) 65%, transparent);
+  color: color-mix(in srgb, var(--color-gold) 72%, var(--color-text));
+  background: var(--color-gold-soft);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-gold) 28%, transparent);
 }
 .cmp-grade-b { border-color: var(--color-accent-600); color: var(--color-accent-300); }
 .cmp-grade-c { border-color: var(--color-accent-800); color: var(--color-neutral-400); }
@@ -451,7 +451,7 @@
 .cmp-fval-none { color: var(--color-neutral-700); }
 /* desaturated tones only — same family as the board's trend chips */
 .cmp-fval.pos { color: color-mix(in srgb, var(--color-accent-300) 80%, var(--color-neutral-300)); }
-.cmp-fval.neg { color: color-mix(in srgb, #d3837d 62%, var(--color-neutral-300)); }
+.cmp-fval.neg { color: var(--color-down); }
 
 .cmp-ftrack {
   display: flex;
@@ -470,7 +470,7 @@
 }
 .cmp-fside-a .cmp-fbar { transform-origin: right; }
 .cmp-fside-b .cmp-fbar { transform-origin: left; }
-.cmp-fbar.neg { background: color-mix(in srgb, #d3837d 62%, var(--color-neutral-500)); }
+.cmp-fbar.neg { background: var(--color-down); }
 
 .cmp-note {
   margin: 18px 0 0;

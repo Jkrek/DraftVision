@@ -15,6 +15,12 @@ const PAGE_SIZE = 100;
 
 const GRADE_ORDER = { 'A+': 0, 'A': 1, 'A-': 2, 'B+': 3, 'B': 4, 'B-': 5, 'C+': 6, 'C': 7, 'C-': 8, 'D': 9 };
 
+// Grade letter -> tier class for the pill tinting (a/b/c/d).
+function gradeTier(grade) {
+  const c = (grade || '').charAt(0).toUpperCase();
+  return c === 'A' ? 'a' : c === 'B' ? 'b' : c === 'C' ? 'c' : c === 'D' ? 'd' : '';
+}
+
 const keyOf = (p) => `${p.name}|${p.team || ''}`;
 const mirrorKey = (year) => `dv_big_board_${year}`;
 const myBoardKey = (year) => `dv_my_board_${year}`;
@@ -126,7 +132,7 @@ function BoardRow({ p, rank, curated, onOpen }) {
       </span>
       <span className="bb-pos bb-c-pos">{(p.position || '?').toUpperCase()}</span>
       <span className="bb-school bb-c-school">{p.team || '—'}</span>
-      <span className="bb-grade bb-c-grade"><span>{p.grade || '—'}</span></span>
+      <span className="bb-grade bb-c-grade"><span className={gradeTier(p.grade) ? `bb-grade-${gradeTier(p.grade)}` : undefined}>{p.grade || '—'}</span></span>
       <span className="bb-prob bb-c-prob">{sp != null ? Number(sp).toFixed(1) : '—'}</span>
     </div>
   );
@@ -685,7 +691,7 @@ export default function BigBoard() {
                     </span>
                     <span className="bb-pos bb-c-pos">{(p.position || '?').toUpperCase()}</span>
                     <span className="bb-school bb-c-school">{p.team || '—'}</span>
-                    <span className="bb-grade bb-c-grade"><span>{p.grade || '—'}</span></span>
+                    <span className="bb-grade bb-c-grade"><span className={gradeTier(p.grade) ? `bb-grade-${gradeTier(p.grade)}` : undefined}>{p.grade || '—'}</span></span>
                     <button
                       type="button"
                       className="bb-btn bb-add"
@@ -763,7 +769,7 @@ export default function BigBoard() {
                   </span>
                   <span className="bb-pos bb-c-pos">{(p.position || '?').toUpperCase()}</span>
                   <span className="bb-school bb-c-school">{p.team || '—'}</span>
-                  <span className="bb-grade bb-c-grade"><span>{p.grade || '—'}</span></span>
+                  <span className="bb-grade bb-c-grade"><span className={gradeTier(p.grade) ? `bb-grade-${gradeTier(p.grade)}` : undefined}>{p.grade || '—'}</span></span>
                   <span className="bb-edit-ctls">
                     <button type="button" className="bb-ctl" disabled={i === 0} onClick={() => myMoveTo(i, i - 1)} aria-label={`Move ${p.name} up`}>↑</button>
                     <button type="button" className="bb-ctl" disabled={i === myBoard.length - 1} onClick={() => myMoveTo(i, i + 1)} aria-label={`Move ${p.name} down`}>↓</button>
@@ -805,7 +811,7 @@ export default function BigBoard() {
                     </span>
                     <span className="bb-pos bb-c-pos">{(p.position || '?').toUpperCase()}</span>
                     <span className="bb-school bb-c-school">{p.team || '—'}</span>
-                    <span className="bb-grade bb-c-grade"><span>{p.grade || '—'}</span></span>
+                    <span className="bb-grade bb-c-grade"><span className={gradeTier(p.grade) ? `bb-grade-${gradeTier(p.grade)}` : undefined}>{p.grade || '—'}</span></span>
                     <button
                       type="button"
                       className="bb-btn bb-add"

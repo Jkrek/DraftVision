@@ -17,11 +17,11 @@
   --primary-color: var(--color-accent);
   --secondary-color: var(--color-accent-500);
   --accent-color: var(--color-accent-400);
-  --purple:       var(--color-accent-500);
-  --amber:        var(--color-accent-300);
-  --amber-dim:    color-mix(in srgb, var(--color-accent) 15%, transparent);
-  --emerald:      var(--color-accent-400);
-  --red:          var(--color-accent-2-500);
+  --purple:       var(--color-accent-500); /* legacy name — now JK red */
+  --amber:        var(--color-gold);
+  --amber-dim:    var(--color-gold-soft);
+  --emerald:      var(--color-up);
+  --red:          var(--color-down);
   --rose:         var(--color-accent-2-400);
 
   /* Text */
@@ -43,7 +43,7 @@
   /* Gradients — mono accent, no rainbow */
   --brand-gradient:   linear-gradient(135deg, var(--color-accent-500), var(--color-accent-300));
   --gradient-brand:   linear-gradient(135deg, var(--color-accent-500), var(--color-accent-300));
-  --gold-gradient:    linear-gradient(135deg, var(--color-accent-400), var(--color-accent-200));
+  --gold-gradient:    linear-gradient(135deg, var(--color-gold), color-mix(in srgb, var(--color-gold) 60%, var(--color-surface)));
 
   /* Radius — sm/md/lg come from Nocturne; xl folds into lg */
   --radius-xl:   var(--radius-lg);
@@ -92,10 +92,13 @@ body {
   border-radius: var(--radius-lg);
 }
 
-.gradient-text,
+.gradient-text {
+  background: none;
+  color: var(--color-accent-300); /* the logo red in light, soft red in dark */
+}
 .gradient-text-gold {
   background: none;
-  color: var(--color-accent-300);
+  color: var(--color-gold);
 }
 
 /* ── Buttons — Nocturne: outlined, never solid-filled ──────────────────────── */

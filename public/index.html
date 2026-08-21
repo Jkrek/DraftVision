@@ -3,7 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#161826" />
+    <meta name="theme-color" content="#FAFAF7" />
+    <!-- Theme boot — runs before any paint so there is no flash of the wrong
+         theme. Order: saved choice ('dv_theme') → OS preference → light.
+         Keep the colors in sync with --color-bg in src/nocturne.css. -->
+    <script>
+      (function () {
+        var t = 'light';
+        try {
+          var saved = localStorage.getItem('dv_theme');
+          if (saved === 'dark' || saved === 'light') {
+            t = saved;
+          } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            t = 'dark';
+          }
+        } catch (e) {}
+        document.documentElement.setAttribute('data-theme', t);
+        if (t === 'dark') {
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', '#232A36');
+        }
+      })();
+    </script>
     <meta
       name="description"
       content="DraftVision — ML-Powered NFL Prospect Success Prediction. Browse college prospects and get instant AI scouting reports."

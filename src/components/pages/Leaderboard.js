@@ -385,7 +385,7 @@ export default function Leaderboard() {
                   />
                 )}
                 <span className="lb-topcard-name">{player.name}</span>
-                <span className="lb-topcard-grade">{player.grade || '—'}</span>
+                <span className={`lb-topcard-grade${gradeTier(player.grade) === 'a' ? ' is-a' : ''}`}>{player.grade || '—'}</span>
               </button>
             ))}
           </div>

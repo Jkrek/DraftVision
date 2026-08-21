@@ -26,8 +26,13 @@
   height: 100%;
   object-fit: cover;
   object-position: 50% 22%;
+  /* light: near-natural photo; the dark cinematic crush is theme-scoped below */
+  filter: saturate(1.15) contrast(1.04) brightness(0.97);
+}
+[data-theme="dark"] .lb-hero-media img {
   filter: saturate(1.5) contrast(1.1) brightness(0.82);
 }
+
 
 /* dark left scrim into the page ground */
 .lb-hero-scrim-x {
@@ -245,7 +250,7 @@
   width: 18px;
   height: 18px;
   object-fit: contain;
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 .lb-topcard-name {
   font-size: 12.5px;
@@ -262,6 +267,12 @@
   border-radius: 99px;
   color: var(--color-accent-300);
   font-variant-numeric: tabular-nums;
+}
+/* A-range earns the gold, same tier language as the table pills */
+.lb-topcard-grade.is-a {
+  border-color: color-mix(in srgb, var(--color-gold) 65%, transparent);
+  color: color-mix(in srgb, var(--color-gold) 72%, var(--color-text));
+  background: var(--color-gold-soft);
 }
 
 /* ── Position distribution cells ── */
@@ -409,8 +420,17 @@
 .lb-row:hover {
   background: color-mix(in srgb, var(--color-accent) 9%, transparent);
 }
-/* broadcast-board treatment for the top ten */
+/* broadcast-board treatment for the top ten — light theme keeps it faint
+   (red at dark-theme opacities reads as a loud pink wash on white) */
 .lb-row-t10 .lb-fill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-accent) 9%, transparent),
+    color-mix(in srgb, var(--color-accent) 1%, transparent)
+  );
+  box-shadow: 0 0 22px color-mix(in srgb, var(--color-accent) 7%, transparent);
+}
+[data-theme="dark"] .lb-row-t10 .lb-fill {
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--color-accent) 22%, transparent),
@@ -436,6 +456,13 @@
   bottom: 0;
   pointer-events: none;
   transform-origin: left;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-accent) 5%, transparent),
+    color-mix(in srgb, var(--color-accent) 1%, transparent)
+  );
+}
+[data-theme="dark"] .lb-fill {
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--color-accent) 16%, transparent),
@@ -482,7 +509,7 @@
   width: 20px;
   height: 20px;
   object-fit: contain;
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 
 /* provenance badge: profile estimated, no verified season stats */
@@ -527,12 +554,12 @@
   border-radius: 99px;
   color: var(--color-accent-300);
 }
-/* tier tinting stays inside the mono accent ramp — no stoplight colors */
+/* tier tinting — A-range earns the gold; B stays accent; C/D go muted */
 .lb-grade > .lb-grade-a {
-  border-color: var(--color-accent-300);
-  color: var(--color-accent-200);
-  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold) 65%, transparent);
+  color: color-mix(in srgb, var(--color-gold) 72%, var(--color-text));
+  background: var(--color-gold-soft);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-gold) 28%, transparent);
 }
 .lb-grade > .lb-grade-b {
   border-color: var(--color-accent-600);
@@ -567,8 +594,8 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.lb-trend.up   { color: color-mix(in srgb, #7dd3a8 62%, var(--color-neutral-300)); }
-.lb-trend.down { color: color-mix(in srgb, #d3837d 62%, var(--color-neutral-300)); }
+.lb-trend.up   { color: var(--color-up); }
+.lb-trend.down { color: var(--color-down); }
 
 .lb-chev {
   position: relative;

@@ -34,8 +34,13 @@
   height: 100%;
   object-fit: cover;
   object-position: 68% 24%;
+  /* light: near-natural photo; the dark cinematic crush is theme-scoped below */
+  filter: saturate(1.15) contrast(1.04) brightness(0.97);
+}
+[data-theme="dark"] .mock-hero-media img {
   filter: saturate(1.5) contrast(1.1) brightness(0.8);
 }
+
 
 /* dark left scrim into the page ground — copy stays legible */
 .mock-hero-scrim-x {
@@ -299,7 +304,7 @@
   width: 26px;
   height: 26px;
   object-fit: contain;
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 .sim-team:hover {
   background: color-mix(in srgb, var(--color-text) 6%, transparent);
@@ -361,7 +366,7 @@
   width: 18px;
   height: 18px;
   object-fit: contain;
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 
 .sim-order-name {
@@ -435,7 +440,7 @@
   width: 24px;
   height: 24px;
   object-fit: contain;
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 
 .sim-bar-onclock {
@@ -524,7 +529,7 @@
   width: 20px;
   height: 20px;
   object-fit: contain;
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 
 .sim-av-name {
@@ -649,7 +654,7 @@
   width: 20px;
   height: 20px;
   object-fit: contain;
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 
 .sim-trade-team {
@@ -720,7 +725,7 @@
   width: 40px;
   height: 40px;
   object-fit: contain;
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 
 .sim-summary-title {
@@ -1023,7 +1028,7 @@
   height: 22px;
   object-fit: contain;
   /* dark ground: lift the logo slightly so dark marks stay legible */
-  filter: drop-shadow(0 0 1px rgba(233, 233, 237, 0.25));
+  filter: var(--halo-logo);
 }
 
 .mock-row-pos {

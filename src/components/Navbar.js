@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import './Navbar.css';
 import AuthButton from './AuthButton';
 import LogoMark from './Logo';
+import { getTheme, toggleTheme } from '../theme';
 
 const NAV_LINKS = [
   { to: '/',             label: 'Overview',      end: true },
@@ -13,6 +14,23 @@ const NAV_LINKS = [
   { to: '/big-board',    label: 'Big Board'      },
   { to: '/predict',      label: 'Predict'        },
 ];
+
+function ThemeToggle() {
+  const [theme, setTheme] = useState(getTheme);
+  const flip = () => setTheme(toggleTheme());
+  const dark = theme === 'dark';
+  return (
+    <button
+      type="button"
+      className="theme-toggle"
+      onClick={flip}
+      aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
+      title={dark ? 'Light theme' : 'Dark theme'}
+    >
+      <i className={dark ? 'fas fa-sun' : 'fas fa-moon'} aria-hidden="true" />
+    </button>
+  );
+}
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -94,6 +112,7 @@ function Navbar() {
           >
             ▶ YouTube
           </a>
+          <ThemeToggle />
           <AuthButton />
           <Link to="/sign-up" className="nav-cta">Get access</Link>
         </div>
@@ -119,6 +138,7 @@ function Navbar() {
           </NavLink>
         ))}
         <div className="nav-menu-mobile-auth">
+          <ThemeToggle />
           <AuthButton />
           <Link to="/sign-up" className="nav-cta" onClick={close}>Get access</Link>
         </div>
