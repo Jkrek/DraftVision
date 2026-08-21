@@ -132,3 +132,26 @@
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.25; }
 }
+
+/* Phones: the fixed label was eating a third of the strip and the chip /
+   label type dipped below legibility. Slim the label, lift the small type. */
+@media (max-width: 560px) {
+  .ticker-label {
+    padding: 9px 12px 9px 16px;
+  }
+  .ticker-label-text {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+  .ticker-item {
+    padding: 9px 18px;
+    font-size: 12.5px;
+  }
+  .ticker-gradechip {
+    font-size: 11px;
+  }
+  .ticker-pos,
+  .ticker-delta {
+    font-size: 11.5px;
+  }
+}

@@ -746,16 +746,40 @@
   }
   .bb-row,
   .bb-edit-row {
-    gap: 10px;
-    padding-left: 14px;
-    padding-right: 14px;
+    gap: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
   }
+  /* Rebalance fixed columns so the player name keeps ~140px of legible
+     space at 360-390px (school hides; it's on the player's full report). */
   .bb-c-rank {
-    flex-basis: 34px;
+    flex-basis: 26px;
+  }
+  .bb-c-pos {
+    flex: 0 0 34px;
+  }
+  .bb-c-grade {
+    flex: 0 0 40px;
+  }
+  .bb-c-prob {
+    flex: 0 0 52px;
+  }
+  .bb-name {
+    gap: 7px;
+  }
+  .bb-curated .bb-rank {
+    font-size: 18px;
+  }
+  .bb-row-no1 .bb-rank {
+    font-size: 20px;
   }
   .bb-count {
     margin-left: 0;
     text-align: left;
+  }
+  /* fixed save bar: respect the home-indicator safe area */
+  .bb-savebar {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
   }
 
   /* Fitts: ~40px minimum hit areas for touch */

@@ -376,3 +376,17 @@
   .hsp-clear { padding: 8px 10px; }
   .hsp-more .btn { width: 100%; }
 }
+
+@media (max-width: 560px) {
+  /* The school/city column can't share a 360px row with the name — it
+     collapses both to nothing. Hide it (searchable via the search box;
+     commit/year already hide) and rebalance so the name keeps ~130px. */
+  .hsp-col-school { display: none; }
+  .hsp-thead, .hsp-row { padding: 11px 12px; gap: 8px; }
+  .hsp-col-rank { flex: 0 0 30px; }
+  .hsp-col-name { gap: 7px; }
+  .hsp-col-pos { flex: 0 0 34px; }
+  .hsp-col-stars { flex: 0 0 72px; }
+  .hsp-star-pill { letter-spacing: 0.4px; padding: 3px 6px; }
+  .hsp-col-rating { flex: 0 0 58px; font-size: 15px; }
+}

@@ -60,3 +60,18 @@
 .footer-link-yt:hover {
   color: #ff6b66; /* JK brand red accent on hover */
 }
+
+/* Phones: comfortable tap targets for the link row + home-indicator room */
+@media (max-width: 560px) {
+  .footer-inner {
+    padding: 36px 20px calc(36px + env(safe-area-inset-bottom));
+  }
+  .footer-links {
+    gap: 4px 10px;
+  }
+  .footer-link {
+    display: inline-block;
+    padding: 10px 8px;
+    margin: -2px 0;
+  }
+}

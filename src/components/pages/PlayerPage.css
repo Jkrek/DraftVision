@@ -417,8 +417,10 @@
 
 .pp-comp {
   display: flex;
+  flex-wrap: wrap; /* lets the outcome line (flex-basis 100%) take its own row
+                      instead of squeezing the comp's name into a mid-word wrap */
   align-items: baseline;
-  gap: 10px;
+  gap: 4px 10px;
   padding: 9px 0;
   font-size: 13px;
   border-bottom: 1px solid color-mix(in srgb, var(--color-text) 7%, transparent);

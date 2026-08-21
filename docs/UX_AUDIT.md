@@ -191,3 +191,101 @@ primary per screen:
 Verified: `CI=true npx react-scripts build` clean; Playwright spot-checks at
 390 px and 1400 px (seg buttons measure 40 px, Run model 44 px full-width,
 chips render, home hero primary reads above the ghost CTA).
+
+---
+
+## Mobile — systematic pass (390×844 iPhone-class, 360×780 small Android)
+
+Method: Playwright audit of every route at both widths — programmatic
+horizontal-overflow check (`scrollingElement.scrollWidth > innerWidth`),
+tiny-text scan, hero-video mount check, plus visual review of 54 captures
+per run (`/tmp/mobile_audit/{before,after}`). Re-verified after fixes:
+**0 overflow failures / 54 captures at both widths, before and after** —
+the layouts never leaked horizontally; the failures were *inside* rows.
+
+### Per-page verdicts
+
+- **/ (home) — PASS as found.** Hero stacks, CTAs full-width, stats grid
+  2-up, steps + footer clean. Video verified NOT mounted ≤900px (JS gate in
+  `HeroSection.js`). Only fix needed: ticker legibility (below).
+- **Ticker (global) — FIXED.** The fixed "The board" label ate a third of a
+  360px strip and label/grade-chip type sat at 10px. ≤560px: label padding
+  slimmed, label text and grade chips lifted to 11px, item text to 12.5px.
+- **Navbar — PASS + small fix.** Slide-down menu is roomy with 44px rows;
+  the hamburger itself measured ~34px, now `min-width/height: 44px`.
+- **/leaderboard — FIXED (the crux).** At 390/360 the fixed columns
+  (rank 34 + pos 58 + grade 46 + success 86 + chev 18 + 10px gaps) starved
+  the name column to ~10-70px — rows rendered as *logo, pos, grade, number*
+  with **no player name at all**, and the POS header overlapped PLAYER.
+  ≤560px rebalance: rank 26, pos 34, grade 40, success 64 (17px numeral),
+  chev 10, gaps 8, row padding 12 → the name keeps ~140px. Essentials read
+  left-to-right: name+logo, pos, grade, success+trend. Hidden at narrow
+  widths: school (≤560) and projection (≤860) — both appear in the row's
+  expanded panel ("Full scouting report") one tap away, which is why they
+  hide rather than wrap. Expanded panel verified clean at 360.
+- **/big-board — FIXED, same disease/same cure.** Names truncated to
+  "Jere…" at 390. Same column rebalance (success 52 since no trend chip);
+  edit-mode rows share the classes so the editor heals too. The fixed
+  unsaved-changes save bar now pads `env(safe-area-inset-bottom)` so Save
+  clears the home indicator. Hidden ≤560: school (on the player page).
+- **/services (College Stars) — FIXED.** Names collapsed to two letters
+  ("Sa…"). New ≤560 block mirrors the leaderboard rebalance (rank 26,
+  pos 34, grade 40, success 64/17px, gaps 8). Hidden ≤760 (pre-existing):
+  school, projection — both on the player's full report.
+- **/hs-prospects — FIXED.** At 390 the name and HS/City columns split
+  ~56px between them: names showed one letter and the thead overlapped
+  ("PL/POS/CITY" jumble). ≤560: **HS/City column hidden** — it's the
+  lowest-value column (searchable via the search box, and commit/year
+  already hide at 860/720); rank 30, pos 34, stars pill tightened (72px),
+  rating 58/15px. Names now read ~10+ chars; thead is clean.
+- **/mock-draft — PASS + polish.** Setup (team grid 3-up, full-width Start),
+  live board and on-the-clock list were already right (grade/prob columns
+  already hide ≤720). Haul summary rows truncated names ("Leonard Moc…") —
+  grid rebalanced (30px pick, 34px pos, 40px grade, 10px gaps) so full
+  names fit alongside STEAL/REACH tags.
+- **/predict — PASS as found.** Empty state (chips, full-width Run model)
+  and the full report both verified at 360 — no changes needed.
+- **/player/:slug — PASS + one fix.** Hero, metric grid and factor bars
+  stack correctly. Historical-comps rows wrapped the comp's *name*
+  mid-word while the outcome text squeezed beside it: `.pp-comp` now
+  `flex-wrap: wrap`, letting the outcome line (already `flex-basis: 100%`)
+  take its own row — improves desktop too.
+- **/compare — PASS as found.** Empty and `?a=&b=` populated verified at
+  both widths: slot cards, verdict, aligned factor pairs all stack.
+- **/backtest, /edge — PASS as found.** Card-based lists; no tables to fix.
+- **Footer — polish.** Link row gets padded ~40px tap targets and
+  `env(safe-area-inset-bottom)` ≤560px.
+
+### What hides at narrow widths, and why
+
+| Page | Hidden ≤560-860px | Where it still lives |
+| --- | --- | --- |
+| Leaderboard | school (≤560), projection (≤860) | expanded row panel / full report |
+| Big Board | school (≤560) | player page |
+| College Stars | school, projection (≤760) | player page |
+| HS Prospects | HS/City (≤560), year (≤720), commit (≤860) | search matches school/state/commit |
+| Mock draft lists | school, grade/prob on dense lists (≤720) | pick detail / Predict link |
+
+The kept quartet on every board row — **name+logo, pos, grade, success** —
+is the minimum a scout needs to rank players; everything hidden is
+secondary identification or duplicated one tap deeper.
+
+Remaining sub-12px strings are all Nocturne eyebrow labels and badges
+(10-10.5px uppercase kickers, EST/STEAL/REACH chips) — display metadata by
+design, not body copy; body text everywhere measures ≥12.5px.
+
+### Files touched (mobile pass)
+
+- `src/components/pages/Leaderboard.css` — ≤560 column rebalance
+- `src/components/pages/BigBoard.css` — ≤560 rebalance + save-bar safe area
+- `src/components/pages/services.css` — new ≤560 block
+- `src/components/pages/HSProspects.css` — new ≤560 block, school hidden
+- `src/components/pages/MockDraft.css` — haul-row grid rebalance
+- `src/components/pages/PlayerPage.css` — `.pp-comp` wrap fix
+- `src/components/Ticker.css` — ≤560 legibility block
+- `src/components/Navbar.css` — 44px hamburger
+- `src/components/Footer.css` — ≤560 tap targets + safe area
+
+Verified: `CI=true npx react-scripts build` clean; full Playwright re-run at
+390 px and 360 px — 54/54 captures overflow-free on every route, video never
+mounts at phone widths, desktop (1400 px) spot-checked for regressions.

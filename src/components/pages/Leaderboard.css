@@ -797,12 +797,36 @@
   }
   .lb-thead,
   .lb-row {
-    gap: 10px;
-    padding-left: 14px;
-    padding-right: 14px;
+    gap: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
   }
+  /* Rebalance fixed columns so the name — the row's whole point — keeps
+     ~140px of legible space at 360-390px viewports (school and projection
+     are hidden here; both live in the expanded panel / full report). */
   .lb-c-rank {
-    flex-basis: 34px;
+    flex-basis: 26px;
+  }
+  .lb-c-pos {
+    flex: 0 0 34px;
+  }
+  .lb-c-grade {
+    flex: 0 0 40px;
+  }
+  .lb-c-prob {
+    flex: 0 0 64px;
+  }
+  .lb-c-chev {
+    flex: 0 0 10px;
+  }
+  .lb-name {
+    gap: 7px;
+  }
+  .lb-prob {
+    font-size: 17px;
+  }
+  .lb-row-top .lb-rank {
+    font-size: 18px;
   }
   .lb-count {
     margin-left: 0;

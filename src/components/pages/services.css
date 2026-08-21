@@ -269,3 +269,36 @@
     width: 100%;
   }
 }
+
+@media (max-width: 560px) {
+  /* Rebalance fixed columns so the player name keeps ~140px of legible
+     space at 360-390px (school/projection already hide at 760px; both
+     live on the player's full report). */
+  .stars-board-head,
+  .stars-row {
+    padding-left: 12px;
+    padding-right: 12px;
+    gap: 8px;
+  }
+  .col-rank {
+    flex-basis: 26px;
+  }
+  .stars-row--top .col-rank {
+    font-size: 18px;
+  }
+  .col-player {
+    gap: 7px;
+  }
+  .col-pos {
+    flex: 0 0 34px;
+  }
+  .col-grade {
+    flex: 0 0 40px;
+  }
+  .col-prob {
+    flex: 0 0 64px;
+  }
+  .stars-row .col-prob {
+    font-size: 17px;
+  }
+}

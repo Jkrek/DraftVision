@@ -147,6 +147,9 @@
   color: var(--color-neutral-300);
   font-size: 18px;
   padding: 8px;
+  /* Fitts: ≥44px hit area for the one control that opens everything */
+  min-width: 44px;
+  min-height: 44px;
   cursor: pointer;
   margin-left: auto;
 }
