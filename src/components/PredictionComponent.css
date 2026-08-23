@@ -1,11 +1,33 @@
 /* Predict / Scouting report — Nocturne styling (see src/nocturne.css tokens) */
 
+/* Ambient ground — accent + gold washes and a fading yard-line grid so the
+   page never reads as a flat grey slab, in either theme */
 .predict-page {
+  position: relative;
   min-height: 100vh;
-  background: var(--color-bg);
+  background:
+    radial-gradient(1000px 520px at 88% -12%,
+      color-mix(in srgb, var(--color-accent) 13%, transparent), transparent 70%),
+    radial-gradient(760px 460px at -12% 34%,
+      color-mix(in srgb, var(--color-gold) 9%, transparent), transparent 70%),
+    radial-gradient(900px 600px at 50% 115%,
+      color-mix(in srgb, var(--color-accent) 7%, transparent), transparent 70%),
+    var(--color-bg);
+}
+.predict-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(90deg,
+    color-mix(in srgb, var(--color-text) 4%, transparent) 0 1px,
+    transparent 1px 120px);
+  mask-image: linear-gradient(180deg, black, transparent 72%);
+  -webkit-mask-image: linear-gradient(180deg, black, transparent 72%);
 }
 
 .predict-shell {
+  position: relative;
   max-width: 1280px;
   margin: 0 auto;
   padding: 56px 32px 100px;
@@ -323,17 +345,53 @@
     color-mix(in srgb, var(--color-bg) 28%, transparent));
 }
 
+/* Team watermark — huge, ghosted, bleeding off the right edge of the card */
+.report-hero-teammark {
+  position: absolute;
+  right: -4%;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 145%;
+  opacity: 0.16;
+  pointer-events: none;
+  filter: saturate(1.25);
+}
+[data-theme="dark"] .report-hero-teammark { opacity: 0.2; }
+
 .report-hero-content {
   position: relative;
   z-index: 1;
-  padding: 74px 34px 64px;
+  padding: 58px 34px 0 34px;
   display: flex;
   flex-wrap: wrap;
-  gap: 48px;
-  align-items: center;
+  gap: 34px 44px;
+  align-items: flex-end;
+}
+.report-hero-content > .report-metrics { padding-bottom: 56px; }
+.report-identity { padding-bottom: 56px; }
+
+/* ESPN headshot — transparent PNG grounded on the card's bottom edge */
+.report-headshot {
+  flex: 0 0 auto;
+  width: 190px;
+  height: 168px;
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.5));
+  align-self: flex-end;
+  margin-bottom: 0;
 }
 
 .report-identity { flex: 1 1 300px; }
+
+.report-sub-logo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  vertical-align: -6px;
+  margin-right: 8px;
+  filter: var(--halo-logo);
+}
 
 .report-name {
   margin: 0 0 6px;
@@ -608,9 +666,13 @@
   .predict-run-btn { flex: 1 1 100%; padding: 13px 24px; }
   .report-next-btn { flex: 1 1 100%; justify-content: center; }
   .report-hero-content {
-    padding: 48px 22px 42px;
-    gap: 30px;
+    padding: 42px 22px 0;
+    gap: 22px 30px;
   }
+  .report-identity,
+  .report-hero-content > .report-metrics { padding-bottom: 38px; }
+  .report-headshot { width: 128px; height: 112px; }
+  .report-hero-teammark { height: 110%; }
   .report-metrics { gap: 26px; }
   .report-prob-value { font-size: 52px; }
   .report-panel { padding: 24px 20px; }

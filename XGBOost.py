@@ -3475,10 +3475,28 @@ def predict():
         "is_real":         bool(player_data.get("physical_is_real", False)),
     }
 
+    # ESPN ids unlock the headshot + team logo on the report card. The
+    # resolved player dict doesn't carry them, but the board cache does —
+    # match by name, preferring the row at the same team.
+    espn_id      = str(player_data.get("espn_id") or "")
+    espn_team_id = str(player_data.get("espn_team_id") or "")
+    if not espn_id or not espn_team_id:
+        _maybe_reload_prospect_cache()
+        _rn = str(player_data.get("name", player_name)).lower().strip()
+        _rt = _normalize_team(str(player_data.get("team") or ""))
+        _hits = [r for r in _PROSPECT_CACHE if (r.get("name") or "").lower().strip() == _rn]
+        if len(_hits) > 1 and _rt:
+            _hits = [r for r in _hits if _normalize_team(str(r.get("team") or "")) == _rt] or _hits
+        if _hits:
+            espn_id      = espn_id or str(_hits[0].get("espn_id") or "")
+            espn_team_id = espn_team_id or str(_hits[0].get("espn_team_id") or "")
+
     return jsonify(_json_safe(
         {
             "requested_name":      player_name,
             "resolved_name":       str(player_data.get("name", player_name)),
+            "espn_id":             espn_id or None,
+            "espn_team_id":        espn_team_id or None,
             "success":             success_label,
             "confidence":          confidence,
             "reasoning":           reasoning,

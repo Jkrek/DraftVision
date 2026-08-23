@@ -313,6 +313,8 @@ export default function PredictionComponent() {
           const name    = prediction?.resolved_name || selected?.name;
           const pos     = prediction?.predicted_position || selected?.position || '—';
           const team    = prediction?.stats?.team || selected?.team || '';
+          const espnId  = prediction?.espn_id || null;
+          const teamId  = prediction?.espn_team_id || null;
           const prob    = typeof prediction.success_probability === 'number' ? prediction.success_probability : null;
           const factors = Array.isArray(prediction?.top_factors) ? prediction.top_factors : [];
           const comps   = Array.isArray(prediction?.historical_comps) ? prediction.historical_comps : [];
@@ -325,12 +327,37 @@ export default function PredictionComponent() {
                   <img className="report-hero-img" src={img('img-2.jpeg')} alt="" />
                   <div className="report-hero-tint" />
                   <div className="report-hero-scrim" />
+                  {teamId && (
+                    <img
+                      className="report-hero-teammark"
+                      src={`https://a.espncdn.com/i/teamlogos/ncaa/500/${teamId}.png`}
+                      alt=""
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  )}
                 </div>
                 <div className="report-hero-content">
+                  {espnId && (
+                    <img
+                      className="report-headshot"
+                      src={`https://a.espncdn.com/i/headshots/college-football/players/full/${espnId}.png`}
+                      alt=""
+                      loading="lazy"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  )}
                   <div className="report-identity">
                     <h1 className="report-name">{name}</h1>
                     <div className="report-sub">
-                      {pos}{team ? ` · ${team}` : ''}
+                      {teamId && (
+                        <img
+                          className="report-sub-logo"
+                          src={`https://a.espncdn.com/i/teamlogos/ncaa/500/${teamId}.png`}
+                          alt=""
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                      )}
+                      <span>{pos}{team ? ` · ${team}` : ''}</span>
                     </div>
                   </div>
                   <div className="report-metrics">
