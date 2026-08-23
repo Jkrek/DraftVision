@@ -58,7 +58,9 @@ export default function HSProspects() {
       .then(r => r.json())
       .then(data => {
         setProspects(Array.isArray(data.prospects) ? data.prospects : []);
-        setMeta(data.meta || null);
+        // meta.total is the whole cache (all classes incl. enrolled);
+        // data.total is the filtered board — that's the honest count.
+        setMeta(data.meta ? { ...data.meta, total: data.total } : null);
         setApiKeyMissing(!data.api_key_set);
         setError(null);
       })
@@ -95,8 +97,10 @@ export default function HSProspects() {
       return [...list].sort((a, b) => (b.rating || 0) - (a.rating || 0));
     if (sortBy === 'name')
       return [...list].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-    // default: rank
-    return [...list].sort((a, b) => (a.ranking || 9999) - (b.ranking || 9999));
+    // default: class first (seniors on top), national rank within class —
+    // otherwise the #1s of every class interleave at the top of the board
+    return [...list].sort((a, b) =>
+      (a.year || 9999) - (b.year || 9999) || (a.ranking || 9999) - (b.ranking || 9999));
   }, [prospects, posTab, starsFilter, yearFilter, search, sortBy]);
 
   const total   = filtered.length;

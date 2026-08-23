@@ -2456,15 +2456,14 @@ def api_hs_prospects():
     _lt0 = time.localtime()
     _current_hs = _lt0.tm_year + 1 if _lt0.tm_mon >= 7 else _lt0.tm_year
     if request.args.get("include_enrolled") != "1":
-        _maybe_reload_prospect_cache()
-        _college = {(r.get("name") or "").lower().strip() for r in _PROSPECT_CACHE}
+        # Class year is the authoritative test. Rosters lag a season, so a
+        # roster-name match against a current+ class is a common-name
+        # collision (44 measured across 2027/2028), not proof of enrollment.
         def _is_hs(p):
             try:
-                if int(p.get("year") or 0) < _current_hs:
-                    return False
+                return int(p.get("year") or 0) >= _current_hs
             except (TypeError, ValueError):
-                pass
-            return (p.get("name") or "").lower().strip() not in _college
+                return True
         results = [p for p in results if _is_hs(p)]
 
     _HS_POS_GROUPS = {
@@ -2514,19 +2513,16 @@ def api_hs_prospects():
     # college season).
     _lt = time.localtime()
     current_hs_class = _lt.tm_year + 1 if _lt.tm_mon >= 7 else _lt.tm_year
-    # Roster cross-validation: appearing on an FBS roster (the college cache)
-    # is PROOF of enrollment, stronger than class-year bookkeeping.
-    _maybe_reload_prospect_cache()
-    college_names = {(r.get("name") or "").lower().strip() for r in _PROSPECT_CACHE}
+    # Enrollment = the class has graduated. Roster-name matching was dropped:
+    # rosters lag a season, so a match against a current+ class is a
+    # common-name collision, not proof of enrollment.
     out_rows = []
     for p in results[offset: offset + limit]:
         q = dict(p)
         try:
-            stale_class = int(q.get("year") or 0) < current_hs_class
+            q["enrolled"] = int(q.get("year") or 0) < current_hs_class
         except (TypeError, ValueError):
-            stale_class = False
-        on_roster = (q.get("name") or "").lower().strip() in college_names
-        q["enrolled"] = bool(stale_class or on_roster)
+            q["enrolled"] = False
         out_rows.append(q)
 
     meta = dict(_HS_PROSPECT_CACHE_META)
