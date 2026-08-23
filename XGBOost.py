@@ -2490,13 +2490,38 @@ def api_hs_prospects():
     else:  # default: rank
         results = sorted(results, key=lambda p: (p.get("ranking") or 9999))
 
+    # Recruiting classes graduate: the class signed in February ENROLLS by
+    # summer. From July on, "current HS" means next year's class. Rows from
+    # enrolled classes are flagged so the UI never calls a college freshman
+    # a high schooler again (Bryce Underwood was listed here in his second
+    # college season).
+    _lt = time.localtime()
+    current_hs_class = _lt.tm_year + 1 if _lt.tm_mon >= 7 else _lt.tm_year
+    # Roster cross-validation: appearing on an FBS roster (the college cache)
+    # is PROOF of enrollment, stronger than class-year bookkeeping.
+    _maybe_reload_prospect_cache()
+    college_names = {(r.get("name") or "").lower().strip() for r in _PROSPECT_CACHE}
+    out_rows = []
+    for p in results[offset: offset + limit]:
+        q = dict(p)
+        try:
+            stale_class = int(q.get("year") or 0) < current_hs_class
+        except (TypeError, ValueError):
+            stale_class = False
+        on_roster = (q.get("name") or "").lower().strip() in college_names
+        q["enrolled"] = bool(stale_class or on_roster)
+        out_rows.append(q)
+
+    meta = dict(_HS_PROSPECT_CACHE_META)
+    meta["current_hs_class"] = current_hs_class
+
     return jsonify({
         "total":         len(results),
         "offset":        offset,
         "limit":         limit,
-        "meta":          _HS_PROSPECT_CACHE_META,
+        "meta":          meta,
         "api_key_set":   bool(CFBD_API_KEY),
-        "prospects":     results[offset: offset + limit],
+        "prospects":     out_rows,
     })
 
 
@@ -2807,54 +2832,164 @@ NAMED_HISTORICAL_COMPS = [
 ]
 
 
-def find_historical_comps(player_stats: Dict[str, object], n: int = 3) -> list:
-    """Return top-n most similar historical players by feature distance."""
-    pos = (str(player_stats.get("position", "") or "")).upper()
-    player_group = _POS_GROUP.get(pos, pos)
+_COMP_BANK = None          # list of dicts built from combine_outcomes.csv
+_COMP_BANK_STATS = None    # per-feature (mean, std) over the bank
 
-    def _num(v, default):
-        """NaN-safe float — NaN is truthy, so `or default` alone misses it."""
+# Similarity features: (key, weight). Values are percentile/z-comparable at
+# serve time; bank production is percentile-ized through the same table the
+# serving path uses. Distance is masked — only features BOTH sides have.
+_COMP_FEATURES = [
+    ("production", 2.0), ("speed", 1.2), ("tier", 1.0), ("stars", 1.5),
+    ("height", 0.7), ("weight", 0.7), ("years", 0.8),
+]
+
+
+def _load_comp_bank() -> None:
+    """Historical comp bank: real prospects 2000-2023 with known outcomes."""
+    global _COMP_BANK, _COMP_BANK_STATS
+    import csv as _csv
+    from dv_features import _raw_production_to_percentile
+    bank = []
+    try:
+        with open(TRAINING_DATA_PATH) as fh:
+            for r in _csv.DictReader(fh):
+                try:
+                    year = int(float(r.get("draft_year") or 0))
+                except ValueError:
+                    continue
+                if not (2000 <= year <= 2023):
+                    continue  # outcome must be settled
+                pos = (r.get("position") or "").upper()
+                group = _POS_GROUP.get(pos, pos)
+                if not group:
+                    continue
+
+                def fv(key):
+                    v = r.get(key)
+                    try:
+                        f = float(v)
+                        return None if math.isnan(f) else f
+                    except (TypeError, ValueError):
+                        return None
+
+                raw_prod = fv("production_score")
+                feats = {
+                    "production": (_raw_production_to_percentile(group, raw_prod)
+                                   if raw_prod is not None else None),
+                    "speed":  fv("combine_speed_score"),
+                    "tier":   fv("conference_tier"),
+                    "stars":  fv("rec_stars"),
+                    "height": fv("height_in"),
+                    "weight": fv("weight_lb"),
+                    "years":  fv("years_in_college"),
+                }
+                rd = fv("draft_round")
+                rd = int(rd) if rd is not None else 8
+                bits = [f"R{rd} · {year}" if rd <= 7 else f"UDFA · {year}"]
+                pb = int(fv("pro_bowls") or 0)
+                ss = int(fv("seasons_started") or 0)
+                if pb:
+                    bits.append(f"{pb}x Pro Bowl")
+                elif ss >= 3:
+                    bits.append(f"{ss} seasons as a starter")
+                elif int(fv("nfl_success") or 0) == 0 and rd <= 3:
+                    bits.append("did not stick")
+                bank.append({
+                    "name": (r.get("name") or "").strip(),
+                    "position": pos, "group": group, "feats": feats,
+                    "outcome": " · ".join(bits),
+                    "nfl_success": int(fv("nfl_success") or 0),
+                })
+    except Exception as exc:
+        print(f"Comp bank unavailable ({exc}) — comps disabled")
+        _COMP_BANK, _COMP_BANK_STATS = [], {}
+        return
+    stats = {}
+    for key, _w in _COMP_FEATURES:
+        vals = [b["feats"][key] for b in bank if b["feats"][key] is not None]
+        if len(vals) >= 30:
+            mean = sum(vals) / len(vals)
+            var = sum((v - mean) ** 2 for v in vals) / len(vals)
+            stats[key] = (mean, max(var ** 0.5, 1e-6))
+    _COMP_BANK, _COMP_BANK_STATS = bank, stats
+    print(f"Comp bank loaded: {len(bank)} historical prospects (2000-2023).")
+
+
+def find_historical_comps(player_stats: Dict[str, object], n: int = 3) -> list:
+    """Top-n statistically closest REAL historical prospects (2000-2023),
+    nearest-neighbor over a masked z-scored feature distance within the
+    player's position group. Replaces the old 46-name hand-curated list,
+    whose tiny per-position pools gave different players identical comps."""
+    if _COMP_BANK is None:
+        _load_comp_bank()
+    if not _COMP_BANK:
+        return []
+
+    pos = (str(player_stats.get("position", "") or "")).upper()
+    group = _POS_GROUP.get(pos, pos)
+
+    def _num(v):
         try:
             f = float(v)
+            return None if math.isnan(f) else f
         except (TypeError, ValueError):
-            return default
-        return default if math.isnan(f) else f
+            return None
 
-    prod  = _num(player_stats.get("production_score") or 0, 0)
-    speed = _num(player_stats.get("combine_speed_score") or 50, 50)
-    tier  = _num(player_stats.get("conference_tier") or 5, 5)
-    award = int(player_stats.get("is_award_winner") or 0)
-    aa    = int(player_stats.get("is_all_american") or 0)
-    tier_norm = (11.0 - tier) / 10.0 * 100  # invert so higher = better
+    name = str(player_stats.get("name") or "")
+    team = str(player_stats.get("team") or "")
+    enr = enrichment_for(name, team) or {}
+    phys_real = bool(player_stats.get("physical_is_real"))
+    me = {
+        "production": _num(player_stats.get("production_score")),
+        "speed":  _num(player_stats.get("combine_speed_score")),
+        "tier":   _num(player_stats.get("conference_tier")),
+        "stars":  _num(enr.get("stars")),
+        # hash-estimated height/weight must not drive similarity
+        "height": _num(player_stats.get("height_inches")) if phys_real else None,
+        "weight": _num(player_stats.get("weight_lbs")) if phys_real else None,
+        # years in college at the next draft, from the recruiting class
+        "years": (
+            (time.localtime().tm_year + 1) - int(enr["recruit_year"])
+            if _num(enr.get("recruit_year")) else None
+        ),
+    }
 
     scored = []
-    for comp in NAMED_HISTORICAL_COMPS:
-        comp_group = _POS_GROUP.get(comp["position"].upper(), comp["position"].upper())
-        if comp_group != player_group:
+    for b in _COMP_BANK:
+        if b["group"] != group:
             continue
-        cp = float(comp["production_score"])
-        cs = float(comp["combine_speed_score"])
-        ct = (11.0 - float(comp["conference_tier"])) / 10.0 * 100
-        ca = int(comp["is_award_winner"])
-        caa = int(comp["is_all_american"])
-        dist = (
-            ((prod - cp) / 100) ** 2 * 2.0
-            + ((speed - cs) / 100) ** 2 * 1.5
-            + ((tier_norm - ct) / 100) ** 2 * 1.0
-            + (award - ca) ** 2 * 0.3
-            + (aa - caa) ** 2 * 0.2
-        ) ** 0.5
-        similarity = max(0, round(100 - dist * 100))
-        scored.append({
-            "name":       comp["name"],
-            "position":   comp["position"],
-            "similarity": similarity,
-            "outcome":    comp["outcome"],
-            "nfl_success": comp["nfl_success"],
-        })
+        acc, wsum, used = 0.0, 0.0, 0
+        for key, w in _COMP_FEATURES:
+            a, c = me.get(key), b["feats"][key]
+            st = _COMP_BANK_STATS.get(key)
+            if a is None or c is None or st is None:
+                continue
+            z = (a - c) / st[1]
+            acc += w * z * z
+            wsum += w
+            used += 1
+        if used < 2:
+            continue  # not enough shared evidence for an honest comp
+        dist = (acc / wsum) ** 0.5
+        scored.append((dist, used, b))
+    scored.sort(key=lambda x: x[0])
 
-    scored.sort(key=lambda x: x["similarity"], reverse=True)
-    return scored[:n]
+    out = []
+    for dist, used, b in scored[:n]:
+        # exp decay reads naturally (dist 0 -> ~99, 1σ avg -> ~37); capped
+        # below 100 because "100% match" overclaims, and thin-evidence comps
+        # (few shared features) are further discounted.
+        sim = min(99.0, 100.0 * math.exp(-dist))
+        if used < 4:
+            sim = min(sim, 60.0 + 5.0 * used)
+        out.append({
+            "name": b["name"],
+            "position": b["position"],
+            "similarity": max(1, round(sim)),
+            "outcome": b["outcome"],
+            "nfl_success": b["nfl_success"],
+        })
+    return out
 
 
 # ── Kalshi market-edge board (dv_edge.py) ─────────────────────────────────────

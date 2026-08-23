@@ -12,7 +12,7 @@ Setup:
     3. Run: python build_hs_prospect_cache.py
 
 Options:
-    --years         Comma-separated list of class years (default: 2023,2024,2025,2026)
+    --years         Comma-separated class years (default: 2027,2028 = current HS)
     --min-stars     Minimum star rating to include (default: 3)
     --output        Output file path (default: training_data/hs_prospect_cache.json)
 """
@@ -170,8 +170,8 @@ def fetch_recruits_for_year(year: int, api_key: str, min_stars: int = 3) -> list
 
 def main():
     parser = argparse.ArgumentParser(description="Build HS prospect cache from CFBD API.")
-    parser.add_argument("--years",      default="2023,2024,2025,2026",
-                        help="Comma-separated class years (default: 2023,2024,2025,2026)")
+    parser.add_argument("--years",      default="2026,2027,2028",
+                        help="Comma-separated class years (default: current HS classes)")
     parser.add_argument("--min-stars",  type=int, default=3,
                         help="Minimum star rating to include (default: 3)")
     parser.add_argument("--output",     default=OUTPUT_FILE,

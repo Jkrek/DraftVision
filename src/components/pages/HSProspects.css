@@ -395,3 +395,17 @@
   .hsp-star-pill { letter-spacing: 0.4px; padding: 3px 6px; }
   .hsp-col-rating { flex: 0 0 58px; font-size: 15px; }
 }
+
+/* enrolled cross-validation chip: this recruit is on a college roster or in
+   a signed class — no longer a high schooler */
+.hsp-enrolled {
+  flex: 0 0 auto;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
+  color: color-mix(in srgb, var(--color-gold) 80%, var(--color-neutral-300));
+  background: var(--color-gold-soft, transparent);
+}

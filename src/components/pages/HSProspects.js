@@ -143,6 +143,16 @@ export default function HSProspects() {
             Set <code>CFBD_API_KEY</code> env var (free at collegefootballdata.com) to fetch live data
           </p>
         )}
+        {!loading && meta && meta.current_hs_class &&
+          prospects.length > 0 &&
+          !prospects.some(p => Number(p.year) >= meta.current_hs_class) && (
+          <p className="hsp-note">
+            Class of {meta.current_hs_class} rankings arrive when the composite
+            publishes — showing the most recent signed class meanwhile. Players
+            marked <span className="hsp-enrolled">Enrolled</span> are already on
+            college rosters (see the college board).
+          </p>
+        )}
         {error && <p className="hsp-error">{error}</p>}
 
         {/* Filter bar */}
@@ -246,6 +256,14 @@ export default function HSProspects() {
               </div>
 
               <div className="hsp-col-name">
+                {p.enrolled && (
+                  <span
+                    className="hsp-enrolled"
+                    title="Already enrolled — appears on a college roster or is a signed class"
+                  >
+                    Enrolled
+                  </span>
+                )}
                 <svg
                   className="hsp-school-icon"
                   viewBox="0 0 20 20"
