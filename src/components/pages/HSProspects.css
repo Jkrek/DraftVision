@@ -354,6 +354,22 @@
   color: var(--color-neutral-500);
   border-top: 1px solid color-mix(in srgb, var(--color-text) 7%, transparent);
 }
+.hsp-empty p {
+  max-width: 520px;
+  margin: 0 auto 18px;
+  line-height: 1.65;
+}
+
+/* inline text-button inside notes ("Back to the HS board") */
+.hsp-linklike {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--color-accent-300);
+  text-decoration: underline;
+  cursor: pointer;
+}
 
 /* — load more — */
 .hsp-more {

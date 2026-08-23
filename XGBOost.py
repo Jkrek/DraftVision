@@ -2450,6 +2450,23 @@ def api_hs_prospects():
 
     results = _HS_PROSPECT_CACHE
 
+    # A high-school board shows HIGH SCHOOLERS. Enrolled players (signed
+    # classes, or names proven on FBS rosters) are excluded by default —
+    # they live on the college board now. ?include_enrolled=1 for research.
+    _lt0 = time.localtime()
+    _current_hs = _lt0.tm_year + 1 if _lt0.tm_mon >= 7 else _lt0.tm_year
+    if request.args.get("include_enrolled") != "1":
+        _maybe_reload_prospect_cache()
+        _college = {(r.get("name") or "").lower().strip() for r in _PROSPECT_CACHE}
+        def _is_hs(p):
+            try:
+                if int(p.get("year") or 0) < _current_hs:
+                    return False
+            except (TypeError, ValueError):
+                pass
+            return (p.get("name") or "").lower().strip() not in _college
+        results = [p for p in results if _is_hs(p)]
+
     _HS_POS_GROUPS = {
         "DB": {"CB", "S", "DB", "FS", "SS"},
         "LB": {"LB", "ILB", "OLB", "MLB"},

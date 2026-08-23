@@ -47,10 +47,14 @@ export default function HSProspects() {
   });
   const [sortBy, setSortBy]         = useState('rank');
   const [page, setPage]             = useState(0);
+  // The board only shows actual high schoolers. When the current class isn't
+  // published yet that's an empty board — this opts into viewing the signed
+  // (enrolled) class for reference instead.
+  const [showEnrolled, setShowEnrolled] = useState(false);
 
   useEffect(() => {
     setLoading(true);
-    anonFetch('/api/hs-prospects?limit=2000')
+    anonFetch(`/api/hs-prospects?limit=2000${showEnrolled ? '&include_enrolled=1' : ''}`)
       .then(r => r.json())
       .then(data => {
         setProspects(Array.isArray(data.prospects) ? data.prospects : []);
@@ -60,7 +64,7 @@ export default function HSProspects() {
       })
       .catch(() => setError('Failed to load HS prospects.'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [showEnrolled]);
 
   // Collect unique years from data
   const availableYears = useMemo(() => {
@@ -143,14 +147,14 @@ export default function HSProspects() {
             Set <code>CFBD_API_KEY</code> env var (free at collegefootballdata.com) to fetch live data
           </p>
         )}
-        {!loading && meta && meta.current_hs_class &&
-          prospects.length > 0 &&
-          !prospects.some(p => Number(p.year) >= meta.current_hs_class) && (
+        {!loading && showEnrolled && prospects.length > 0 && (
           <p className="hsp-note">
-            Class of {meta.current_hs_class} rankings arrive when the composite
-            publishes — showing the most recent signed class meanwhile. Players
-            marked <span className="hsp-enrolled">Enrolled</span> are already on
-            college rosters (see the college board).
+            Viewing the signed Class of {availableYears[0] || ''} for reference —
+            these players are <span className="hsp-enrolled">Enrolled</span> on
+            college rosters and are no longer high schoolers.{' '}
+            <button className="hsp-linklike" onClick={() => setShowEnrolled(false)}>
+              Back to the HS board
+            </button>
           </p>
         )}
         {error && <p className="hsp-error">{error}</p>}
@@ -245,7 +249,22 @@ export default function HSProspects() {
             <div className="hsp-empty">Loading prospects…</div>
           ) : shown.length === 0 ? (
             <div className="hsp-empty">
-              {prospects.length === 0
+              {prospects.length === 0 && meta && meta.current_hs_class ? (
+                <>
+                  <p>
+                    The Class of {meta.current_hs_class} isn't ranked yet — the
+                    board fills automatically when the recruiting composite
+                    publishes. Last year's class has enrolled and lives on the
+                    college board now.
+                  </p>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setShowEnrolled(true)}
+                  >
+                    View last signed class for reference
+                  </button>
+                </>
+              ) : prospects.length === 0
                 ? 'No HS prospects cached — run build_hs_prospect_cache.py to populate'
                 : 'No prospects match your filters'}
             </div>
