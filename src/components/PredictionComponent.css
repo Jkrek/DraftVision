@@ -413,6 +413,10 @@
 
 .report-metrics {
   flex: 0 0 auto;
+  /* as a flex ITEM it must not outgrow the card row — without this bound
+     its own flex-wrap never engages and the grade walks off small screens */
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   align-items: flex-end;
   gap: 36px;
