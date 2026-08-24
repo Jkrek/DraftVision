@@ -96,6 +96,13 @@ jobs:
             --workers 6 \
             --delay 0
 
+      - name: Post-process board (nominal picks, projection relabel)
+        # Re-ranks model picks within each draft class and relabels the
+        # projection ladder against the FRESH board (the serve path during the
+        # rebuild ranked against the previous board's distribution). Also
+        # prints the current grade-cutoff percentiles for drift monitoring.
+        run: python scripts/postprocess_board.py
+
       - name: Generate weekly YouTube recap
         run: python scripts/generate_weekly_recap.py
 
