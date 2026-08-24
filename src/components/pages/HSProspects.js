@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { anonFetch } from '../../lib/api';
+import InfoTip from '../InfoTip';
 import './HSProspects.css';
 
 const POSITION_TABS = ['ALL', 'QB', 'RB', 'WR', 'TE', 'DB', 'LB', 'DL', 'OL'];
@@ -243,10 +244,22 @@ export default function HSProspects() {
             <div className="hsp-col-name">Player</div>
             <div className="hsp-col-school">HS / City</div>
             <div className="hsp-col-pos">Pos</div>
-            <div className="hsp-col-stars">Stars</div>
+            <div className="hsp-col-stars">
+              Stars
+              <InfoTip
+                place="bottom"
+                text="Recruiting star tier. From the 247Sports composite when a class has signed; for future classes, ESPN’s 0–100 grade mapped to its published bands (90+ = 5★, 80+ = 4★, 70+ = 3★)."
+              />
+            </div>
             <div className="hsp-col-year">Yr</div>
             <div className="hsp-col-commit">Commit</div>
-            <div className="hsp-col-rating">Rating</div>
+            <div className="hsp-col-rating">
+              Rating
+              <InfoTip
+                place="bottom-left"
+                text="Numeric recruiting rating on a 0–1 scale — the 247Sports composite (aggregating 247, Rivals, ESPN and On3) for signed classes; ESPN grade ÷ 100 for future classes."
+              />
+            </div>
           </div>
 
           {loading ? (

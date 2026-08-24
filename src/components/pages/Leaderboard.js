@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { anonFetch } from '../../lib/api';
+import InfoTip from '../InfoTip';
 import './Leaderboard.css';
 
 const PAGE_SIZE   = 100;
@@ -279,9 +280,12 @@ export default function Leaderboard() {
     { label: 'Player',     cls: 'lb-c-name',   sort: 'name' },
     { label: 'Pos',        cls: 'lb-c-pos',    sort: null },
     { label: 'School',     cls: 'lb-c-school', sort: 'team' },
-    { label: 'Projection', cls: 'lb-c-proj',   sort: null },
-    { label: 'Grade',      cls: 'lb-c-grade',  sort: 'grade' },
-    { label: 'Success',    cls: 'lb-c-prob',   sort: 'success' },
+    { label: 'Projection', cls: 'lb-c-proj',   sort: null,
+      tip: 'Projected draft range from the ensemble’s draft-round classifier, trained on the 2000–2023 draft classes.' },
+    { label: 'Grade',      cls: 'lb-c-grade',  sort: 'grade',
+      tip: 'Letter grade from percentile cutoffs of success probability across the whole board — A+ is the top 2%, A- the top 10%, C+ sits near the median.' },
+    { label: 'Success',    cls: 'lb-c-prob',   sort: 'success',
+      tip: 'The ML ensemble’s calibrated chance this player becomes an NFL success — a Pro Bowl, 3+ seasons as a starter, or 30+ career Approximate Value.' },
   ];
 
   return (
@@ -419,17 +423,21 @@ export default function Leaderboard() {
         {/* ── Board table ── */}
         <div className="lb-table">
           <div className="lb-thead">
-            {sortHeaders.map(h => h.sort ? (
-              <button
-                key={h.label}
-                type="button"
-                className={`lb-th ${h.cls}${sortBy === h.sort ? ' active' : ''}`}
-                onClick={() => onSort(h.sort)}
-              >
-                {h.label}
-              </button>
-            ) : (
-              <div key={h.label} className={`lb-th-static ${h.cls}`}>{h.label}</div>
+            {sortHeaders.map(h => (
+              <div key={h.label} className={`lb-thc ${h.cls}`}>
+                {h.sort ? (
+                  <button
+                    type="button"
+                    className={`lb-th${sortBy === h.sort ? ' active' : ''}`}
+                    onClick={() => onSort(h.sort)}
+                  >
+                    {h.label}
+                  </button>
+                ) : (
+                  <span className="lb-th-static">{h.label}</span>
+                )}
+                {h.tip && <InfoTip text={h.tip} place="bottom-left" />}
+              </div>
             ))}
             <div className="lb-c-chev" aria-hidden="true" />
           </div>

@@ -366,6 +366,12 @@
   background: var(--color-neutral-900);
 }
 
+/* Header cell wrapper — carries the lb-c-* column sizing, holds label + tip */
+.lb-thc {
+  display: inline-flex;
+  align-items: center;
+}
+
 .lb-th,
 .lb-th-static {
   font-family: var(--font-body);

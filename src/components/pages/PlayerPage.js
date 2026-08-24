@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { anonFetch } from '../../lib/api';
+import InfoTip from '../InfoTip';
 import './PlayerPage.css';
 
 // ── Shared slug helper ───────────────────────────────────────────────────
@@ -271,13 +272,19 @@ export default function PlayerPage() {
         {/* ── Grade card ── */}
         <section className="pp-grade-card">
           <div className="pp-grade-cell">
-            <div className="pp-cell-label">Grade</div>
+            <div className="pp-cell-label">
+              Grade
+              <InfoTip text="Letter grade from percentile cutoffs of success probability across the whole board — A+ is the top 2%, A- the top 10%, C+ sits near the median. Graded on the curve of this class." />
+            </div>
             <span className={`pp-grade-pill${tier ? ` pp-grade-${tier}` : ''}`}>
               {player.grade || '—'}
             </span>
           </div>
           <div className="pp-grade-cell">
-            <div className="pp-cell-label">Success probability</div>
+            <div className="pp-cell-label">
+              Success probability
+              <InfoTip text="The ML ensemble’s calibrated chance this player becomes an NFL success — defined in training as a Pro Bowl, 3+ seasons as a starter, or 30+ career Approximate Value." />
+            </div>
             <div className="pp-prob">
               {sp != null ? (
                 <>
@@ -292,7 +299,10 @@ export default function PlayerPage() {
             </div>
           </div>
           <div className="pp-grade-cell">
-            <div className="pp-cell-label">Draft projection</div>
+            <div className="pp-cell-label">
+              Draft projection
+              <InfoTip text="Projected draft range from the ensemble’s draft-round classifier, trained on the 2000–2023 draft classes." place="top-left" />
+            </div>
             <div className="pp-proj">{player.draft_grade || '—'}</div>
           </div>
         </section>
@@ -367,7 +377,10 @@ export default function PlayerPage() {
               )}
               {why.comps && why.comps.length > 0 && (
                 <div className="pp-comps">
-                  <div className="pp-cell-label">Historical comps</div>
+                  <div className="pp-cell-label">
+                    Historical comps
+                    <InfoTip text="Nearest real prospects from the 2000–2023 classes at the same position group — statistical distance over height, weight, speed, production and pedigree. Capped at 99%: no comp is a clone." />
+                  </div>
                   {why.comps.map((c) => (
                     <div className="pp-comp" key={c.name}>
                       <span className="pp-comp-name">{c.name}</span>

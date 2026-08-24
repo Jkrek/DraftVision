@@ -3,7 +3,33 @@ import React, {
 } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { anonFetch } from '../lib/api';
+import InfoTip from './InfoTip';
 import './PredictionComponent.css';
+
+// Metric explainers — these describe the ACTUAL calculations (see XGBOost.py)
+const TIP = {
+  successProb:
+    'The ML ensemble’s calibrated estimate that this player becomes an NFL '
+    + '“success” — defined in training as making a Pro Bowl, starting 3+ '
+    + 'seasons, or reaching 30+ career Approximate Value. Built from 29 features: '
+    + 'production, athleticism, recruiting pedigree and competition level.',
+  projection:
+    'Projected draft range from the ensemble’s draft-round classifier, '
+    + 'trained on the 2000–2023 draft classes.',
+  grade:
+    'Letter grade from percentile cutoffs of success probability across the '
+    + 'full FBS board — A+ is the top 2%, A- the top 10%, C+ sits near the '
+    + 'median. Graded on the curve of this class, not an absolute scale.',
+  factors:
+    'Per-player SHAP attribution — how much each feature pushed THIS '
+    + 'prediction up or down, as a share of the total. Longer bar = bigger '
+    + 'influence on the number above.',
+  comps:
+    'Nearest real prospects from the 2000–2023 classes at the same position '
+    + 'group — statistical distance over height, weight, speed, 40/vertical '
+    + '(when measured), production, recruiting stars and competition level. '
+    + 'Capped at 99%: no comp is a clone.',
+};
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const img = (file) => `${process.env.PUBLIC_URL}/images/CFB Content/${file}`;
@@ -388,18 +414,27 @@ export default function PredictionComponent() {
                   </div>
                   <div className="report-metrics">
                     <div className="report-metric">
-                      <div className="report-metric-label">Success probability</div>
+                      <div className="report-metric-label">
+                        Success probability
+                        <InfoTip text={TIP.successProb} place="bottom" />
+                      </div>
                       <div className="report-prob">
                         <span className="report-prob-value">{prob !== null ? prob : '—'}</span>
                         {prob !== null && <span className="report-prob-unit">%</span>}
                       </div>
                     </div>
                     <div className="report-metric">
-                      <div className="report-metric-label">Projection</div>
+                      <div className="report-metric-label">
+                        Projection
+                        <InfoTip text={TIP.projection} place="bottom" />
+                      </div>
                       <div className="report-metric-value">{prediction?.draft_grade || '—'}</div>
                     </div>
                     <div className="report-metric">
-                      <div className="report-metric-label">Grade</div>
+                      <div className="report-metric-label">
+                        Grade
+                        <InfoTip text={TIP.grade} place="bottom-left" />
+                      </div>
                       <div
                         className={`report-grade${
                           gradeTier(prediction?.prospect_grade)
@@ -416,7 +451,10 @@ export default function PredictionComponent() {
               {/* 1px-gapped panels */}
               <section className="report-panels">
                 <div className="report-panel report-factors">
-                  <div className="report-panel-label">Top prediction factors</div>
+                  <div className="report-panel-label">
+                    Top prediction factors
+                    <InfoTip text={TIP.factors} place="bottom" />
+                  </div>
                   {factors.length > 0 ? factors.map((f, i) => (
                     <div className="factor" key={f.feature}>
                       <div className="factor-head">
@@ -437,7 +475,10 @@ export default function PredictionComponent() {
 
                 {comps.length > 0 && (
                   <div className="report-panel report-comps">
-                    <div className="report-panel-label">Closest historical comps</div>
+                    <div className="report-panel-label">
+                      Closest historical comps
+                      <InfoTip text={TIP.comps} place="bottom" />
+                    </div>
                     {comps.map((c, i) => (
                       <div className="comp-row" key={`${c.name}-${i}`}>
                         <div className="comp-id">
