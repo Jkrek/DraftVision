@@ -15,6 +15,13 @@ const slugify = (name, team) =>
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '');
 
+// Grade letter → tier class for color-coding (house pattern: gold A,
+// accent B, muted C/D — same tiers the Big Board pills use).
+const gradeTier = (grade) => {
+  const c = (grade || '').charAt(0).toUpperCase();
+  return c === 'A' ? 'a' : c === 'B' ? 'b' : c === 'C' ? 'c' : c === 'D' ? 'd' : '';
+};
+
 // One-tap starters for the empty state — recognizable names beat a blank box.
 const SUGGESTED_PLAYERS = ['Jeremiah Smith', 'Arch Manning', 'Julian Sayin'];
 
@@ -114,6 +121,24 @@ export default function PredictionComponent() {
     }
   }, []);
 
+  // Resolve a bare name through /search before predicting — the matched row
+  // carries espn_id/team, which unlocks the verified-stats path and the
+  // physically-grounded comps. Bare-name predictions get a baseline profile.
+  const resolveAndPredict = useCallback(async (name) => {
+    try {
+      const res  = await anonFetch(apiUrl(`/search?q=${encodeURIComponent(name)}`));
+      const data = await res.json();
+      const rows = (Array.isArray(data.players) ? data.players : []).filter((p) => p.kind !== 'hs');
+      const match =
+        rows.find((p) => p.name.toLowerCase() === name.toLowerCase() && p.espn_id) ||
+        rows.find((p) => p.name.toLowerCase() === name.toLowerCase()) ||
+        null;
+      runPrediction(match || { name, position: 'UNK', team: '' });
+    } catch {
+      runPrediction({ name, position: 'UNK', team: '' });
+    }
+  }, [runPrediction]);
+
   // "Run model" — predict whatever is typed (prefer a non-HS autocomplete match;
   // the college model does not apply to high-school prospects)
   const handleRun = useCallback(() => {
@@ -122,8 +147,9 @@ export default function PredictionComponent() {
     const match = acResults.find(
       (p) => p.kind !== 'hs' && p.name.toLowerCase() === name.toLowerCase(),
     );
-    runPrediction(match || { name, position: 'UNK', team: '' });
-  }, [acQuery, acResults, predicting, runPrediction]);
+    if (match) runPrediction(match);
+    else resolveAndPredict(name);
+  }, [acQuery, acResults, predicting, runPrediction, resolveAndPredict]);
 
   // ── sync ──────────────────────────────────────────────────────
   const handleSync = useCallback(async () => {
@@ -151,9 +177,9 @@ export default function PredictionComponent() {
       didAutoPredict.current = true;
       // Clean the URL so a back-navigation doesn't re-trigger
       window.history.replaceState(null, '', '/predict');
-      runPrediction({ name, position: 'UNK', team: '' });
+      resolveAndPredict(name);
     }
-  }, [location.search, runPrediction]);
+  }, [location.search, resolveAndPredict]);
 
   // ── auto-focus the search box — this page's one job is search. Skipped
   // when arriving via ?name= (auto-predict is already running) and on
@@ -263,7 +289,7 @@ export default function PredictionComponent() {
                   key={name}
                   type="button"
                   className="predict-try-chip"
-                  onClick={() => runPrediction({ name, position: 'UNK', team: '' })}
+                  onClick={() => resolveAndPredict(name)}
                 >
                   {name}
                 </button>
@@ -374,7 +400,14 @@ export default function PredictionComponent() {
                     </div>
                     <div className="report-metric">
                       <div className="report-metric-label">Grade</div>
-                      <div className="report-metric-value report-metric-accent">{prediction?.prospect_grade || '—'}</div>
+                      <div
+                        className={`report-grade${
+                          gradeTier(prediction?.prospect_grade)
+                            ? ` report-grade-${gradeTier(prediction?.prospect_grade)}`
+                            : ''}`}
+                      >
+                        {prediction?.prospect_grade || '—'}
+                      </div>
                     </div>
                   </div>
                 </div>

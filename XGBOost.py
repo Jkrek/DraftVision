@@ -1267,8 +1267,10 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
                             "height_score","weight_score","vert_score","physical_is_real"):
                     if combine_data.get(key) is not None:
                         profile[key] = combine_data[key]
-            # Fill height/weight from athlete info if combine didn't have it
-            if not profile.get("height_inches") and ath_info.get("height_inches"):
+            # Roster-listed height/weight from athlete info is REAL and must
+            # replace the hash-estimated numbers the base profile always has
+            # (combine measurables, when merged above, still take precedence).
+            if not profile.get("physical_is_real") and ath_info.get("height_inches"):
                 profile["height_inches"]  = ath_info["height_inches"]
                 profile["weight_lbs"]     = ath_info.get("weight_lbs", 0)
                 profile["display_height"] = ath_info.get("display_height", "")
@@ -1300,7 +1302,7 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
                             "height_score","weight_score","vert_score","physical_is_real"):
                     if combine_data.get(key) is not None:
                         result[key] = combine_data[key]
-            if not result.get("height_inches") and ath_info.get("height_inches"):
+            if not result.get("physical_is_real") and ath_info.get("height_inches"):
                 result["height_inches"]  = ath_info["height_inches"]
                 result["weight_lbs"]     = ath_info.get("weight_lbs", 0)
                 result["display_height"] = ath_info.get("display_height", "")
@@ -2851,9 +2853,13 @@ _COMP_BANK_STATS = None    # per-feature (mean, std) over the bank
 # Similarity features: (key, weight). Values are percentile/z-comparable at
 # serve time; bank production is percentile-ized through the same table the
 # serving path uses. Distance is masked — only features BOTH sides have.
+# Physically weighted: a comp should look and move like the player first
+# (height/weight/speed, plus forty/vertical when real), with production
+# and pedigree refining rather than dominating.
 _COMP_FEATURES = [
-    ("production", 2.0), ("speed", 1.2), ("tier", 1.0), ("stars", 1.5),
-    ("height", 0.7), ("weight", 0.7), ("years", 0.8),
+    ("height", 1.6), ("weight", 1.6), ("speed", 1.6),
+    ("forty", 1.4), ("vertical", 0.8),
+    ("production", 1.4), ("stars", 1.1), ("tier", 0.8), ("years", 0.6),
 ]
 
 
@@ -2894,6 +2900,8 @@ def _load_comp_bank() -> None:
                     "stars":  fv("rec_stars"),
                     "height": fv("height_in"),
                     "weight": fv("weight_lb"),
+                    "forty":  fv("combine_forty") or None,     # 0 = missing
+                    "vertical": fv("vertical") or None,
                     "years":  fv("years_in_college"),
                 }
                 rd = fv("draft_round")
@@ -2960,6 +2968,9 @@ def find_historical_comps(player_stats: Dict[str, object], n: int = 3) -> list:
         # hash-estimated height/weight must not drive similarity
         "height": _num(player_stats.get("height_inches")) if phys_real else None,
         "weight": _num(player_stats.get("weight_lbs")) if phys_real else None,
+        # combine numbers only exist when measured — 0 means missing
+        "forty":    (_num(player_stats.get("combine_forty")) or None) if phys_real else None,
+        "vertical": (_num(player_stats.get("combine_vertical")) or None) if phys_real else None,
         # years in college at the next draft, from the recruiting class
         "years": (
             (time.localtime().tm_year + 1) - int(enr["recruit_year"])

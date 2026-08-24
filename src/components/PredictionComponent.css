@@ -452,6 +452,23 @@
 }
 .report-metric-accent { color: var(--color-accent-300); }
 
+/* The grade is the verdict — same visual weight as the probability,
+   color-coded by tier (gold A / accent B / muted C-D, house pattern) */
+.report-grade {
+  font-size: 58px;
+  font-weight: 300;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  color: var(--color-neutral-100);
+}
+.report-grade-a {
+  color: var(--color-gold);
+  text-shadow: 0 0 24px color-mix(in srgb, var(--color-gold) 45%, transparent);
+}
+.report-grade-b { color: var(--color-accent-300); }
+.report-grade-c { color: var(--color-neutral-300); }
+.report-grade-d { color: var(--color-neutral-500); }
+
 /* ── 1px-gapped panel section ───────────────────────────────── */
 .report-panels {
   display: flex;
@@ -675,5 +692,6 @@
   .report-hero-teammark { height: 110%; }
   .report-metrics { gap: 26px; }
   .report-prob-value { font-size: 52px; }
+  .report-grade { font-size: 46px; }
   .report-panel { padding: 24px 20px; }
 }
