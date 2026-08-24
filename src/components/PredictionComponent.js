@@ -14,8 +14,10 @@ const TIP = {
     + 'seasons, or reaching 30+ career Approximate Value. Built from 29 features: '
     + 'production, athleticism, recruiting pedigree and competition level.',
   projection:
-    'Projected draft range from the ensemble’s draft-round classifier, '
-    + 'trained on the 2000–2023 draft classes.',
+    'Projected draft slot from two model heads blended: a pick-number '
+    + 'regressor and the draft-round classifier, both trained on the '
+    + '2000–2023 classes. The pick shown is the player’s rank within his '
+    + 'own draft class on the board — where he’d go in that class’s draft.',
   grade:
     'Letter grade from percentile cutoffs of success probability across the '
     + 'full FBS board — A+ is the top 2%, A- the top 10%, C+ sits near the '
@@ -429,6 +431,9 @@ export default function PredictionComponent() {
                         <InfoTip text={TIP.projection} place="bottom" />
                       </div>
                       <div className="report-metric-value">{prediction?.draft_grade || '—'}</div>
+                      {prediction?.projected_pick != null && prediction.projected_pick <= 262 && (
+                        <div className="report-metric-sub">Pick ~{prediction.projected_pick}</div>
+                      )}
                     </div>
                     <div className="report-metric">
                       <div className="report-metric-label">

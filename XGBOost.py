@@ -8,6 +8,7 @@ Future Star Predictor backend.
 - Falls back to rule scoring only if model inference is unavailable.
 """
 
+import bisect
 import functools
 import json
 import math
@@ -50,7 +51,7 @@ from dv_heuristics import (  # noqa: F401 — rule-based fallback + baseline sou
 # CatBoost is a required ensemble member — imported at module level so startup
 # clearly shows status
 try:
-    from catboost import CatBoostClassifier
+    from catboost import CatBoostClassifier, CatBoostRegressor
     CATBOOST_AVAILABLE = True
 except ImportError:
     CATBOOST_AVAILABLE = False
@@ -62,6 +63,8 @@ SUCCESS_MODEL_PATH         = "success_xgboost_model.json"        # raw XGBoost e
 SUCCESS_CALIBRATED_PATH    = "success_calibrated_model.pkl"      # ENSEMBLE calibrator dict (see scripts/train_models.py)
 CATBOOST_SUCCESS_PATH      = "catboost_success_model.cbm"        # CatBoost ensemble member
 DRAFT_GRADE_MODEL_PATH     = "draft_grade_model.json"            # raw XGBoost ensemble member
+DRAFT_PICK_MODEL_PATH      = "draft_pick_model.json"             # pick regressor (log-pick)
+CATBOOST_DRAFT_PICK_PATH   = "catboost_draft_pick_model.cbm"     # pick regressor member
 DRAFT_GRADE_CALIBRATED_PATH = "draft_grade_calibrated_model.pkl" # ENSEMBLE calibrator dict
 CATBOOST_DRAFT_GRADE_PATH  = "catboost_draft_grade_model.cbm"    # CatBoost ensemble member
 TRAINING_DATA_PATH         = "training_data/combine_outcomes.csv"
@@ -1012,14 +1015,19 @@ def fetch_real_espn_stats(espn_id: str, position: str, player_name: str) -> Opti
         interceptions  = _parse_int(sv.get("interceptions", 0))
         pass_deflections = _parse_int(sv.get("passesDefended", 0)) or _parse_int(sv.get("passDeflections", 0))
 
-        # Estimate games from available counting stats
-        attempts = _parse_int(sv.get("passingAttempts", 0)) or _parse_int(sv.get("rushingAttempts", 0))
-        if attempts:
-            games = max(1, min(17, round(attempts / 28)))
-        elif tackles:
-            games = max(1, min(17, round(tackles / 6)))
-        else:
-            games = 13
+        # Estimate games from counting stats — take the LARGEST implied count
+        # across stat families. Keying on a single stat undercounted badly:
+        # a star WR with 3 rush attempts scored round(3/28)=1 "game" while
+        # his 87 receptions (a full season) were never consulted.
+        receptions = _parse_int(sv.get("receptions", 0))
+        implied = [
+            _parse_int(sv.get("passingAttempts", 0)) / 28.0,
+            receptions / 5.5,
+            _parse_int(sv.get("rushingAttempts", 0)) / 18.0,
+            tackles / 6.0,
+        ]
+        best = max(implied)
+        games = max(1, min(17, round(best))) if best >= 0.5 else 13
 
         # Resolve real team + position from ESPN athlete info
         ath_info  = _espn_resolve_athlete_info(espn_id)
@@ -1676,6 +1684,61 @@ def load_draft_grade_models() -> None:
     catboost_draft_grade_model = cb
     draft_grade_calibrator = cal
     print("Draft grade ensemble loaded (XGBoost + CatBoost + calibrator).")
+
+
+draft_pick_model = None          # XGB regressor on log(overall pick)
+catboost_draft_pick_model = None
+_UDFA_PICK = 300.0
+
+
+def load_draft_pick_models() -> None:
+    """Load the draft-pick regressor pair (fine-grained round projections).
+    Optional — when absent, projections fall back to the 4-class ladder."""
+    global draft_pick_model, catboost_draft_pick_model
+    if not CATBOOST_AVAILABLE:
+        return
+    if not (os.path.exists(DRAFT_PICK_MODEL_PATH) and os.path.exists(CATBOOST_DRAFT_PICK_PATH)):
+        print("Draft pick regressor artifacts absent — serving 4-class projections.")
+        return
+    try:
+        m = xgb.XGBRegressor()
+        m.load_model(DRAFT_PICK_MODEL_PATH)
+        cb = CatBoostRegressor()
+        cb.load_model(CATBOOST_DRAFT_PICK_PATH)
+    except Exception as exc:
+        print(f"Draft pick regressor load failed ({exc}) — serving 4-class projections.")
+        return
+    draft_pick_model = m
+    catboost_draft_pick_model = cb
+    print("Draft pick regressor loaded (XGBoost + CatBoost, log-pick).")
+
+
+def predict_draft_pick(player_stats: Dict[str, object]) -> Optional[float]:
+    """Expected overall draft pick — 50/50 log-space blend of the pick
+    regressor and the 4-class head's implied pick (class-probability ·
+    midpoints 25/85/190/300). The blend beats both parents on the frozen
+    holdout: regressor alone is noisy mid-draft, classifier alone cannot
+    order the top of the draft (see models/metadata.json pick_eval)."""
+    if draft_pick_model is None or catboost_draft_pick_model is None:
+        return None
+    try:
+        X = build_success_features(player_stats)
+        log_reg = float(np.mean([
+            draft_pick_model.predict(X)[0],
+            catboost_draft_pick_model.predict(X.values)[0],
+        ]))
+        log_blend = log_reg
+        if draft_grade_model is not None and catboost_draft_grade_model is not None:
+            P = np.mean([
+                np.array(draft_grade_model.predict_proba(X)[0], dtype=float),
+                np.array(catboost_draft_grade_model.predict_proba(X.values)[0], dtype=float),
+            ], axis=0)
+            cls_pick = float(P @ np.array([25.0, 85.0, 190.0, _UDFA_PICK]))
+            log_blend = 0.5 * (log_reg + math.log(max(cls_pick, 1.0)))
+        return float(min(max(math.exp(log_blend), 1.0), _UDFA_PICK))
+    except Exception as exc:
+        print(f"Draft pick inference failed: {exc}")
+        return None
 
 
 def _apply_binary_calibrator(cal: dict, p: float) -> float:
@@ -2755,16 +2818,153 @@ def compute_prospect_grade(success_prob: Optional[float], draft_grade_class: Opt
     if success_prob is None:
         return "D"  # fallback path with no calibrated probability
     p = float(success_prob)
-    if p >= 41.9: return "A+"
-    if p >= 33.5: return "A"
-    if p >= 24.0: return "A-"
-    if p >= 17.5: return "B+"
-    if p >= 15.5: return "B"
-    if p >= 13.7: return "B-"
-    if p >= 12.3: return "C+"
-    if p >= 9.8:  return "C"
-    if p >= 4.4:  return "C-"
+    # Percentiles of the 2026-08-24 board (12,862 rows, games-estimator fix +
+    # pick-blend rebuild) — recompute via scripts/postprocess_board.py after
+    # any model/feature change reshapes the probability distribution.
+    if p >= 57.9: return "A+"
+    if p >= 47.4: return "A"
+    if p >= 38.6: return "A-"
+    if p >= 29.7: return "B+"
+    if p >= 23.6: return "B"
+    if p >= 17.4: return "B-"
+    if p >= 14.7: return "C+"
+    if p >= 12.3: return "C"
+    if p >= 6.6:  return "C-"
     return "D"
+
+
+# ── Draft projection display ladder ──────────────────────────────────────────
+# The round classifier only knows 4 classes, which made every star a
+# "Top 50 Pick". The display sharpens the top class by BOARD RANK so the
+# rare labels stay rare: Generational = top-3 on the whole live board.
+_PROJ_THRESH = {"key": None, "vals": None}
+
+
+def _projection_thresholds() -> dict:
+    key = (_PROSPECT_CACHE_META or {}).get("generated_at"), len(_PROSPECT_CACHE or [])
+    if _PROJ_THRESH["key"] == key and _PROJ_THRESH["vals"]:
+        return _PROJ_THRESH["vals"]
+    sps = sorted((float(p.get("success_probability") or 0) for p in (_PROSPECT_CACHE or [])),
+                 reverse=True)
+    if len(sps) >= 100:
+        vals = {"gen": sps[2], "top5": sps[7], "top10": sps[19], "r1": sps[49]}
+    else:  # bootstrap fallback before any board exists
+        vals = {"gen": 65.0, "top5": 55.0, "top10": 45.0, "r1": 35.0}
+    _PROJ_THRESH["key"], _PROJ_THRESH["vals"] = key, vals
+    return vals
+
+
+_PICK_RANKS = {"key": None, "by_class": None, "pooled": None, "n_classes": 1}
+
+
+def _pick_rank_index() -> dict:
+    """Per-draft-class sorted projected_pick arrays from the live board —
+    lets a raw model pick be converted to a NOMINAL pick (rank within the
+    player's own class), which is what a mock draft actually means."""
+    key = (_PROSPECT_CACHE_META or {}).get("generated_at"), len(_PROSPECT_CACHE or [])
+    if _PICK_RANKS["key"] == key and _PICK_RANKS["by_class"] is not None:
+        return _PICK_RANKS
+    by = {}
+    for p in _PROSPECT_CACHE or []:
+        # model_pick is the RAW blend (the ranking axis); projected_pick on
+        # cache rows is the nominal rank and must not feed the index
+        pk = p.get("model_pick")
+        if pk is None:
+            continue
+        by.setdefault(int(p.get("draft_class") or 0), []).append(float(pk))
+    for v in by.values():
+        v.sort()
+    pooled = sorted(x for v in by.values() for x in v)
+    _PICK_RANKS.update(key=key, by_class=by, pooled=pooled,
+                       n_classes=max(1, len([v for v in by.values() if len(v) >= 100])))
+    return _PICK_RANKS
+
+
+def nominal_draft_pick(projected_pick: Optional[float],
+                       draft_class: Optional[int]) -> Optional[float]:
+    """Rank the blended model pick within the player's draft class on the
+    live board. The absolute blend compresses the top (its class-midpoint
+    parent can't say 'pick 2'), but its ORDERING is holdout-verified — and
+    the class's #1-ordered player is, by definition, its projected #1 pick."""
+    if projected_pick is None:
+        return None
+    idx = _pick_rank_index()
+    arr = (idx["by_class"] or {}).get(int(draft_class or 0))
+    if arr and len(arr) >= 100:
+        return float(1 + bisect.bisect_left(arr, float(projected_pick)))
+    if idx["pooled"] and len(idx["pooled"]) >= 100:
+        rank = 1 + bisect.bisect_left(idx["pooled"], float(projected_pick))
+        return float(max(1, round(rank / idx["n_classes"])))
+    return float(projected_pick)
+
+
+_NAME_INDEX = {"key": None, "by_name": None}
+
+
+def _cache_name_index() -> dict:
+    """name(lower) → [board rows]. Predict-path lookups were O(12k) linear
+    scans per request — under a parallel board rebuild that starved the dev
+    server into timeouts (3,039 errored players on 2026-08-24)."""
+    key = (_PROSPECT_CACHE_META or {}).get("generated_at"), len(_PROSPECT_CACHE or [])
+    if _NAME_INDEX["key"] == key and _NAME_INDEX["by_name"] is not None:
+        return _NAME_INDEX["by_name"]
+    by = {}
+    for r in _PROSPECT_CACHE or []:
+        by.setdefault((r.get("name") or "").lower().strip(), []).append(r)
+    _NAME_INDEX["key"], _NAME_INDEX["by_name"] = key, by
+    return by
+
+
+def _guess_draft_class(player_stats: Dict[str, object]) -> Optional[int]:
+    """Resolve the player's draft class from their board row (name + team)."""
+    name = (str(player_stats.get("name") or "")).lower().strip()
+    team = _normalize_team(str(player_stats.get("team") or ""))
+    if not name:
+        return None
+    for r in _cache_name_index().get(name, []):
+        if not team or _normalize_team(str(r.get("team") or "")) == team:
+            try:
+                return int(r.get("draft_class") or 0) or None
+            except (TypeError, ValueError):
+                return None
+    return None
+
+
+def projection_label(grade_class: Optional[int], success_prob: Optional[float],
+                     nominal_pick: Optional[float] = None) -> Optional[str]:
+    """Projection display ladder.
+
+    With the pick blend: 11 buckets from the player's NOMINAL pick (class
+    rank), with "Generational" reserved for a top-2 nominal pick that ALSO
+    sits top-3 of the whole board by success probability — rare by
+    construction. Without models: the coarser class-based ladder."""
+    p = float(success_prob or 0)
+    t = _projection_thresholds()
+    if nominal_pick is not None:
+        pk = float(nominal_pick)
+        if pk <= 2 and p >= t["gen"]:   return "Generational"
+        if pk <= 5:                     return "Top 5 Pick"
+        if pk <= 10:                    return "Top 10 Pick"
+        if pk <= 20:                    return "Top 20 Pick"
+        if pk <= 32:                    return "1st Round"
+        if pk <= 64:                    return "2nd Round"
+        if pk <= 105:                   return "3rd Round"
+        if pk <= 145:                   return "4th Round"
+        if pk <= 185:                   return "5th Round"
+        if pk <= 262:                   return "Round 6–7"
+        if pk <= 350:                   return "Priority UDFA"
+        return "Undrafted"
+    if grade_class is None:
+        return None
+    if grade_class == 0:
+        if p >= t["gen"]:   return "Generational"
+        if p >= t["top5"]:  return "Top 5 Pick"
+        if p >= t["top10"]: return "Top 10 Pick"
+        if p >= t["r1"]:    return "1st Round"
+        return "Top 50 Pick"
+    if grade_class == 1: return "Round 2–3"
+    if grade_class == 2: return "Round 4–7"
+    return "Undrafted"
 
 
 # ── Named historical players for similarity comps ─────────────────────────────
@@ -3409,6 +3609,15 @@ def predict():
     # Draft grade + prospect grade
     draft_grade_label_str, draft_grade_class, draft_grade_prob = predict_draft_grade(player_data)
     prospect_grade = compute_prospect_grade(success_probability, draft_grade_class)
+    # Fine-grained projection: pick blend → nominal pick (rank within the
+    # player's draft class on the board) → 11-bucket ladder; class ladder
+    # when models absent
+    raw_model_pick = predict_draft_pick(player_data)
+    projected_pick = nominal_draft_pick(
+        raw_model_pick, player_data.get("draft_class") or _guess_draft_class(player_data))
+    draft_grade_label_str = (projection_label(draft_grade_class, success_probability,
+                                              projected_pick)
+                             or draft_grade_label_str)
 
     position = str(player_data.get("position", "Unknown"))
     draft_round = int(player_data.get("draft_round") or 8)
@@ -3495,7 +3704,7 @@ def predict():
         _maybe_reload_prospect_cache()
         _rn = str(player_data.get("name", player_name)).lower().strip()
         _rt = _normalize_team(str(player_data.get("team") or ""))
-        _hits = [r for r in _PROSPECT_CACHE if (r.get("name") or "").lower().strip() == _rn]
+        _hits = _cache_name_index().get(_rn, [])
         if len(_hits) > 1 and _rt:
             _hits = [r for r in _hits if _normalize_team(str(r.get("team") or "")) == _rt] or _hits
         if _hits:
@@ -3520,6 +3729,10 @@ def predict():
             "prospect_grade":      prospect_grade,
             "draft_grade":         draft_grade_label_str,
             "draft_grade_class":   draft_grade_class,
+            "projected_pick":      (round(projected_pick) if projected_pick is not None
+                                    and projected_pick <= 350 else None),
+            "model_pick":          (round(raw_model_pick, 1)
+                                    if raw_model_pick is not None else None),
             "draft_grade_prob":    draft_grade_prob,
             "historical_comps":    historical_comps,
             "physical":            physical,
@@ -3552,6 +3765,7 @@ initialize_player_database()
 load_position_model_artifacts()
 load_success_models()
 load_draft_grade_models()
+load_draft_pick_models()
 load_prospect_cache()
 load_enrichment()
 load_board_movers()

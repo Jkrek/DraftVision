@@ -459,6 +459,13 @@
 }
 .report-metric-accent { color: var(--color-accent-300); }
 
+.report-metric-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+  font-variant-numeric: tabular-nums;
+}
+
 /* The grade is the verdict — same visual weight as the probability,
    color-coded by tier (gold A / accent B / muted C-D, house pattern) */
 .report-grade {

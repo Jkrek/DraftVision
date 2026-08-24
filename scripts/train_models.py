@@ -78,7 +78,8 @@ import numpy as np
 import pandas as pd
 import sklearn
 import xgboost as xgb
-from catboost import CatBoostClassifier
+from catboost import CatBoostClassifier, CatBoostRegressor
+from scipy.stats import spearmanr
 import catboost as catboost_pkg
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
@@ -111,6 +112,14 @@ SUCCESS_CALIBRATED_PATH     = os.path.join(REPO_ROOT, "success_calibrated_model.
 DRAFT_GRADE_MODEL_PATH      = os.path.join(REPO_ROOT, "draft_grade_model.json")
 CATBOOST_DRAFT_GRADE_PATH   = os.path.join(REPO_ROOT, "catboost_draft_grade_model.cbm")
 DRAFT_GRADE_CALIBRATED_PATH = os.path.join(REPO_ROOT, "draft_grade_calibrated_model.pkl")
+DRAFT_PICK_MODEL_PATH       = os.path.join(REPO_ROOT, "draft_pick_model.json")
+CATBOOST_DRAFT_PICK_PATH    = os.path.join(REPO_ROOT, "catboost_draft_pick_model.cbm")
+
+# Pick-regression target: overall pick 1-262 for drafted rows; undrafted rows
+# train at a pseudo-pick past the end of the draft so the model learns the
+# full ordering. Regression happens in log space (pick value ratios matter:
+# pick 5 vs 15 is a chasm, 155 vs 165 is noise).
+UDFA_PICK = 300.0
 
 SEED = 42
 SEED_ROW_WEIGHT = 5.0
@@ -139,7 +148,7 @@ FORBIDDEN_FEATURES = {
     "draft_round", "pick", "experience", "experience_years", "pro_bowls",
     "probowls", "seasons_started", "w_av", "car_av", "career_av", "to",
     "nfl_success", "draft_grade", "draft_year", "name", "sample_weight",
-    "age", "rec_year", "rec_match_type",
+    "age", "rec_year", "rec_match_type", "draft_pick",
 }
 
 # Baseline-only neutral values: the heuristic is arithmetic and cannot take
@@ -198,6 +207,7 @@ def load_raw_rows() -> pd.DataFrame:
             **position_flags(pos),
             "nfl_success":         int(r["nfl_success"]),
             "draft_grade":         int(min(3, max(0, int(r["draft_grade"])))),
+            "draft_pick":          _nan_float(r.get("draft_pick")),
             "_pos_group":          _production_group(pos),
             "_grp":                _composite_group(pos),
         }
@@ -485,6 +495,67 @@ def fit_grade_calibrator(members: dict, cal: pd.DataFrame, cal_years) -> dict:
     }
 
 
+def _pick_target(df: pd.DataFrame) -> np.ndarray:
+    """log(expected pick): real pick for drafted rows, UDFA_PICK for round-8
+    rows, NaN (excluded) for rows with neither (seed rows)."""
+    pick = df["draft_pick"].to_numpy(dtype=float)
+    y = np.where(np.isfinite(pick), pick, np.nan)
+    y[(df["draft_grade"].to_numpy() == 3) & ~np.isfinite(pick)] = UDFA_PICK
+    return np.log(y)
+
+
+def fit_pick_members(train: pd.DataFrame):
+    """XGB+CatBoost regressors on log(overall pick) — the fine-grained head
+    behind round-level projections (the 4-class head can't tell pick 3
+    from pick 45)."""
+    y = _pick_target(train)
+    m = np.isfinite(y)
+    X_tr, y_tr = train[SUCCESS_FEATURES][m], y[m]
+    w_tr = train.sample_weight.to_numpy()[m]
+    xgb_m = xgb.XGBRegressor(
+        n_estimators=400, max_depth=4, learning_rate=0.05,
+        subsample=0.85, colsample_bytree=0.85, min_child_weight=3,
+        random_state=SEED, objective="reg:squarederror",
+    )
+    xgb_m.fit(X_tr, y_tr, sample_weight=w_tr)
+    cb_m = CatBoostRegressor(
+        iterations=400, depth=5, learning_rate=0.05, loss_function="RMSE",
+        random_seed=SEED, verbose=0, allow_writing_files=False,
+    )
+    cb_m.fit(X_tr, y_tr, sample_weight=w_tr)
+    return {"xgb": xgb_m, "cb": cb_m, "n_rows": int(m.sum())}
+
+
+def ensemble_pick_preds(bundle: dict, X: pd.DataFrame) -> np.ndarray:
+    """Serving-equivalent: exp(mean of member log-pick predictions)."""
+    logp = np.mean([bundle["xgb"].predict(X), bundle["cb"].predict(X.values)], axis=0)
+    return np.clip(np.exp(logp), 1.0, UDFA_PICK)
+
+
+def classifier_expected_pick(P: np.ndarray) -> np.ndarray:
+    """Baseline the regressor must beat: expected pick implied by the 4-class
+    head's probabilities (class midpoints 25/85/190/300)."""
+    mids = np.array([25.0, 85.0, 190.0, UDFA_PICK])
+    return P @ mids
+
+
+def pick_metrics(y_pick: np.ndarray, pred: np.ndarray) -> dict:
+    drafted = y_pick < UDFA_PICK
+    rho = spearmanr(y_pick, pred).statistic
+    rho_d = spearmanr(y_pick[drafted], pred[drafted]).statistic
+    mae_d = float(np.mean(np.abs(y_pick[drafted] - pred[drafted])))
+    r1_hit = float(np.mean((pred[y_pick <= 32] <= 45))) if (y_pick <= 32).any() else None
+    t64 = y_pick <= 64
+    rho_64 = spearmanr(y_pick[t64], pred[t64]).statistic if t64.sum() >= 20 else None
+    return {
+        "spearman_all": round(float(rho), 4),
+        "spearman_drafted": round(float(rho_d), 4),
+        "spearman_top64": round(float(rho_64), 4) if rho_64 is not None else None,
+        "mae_picks_drafted": round(mae_d, 1),
+        "r1_recall_within_45": round(r1_hit, 4) if r1_hit is not None else None,
+    }
+
+
 # ── Serving-equivalent inference (must mirror XGBOost.py) ─────────────────────
 
 def ensemble_success_probs(bundle: dict, X: pd.DataFrame, calibrated: bool = True) -> np.ndarray:
@@ -631,6 +702,44 @@ def main() -> int:
               f"recall {m['per_class_recall']}")
     print(f"    confusion (raw, rows=true 0..3): {grade_eval['ensemble_raw_mean']['confusion_matrix']}")
 
+    # ── Draft-pick regressor (fine-grained projections) ──────────────────────
+    print("\n[EVAL] Training draft-pick regressor (log-pick, 2000-2017 + seeds)…")
+    p_members = fit_pick_members(train)
+    y_pick_te = np.exp(_pick_target(test))
+    pick_m = np.isfinite(y_pick_te)
+    pred_pick = ensemble_pick_preds(p_members, X_te[pick_m])
+    base_pick = classifier_expected_pick(P_raw[pick_m])
+    # SERVED estimator: 50/50 log-space blend of regressor and the 4-class
+    # head's implied pick — beats both parents on holdout (regressor alone
+    # is noisy mid-draft; classifier alone can't order the top).
+    blend_pick = np.exp(0.5 * (np.log(pred_pick) + np.log(base_pick)))
+    pick_eval = {
+        "blend_50_50_SERVED":   pick_metrics(y_pick_te[pick_m], blend_pick),
+        "regressor":            pick_metrics(y_pick_te[pick_m], pred_pick),
+        "classifier_expected":  pick_metrics(y_pick_te[pick_m], base_pick),
+        "n_train_rows":         p_members["n_rows"],
+    }
+    print("\n══ EVAL HOLDOUT (2019-2020) — DRAFT PICK (served blend vs parents) ══")
+    for k in ("blend_50_50_SERVED", "regressor", "classifier_expected"):
+        m = pick_eval[k]
+        print(f"  {k:<22} Spearman(all) {m['spearman_all']:.4f}  "
+              f"top64 {m['spearman_top64']}  "
+              f"MAE {m['mae_picks_drafted']:.1f} picks  "
+              f"R1-recall@45 {m['r1_recall_within_45']}")
+    # Gate on the SERVED estimator: the blend must beat the classifier-implied
+    # baseline on global ordering, top-of-draft ordering, AND first-round
+    # recall (the 4-class head structurally can't tell pick 3 from pick 45).
+    r, c = pick_eval["blend_50_50_SERVED"], pick_eval["classifier_expected"]
+    pick_wins = (
+        r["spearman_all"] > c["spearman_all"]
+        and (r["spearman_top64"] or 0) > (c["spearman_top64"] or 0)
+        and (r["r1_recall_within_45"] or 0) > (c["r1_recall_within_45"] or 0)
+    )
+    print(f"  DECISION GATE (pick, blend): all {r['spearman_all']} vs {c['spearman_all']}, "
+          f"top64 {r['spearman_top64']} vs {c['spearman_top64']}, "
+          f"R1-recall {r['r1_recall_within_45']} vs {c['r1_recall_within_45']} "
+          f"→ serve_pick = {pick_wins}")
+
     # ── Decision gate: serve whichever of {ensemble, heuristic} wins ─────────
     ens = success_eval["ensemble_calibrated"]
     base = success_eval["rule_based_baseline"]
@@ -684,6 +793,15 @@ def main() -> int:
     g_final["cb"].save_model(CATBOOST_DRAFT_GRADE_PATH)
     joblib.dump(g_calibrator, DRAFT_GRADE_CALIBRATED_PATH)
 
+    # Pick regressor: members on ALL classes (pick labels are immediate —
+    # known on draft night, no NFL-outcome maturity needed)
+    print(f"[FINAL] Pick: members on {min(FINAL_GRADE_YEARS)}-{max(FINAL_GRADE_YEARS)} (+seeds)")
+    p_final = fit_pick_members(pd.concat(
+        [df_final[df_final.draft_year.isin(FINAL_GRADE_YEARS)], seeds], ignore_index=True))
+    p_final["xgb"].save_model(DRAFT_PICK_MODEL_PATH)
+    p_final["cb"].save_model(CATBOOST_DRAFT_PICK_PATH)
+    print(f"  pick members    → {DRAFT_PICK_MODEL_PATH}, {CATBOOST_DRAFT_PICK_PATH}")
+
     print(f"  success members → {SUCCESS_MODEL_PATH}, {CATBOOST_SUCCESS_PATH}")
     print(f"  grade members   → {DRAFT_GRADE_MODEL_PATH}, {CATBOOST_DRAFT_GRADE_PATH}")
     print(f"  calibrators     → {SUCCESS_CALIBRATED_PATH}, {DRAFT_GRADE_CALIBRATED_PATH}")
@@ -691,6 +809,8 @@ def main() -> int:
     # ── Metadata ─────────────────────────────────────────────────────────────
     metadata = {
         "serve": serve,
+        "serve_pick": bool(pick_wins),
+        "pick_eval": pick_eval,
         "serve_gate": {
             "rule": "serve ensemble iff eval-holdout AUC(ensemble) > AUC(baseline) "
                     "AND Brier(ensemble) < Brier(baseline); else heuristic",

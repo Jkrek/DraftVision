@@ -200,6 +200,8 @@ def call_predict(player, api_url, timeout=15):
             "success_probability": d.get("success_probability") or 0,
             "draft_grade":        d.get("draft_grade") or "",
             "draft_grade_class":  d.get("draft_grade_class"),
+            "projected_pick":     d.get("projected_pick"),
+            "model_pick":         d.get("model_pick"),
             "conference_tier":    stats.get("conference_tier") or 5,
             # None (not 0/50) when the server graded on missing data — the UI
             # skips the bar instead of drawing a fake league-average one.

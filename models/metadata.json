@@ -1,5 +1,30 @@
 {
   "serve": "ensemble",
+  "serve_pick": true,
+  "pick_eval": {
+    "blend_50_50_SERVED": {
+      "spearman_all": 0.5794,
+      "spearman_drafted": 0.5794,
+      "spearman_top64": 0.3097,
+      "mae_picks_drafted": 69.0,
+      "r1_recall_within_45": 0.4219
+    },
+    "regressor": {
+      "spearman_all": 0.5625,
+      "spearman_drafted": 0.5625,
+      "spearman_top64": 0.3096,
+      "mae_picks_drafted": 70.8,
+      "r1_recall_within_45": 0.4531
+    },
+    "classifier_expected": {
+      "spearman_all": 0.5766,
+      "spearman_drafted": 0.5766,
+      "spearman_top64": 0.2961,
+      "mae_picks_drafted": 69.4,
+      "r1_recall_within_45": 0.2031
+    },
+    "n_train_rows": 6599
+  },
   "serve_gate": {
     "rule": "serve ensemble iff eval-holdout AUC(ensemble) > AUC(baseline) AND Brier(ensemble) < Brier(baseline); else heuristic",
     "ensemble": {
@@ -11,11 +36,11 @@
       "brier": 0.3137
     }
   },
-  "generated_at": "2026-08-19T00:28:49.545015+00:00",
-  "git_sha": "c553bd58e8e563a9b49e103e1f5df0e9a7341f3f",
+  "generated_at": "2026-08-24T02:47:05.052544+00:00",
+  "git_sha": "401c8bae755f2294ba0c829ecfa1e6fbed7e3a86",
   "training_data": {
     "path": "training_data/combine_outcomes.csv",
-    "sha256": "d5501a5d6b793a015e076ccad84c9d63a35fb0407d8b7d03e69c2b48b4dd7f33"
+    "sha256": "5b3691bd2d7b03c2ed76f0e321dba69fc65828e9a9d66a41ebb843bf6f4eebc7"
   },
   "seed": 42,
   "features": [
