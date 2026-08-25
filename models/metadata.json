@@ -3,44 +3,44 @@
   "serve_pick": true,
   "pick_eval": {
     "blend_50_50_SERVED": {
-      "spearman_all": 0.5794,
-      "spearman_drafted": 0.5794,
-      "spearman_top64": 0.3097,
-      "mae_picks_drafted": 69.0,
-      "r1_recall_within_45": 0.4219
+      "spearman_all": 0.7962,
+      "spearman_drafted": 0.7962,
+      "spearman_top64": 0.6898,
+      "mae_picks_drafted": 45.3,
+      "r1_recall_within_45": 0.8438
     },
     "regressor": {
-      "spearman_all": 0.5625,
-      "spearman_drafted": 0.5625,
-      "spearman_top64": 0.3096,
-      "mae_picks_drafted": 70.8,
-      "r1_recall_within_45": 0.4531
+      "spearman_all": 0.7855,
+      "spearman_drafted": 0.7855,
+      "spearman_top64": 0.7049,
+      "mae_picks_drafted": 45.6,
+      "r1_recall_within_45": 0.8281
     },
     "classifier_expected": {
-      "spearman_all": 0.5766,
-      "spearman_drafted": 0.5766,
-      "spearman_top64": 0.2961,
-      "mae_picks_drafted": 69.4,
-      "r1_recall_within_45": 0.2031
+      "spearman_all": 0.7981,
+      "spearman_drafted": 0.7981,
+      "spearman_top64": 0.5406,
+      "mae_picks_drafted": 45.9,
+      "r1_recall_within_45": 0.8438
     },
     "n_train_rows": 6599
   },
   "serve_gate": {
     "rule": "serve ensemble iff eval-holdout AUC(ensemble) > AUC(baseline) AND Brier(ensemble) < Brier(baseline); else heuristic",
     "ensemble": {
-      "auc": 0.7486,
-      "brier": 0.1447
+      "auc": 0.8144,
+      "brier": 0.1286
     },
     "baseline": {
       "auc": 0.5989,
       "brier": 0.3137
     }
   },
-  "generated_at": "2026-08-24T02:47:05.052544+00:00",
-  "git_sha": "401c8bae755f2294ba0c829ecfa1e6fbed7e3a86",
+  "generated_at": "2026-08-25T02:11:09.492413+00:00",
+  "git_sha": "2c645550022662862bec6cb117538f092765e07d",
   "training_data": {
     "path": "training_data/combine_outcomes.csv",
-    "sha256": "5b3691bd2d7b03c2ed76f0e321dba69fc65828e9a9d66a41ebb843bf6f4eebc7"
+    "sha256": "112d0b884f7534f3eaa2a63cabd9b6aaf967325059199ee37780a1e946980b00"
   },
   "seed": 42,
   "features": [
@@ -72,7 +72,9 @@
     "prod_fs_z",
     "prod_car_z",
     "car_seasons",
-    "sp_rating"
+    "sp_rating",
+    "consensus_logrank",
+    "allstar_invite"
   ],
   "feature_config": "v3 winner '+A+B+C+D | flat | hist' (models/experiments/RESULTS.md): base13 + position-normalized measurables + recruiting pedigree + years_in_college/early_declare + all-position fs/car production composites + SP+; z-scores frozen in models/feature_stats.json",
   "evaluation": {
@@ -148,24 +150,24 @@
     },
     "success": {
       "ensemble_calibrated": {
-        "auc": 0.7486,
-        "brier": 0.1447,
-        "log_loss": 0.4531
+        "auc": 0.8144,
+        "brier": 0.1286,
+        "log_loss": 0.4103
       },
       "ensemble_raw_mean": {
-        "auc": 0.7486,
-        "brier": 0.184,
-        "log_loss": 0.5467
+        "auc": 0.8144,
+        "brier": 0.1534,
+        "log_loss": 0.4708
       },
       "xgboost_member": {
-        "auc": 0.7588,
-        "brier": 0.1817,
-        "log_loss": 0.5408
+        "auc": 0.8154,
+        "brier": 0.1505,
+        "log_loss": 0.4643
       },
       "catboost_member": {
-        "auc": 0.7266,
-        "brier": 0.1914,
-        "log_loss": 0.5634
+        "auc": 0.8082,
+        "brier": 0.1594,
+        "log_loss": 0.4858
       },
       "rule_based_baseline": {
         "auc": 0.5989,
@@ -175,63 +177,63 @@
       "reliability_10bin_calibrated": [
         {
           "bin": "[0.0,0.1)",
-          "count": 152,
-          "mean_predicted": 0.0651,
-          "fraction_positive": 0.0526
+          "count": 319,
+          "mean_predicted": 0.0436,
+          "fraction_positive": 0.0596
         },
         {
           "bin": "[0.1,0.2)",
-          "count": 225,
-          "mean_predicted": 0.1523,
-          "fraction_positive": 0.1511
+          "count": 130,
+          "mean_predicted": 0.142,
+          "fraction_positive": 0.1846
         },
         {
           "bin": "[0.2,0.3)",
-          "count": 134,
-          "mean_predicted": 0.2463,
-          "fraction_positive": 0.1866
+          "count": 58,
+          "mean_predicted": 0.2448,
+          "fraction_positive": 0.1379
         },
         {
           "bin": "[0.3,0.4)",
-          "count": 97,
-          "mean_predicted": 0.3462,
-          "fraction_positive": 0.268
+          "count": 54,
+          "mean_predicted": 0.3506,
+          "fraction_positive": 0.2593
         },
         {
           "bin": "[0.4,0.5)",
-          "count": 58,
-          "mean_predicted": 0.4473,
-          "fraction_positive": 0.431
+          "count": 43,
+          "mean_predicted": 0.4431,
+          "fraction_positive": 0.3721
         },
         {
           "bin": "[0.5,0.6)",
-          "count": 29,
-          "mean_predicted": 0.545,
-          "fraction_positive": 0.4483
+          "count": 35,
+          "mean_predicted": 0.5499,
+          "fraction_positive": 0.3714
         },
         {
           "bin": "[0.6,0.7)",
-          "count": 23,
-          "mean_predicted": 0.647,
-          "fraction_positive": 0.7826
+          "count": 34,
+          "mean_predicted": 0.657,
+          "fraction_positive": 0.5
         },
         {
           "bin": "[0.7,0.8)",
-          "count": 12,
-          "mean_predicted": 0.7357,
-          "fraction_positive": 0.5833
+          "count": 19,
+          "mean_predicted": 0.7509,
+          "fraction_positive": 0.8421
         },
         {
           "bin": "[0.8,0.9)",
-          "count": 3,
-          "mean_predicted": 0.8187,
-          "fraction_positive": 1.0
+          "count": 26,
+          "mean_predicted": 0.867,
+          "fraction_positive": 0.7692
         },
         {
           "bin": "[0.9,1.0]",
-          "count": 0,
-          "mean_predicted": null,
-          "fraction_positive": null
+          "count": 15,
+          "mean_predicted": 0.93,
+          "fraction_positive": 0.8
         }
       ],
       "reliability_10bin_baseline": [
@@ -299,38 +301,38 @@
     },
     "draft_grade": {
       "ensemble_raw_mean": {
-        "accuracy": 0.5102,
-        "macro_f1": 0.5031,
+        "accuracy": 0.6535,
+        "macro_f1": 0.6634,
         "per_class_recall": [
-          0.7109,
-          0.4103,
-          0.3244,
-          0.6518
+          0.7812,
+          0.7051,
+          0.4044,
+          0.7946
         ],
         "confusion_matrix": [
           [
+            100,
+            25,
+            1,
+            2
+          ],
+          [
+            10,
+            110,
+            15,
+            21
+          ],
+          [
+            2,
+            52,
             91,
-            19,
-            7,
-            11
+            80
           ],
           [
-            40,
-            64,
-            16,
-            36
-          ],
-          [
+            0,
+            17,
             29,
-            55,
-            73,
-            68
-          ],
-          [
-            14,
-            48,
-            16,
-            146
+            178
           ]
         ],
         "confusion_matrix_labels": [
@@ -341,38 +343,38 @@
         ]
       },
       "ensemble_calibrated": {
-        "accuracy": 0.4925,
-        "macro_f1": 0.4082,
+        "accuracy": 0.648,
+        "macro_f1": 0.6568,
         "per_class_recall": [
-          0.7344,
-          0.0,
-          0.4044,
-          0.7857
+          0.7891,
+          0.4936,
+          0.5333,
+          0.7902
         ],
         "confusion_matrix": [
           [
-            94,
+            101,
+            24,
             0,
-            8,
-            26
+            3
           ],
           [
-            51,
-            0,
-            42,
-            63
+            11,
+            77,
+            46,
+            22
           ],
           [
+            2,
+            22,
+            120,
+            81
+          ],
+          [
+            0,
+            9,
             38,
-            0,
-            91,
-            96
-          ],
-          [
-            18,
-            0,
-            30,
-            176
+            177
           ]
         ],
         "confusion_matrix_labels": [

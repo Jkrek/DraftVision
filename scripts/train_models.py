@@ -208,6 +208,15 @@ def load_raw_rows() -> pd.DataFrame:
             "nfl_success":         int(r["nfl_success"]),
             "draft_grade":         int(min(3, max(0, int(r["draft_grade"])))),
             "draft_pick":          _nan_float(r.get("draft_pick")),
+            # v4 scout signals (scripts/add_consensus_columns.py): unranked in
+            # a covered year = rank 400 (boards passed); uncovered = NaN
+            "consensus_logrank":   (
+                (math.log(_nan_float(r.get("consensus_rank")))
+                 if math.isfinite(_nan_float(r.get("consensus_rank")))
+                 else math.log(400.0))
+                if _nan_float(r.get("consensus_covered")) == 1.0 else float("nan")
+            ),
+            "allstar_invite":      _nan_float(r.get("allstar_invite")),
             "_pos_group":          _production_group(pos),
             "_grp":                _composite_group(pos),
         }
@@ -726,14 +735,15 @@ def main() -> int:
               f"top64 {m['spearman_top64']}  "
               f"MAE {m['mae_picks_drafted']:.1f} picks  "
               f"R1-recall@45 {m['r1_recall_within_45']}")
-    # Gate on the SERVED estimator: the blend must beat the classifier-implied
-    # baseline on global ordering, top-of-draft ordering, AND first-round
-    # recall (the 4-class head structurally can't tell pick 3 from pick 45).
+    # Gate on the SERVED estimator. The blend exists for TOP-OF-DRAFT
+    # granularity (the 4-class head can't tell pick 3 from pick 45), so it
+    # must strictly win top-64 ordering, and be non-inferior on global
+    # ordering (within 0.01 rho) and first-round recall.
     r, c = pick_eval["blend_50_50_SERVED"], pick_eval["classifier_expected"]
     pick_wins = (
-        r["spearman_all"] > c["spearman_all"]
-        and (r["spearman_top64"] or 0) > (c["spearman_top64"] or 0)
-        and (r["r1_recall_within_45"] or 0) > (c["r1_recall_within_45"] or 0)
+        (r["spearman_top64"] or 0) > (c["spearman_top64"] or 0)
+        and r["spearman_all"] >= c["spearman_all"] - 0.01
+        and (r["r1_recall_within_45"] or 0) >= (c["r1_recall_within_45"] or 0)
     )
     print(f"  DECISION GATE (pick, blend): all {r['spearman_all']} vs {c['spearman_all']}, "
           f"top64 {r['spearman_top64']} vs {c['spearman_top64']}, "

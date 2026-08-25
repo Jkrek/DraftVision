@@ -6,6 +6,48 @@ import { anonFetch } from '../lib/api';
 import InfoTip from './InfoTip';
 import './PredictionComponent.css';
 
+// ── Reveal animation tiers — the bigger the projection, the bigger the show ─
+const ANIM_TIER = (label) => {
+  if (label === 'Generational') return 'gen';
+  if (/^Top (5|10|20) Pick$/.test(label || '')) return 'elite';
+  if (['1st Round', '2nd Round', 'Top 50 Pick'].includes(label)) return 'first';
+  if (/^(3rd|4th|5th) Round$/.test(label || '') || label === 'Round 2–3') return 'mid';
+  return 'late'; // Round 6–7, Round 4–7, Priority UDFA, Undrafted, unknown
+};
+
+const REDUCED_MOTION = typeof window !== 'undefined'
+  && window.matchMedia
+  && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Probability counts up to its value — slower for bigger reveals
+const COUNT_MS = { gen: 2000, elite: 1300, first: 1000, mid: 750, late: 750 };
+
+function useCountUp(target, duration) {
+  const [val, setVal] = useState(REDUCED_MOTION ? target : 0);
+  useEffect(() => {
+    if (REDUCED_MOTION || target == null || typeof target !== 'number') {
+      setVal(target);
+      return undefined;
+    }
+    let raf;
+    const t0 = performance.now();
+    const tick = (t) => {
+      const k = Math.min(1, (t - t0) / duration);
+      const eased = 1 - Math.pow(1 - k, 3);
+      setVal(Math.round(target * eased * 10) / 10);
+      if (k < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return val;
+}
+
+function AnimatedProb({ value, tier }) {
+  const shown = useCountUp(value, COUNT_MS[tier] || 900);
+  return <>{shown !== null && shown !== undefined ? shown : '—'}</>;
+}
+
 // Metric explainers — these describe the ACTUAL calculations (see XGBOost.py)
 const TIP = {
   successProb:
@@ -372,9 +414,11 @@ export default function PredictionComponent() {
           const prob    = typeof prediction.success_probability === 'number' ? prediction.success_probability : null;
           const factors = Array.isArray(prediction?.top_factors) ? prediction.top_factors : [];
           const comps   = Array.isArray(prediction?.historical_comps) ? prediction.historical_comps : [];
+          const tier    = ANIM_TIER(prediction?.draft_grade);
 
           return (
-            <div className="predict-report">
+            // key remounts the report per player so the reveal replays
+            <div className={`predict-report report-reveal report-reveal--${tier}`} key={`${name}-${team}`}>
               {/* Hero card */}
               <section className="report-hero">
                 <div className="report-hero-media" aria-hidden="true">
@@ -390,6 +434,14 @@ export default function PredictionComponent() {
                     />
                   )}
                 </div>
+                <div className="report-sweep" aria-hidden="true" />
+                {tier === 'gen' && (
+                  <div className="gen-sparks" aria-hidden="true">
+                    {Array.from({ length: 14 }).map((_, i) => (
+                      <span key={i} className="gen-spark" style={{ '--i': i }} />
+                    ))}
+                  </div>
+                )}
                 <div className="report-hero-content">
                   {espnId && (
                     <img
@@ -421,7 +473,9 @@ export default function PredictionComponent() {
                         <InfoTip text={TIP.successProb} place="bottom" />
                       </div>
                       <div className="report-prob">
-                        <span className="report-prob-value">{prob !== null ? prob : '—'}</span>
+                        <span className="report-prob-value">
+                          {prob !== null ? <AnimatedProb value={prob} tier={tier} /> : '—'}
+                        </span>
                         {prob !== null && <span className="report-prob-unit">%</span>}
                       </div>
                     </div>

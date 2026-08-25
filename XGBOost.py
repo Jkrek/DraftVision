@@ -1027,7 +1027,10 @@ def fetch_real_espn_stats(espn_id: str, position: str, player_name: str) -> Opti
             tackles / 6.0,
         ]
         best = max(implied)
-        games = max(1, min(17, round(best))) if best >= 0.5 else 13
+        # No meaningful counting stats -> games is UNKNOWN, not a free full
+        # season. The old default-13 put 1-tackle bench players (games=13,
+        # "durable") above verified stars — the model must see NaN.
+        games = max(1, min(17, round(best))) if best >= 0.5 else float("nan")
 
         # Resolve real team + position from ESPN athlete info
         ath_info  = _espn_resolve_athlete_info(espn_id)
@@ -1291,10 +1294,10 @@ def fetch_player_data(player_name: str, fallback_position: str = "Unknown", fall
                 profile["position"], profile), 1)
             # Speed-score guard (same rule as _neutralize_fabricated): the base
             # profile inherits a HASH-FABRICATED combine_speed_score from
-            # generate_estimated_profile. Unless real combine data was merged
-            # above (physical_is_real / a real forty), the model must see NaN,
-            # not an invented number. Real production/games from ESPN stay.
-            if not (profile.get("physical_is_real") or profile.get("combine_forty")):
+            # generate_estimated_profile. Speed derives from a MEASURED forty —
+            # roster height/weight setting physical_is_real must NOT validate
+            # it (that leak put 1-tackle DBs atop the board on fake speed).
+            if not profile.get("combine_forty"):
                 profile["combine_speed_score"] = float("nan")
             return profile, "espn_live"
 
@@ -1339,11 +1342,12 @@ def _neutralize_fabricated(profile: Dict[str, object]) -> Dict[str, object]:
     fed to the ensemble it produced inflated 90%+ grades for unknown players
     at tier-1 schools, out-ranking verified stars. NaN routes them through the
     NaN-native model path so they grade on position/tier priors instead.
-    Real combine data (physical_is_real / a real forty) is kept.
+    Real combine data (a measured forty) is kept — roster height/weight
+    setting physical_is_real does NOT validate a speed score.
     """
     profile["production_score"] = float("nan")
     profile["games_played"]     = float("nan")
-    if not (profile.get("physical_is_real") or profile.get("combine_forty")):
+    if not profile.get("combine_forty"):
         profile["combine_speed_score"] = float("nan")
     return profile
 
@@ -1559,7 +1563,29 @@ def build_success_features(player_stats: Dict[str, object]) -> pd.DataFrame:
     except (TypeError, ValueError):
         row["sp_rating"] = float("nan")
 
+    # v4 scout signals. Serve-time consensus source is the PFF big board
+    # (75 names, one board) — a thin proxy for the multi-board training
+    # consensus, so ABSENCE from it is NaN (unknown), NOT the log(400)
+    # "boards passed on him" signal that full-coverage training years carry.
+    row["consensus_logrank"] = _serving_consensus_logrank(name, team)
+    row["allstar_invite"]    = float("nan")  # invites publish in winter
+
     return pd.DataFrame([row], columns=SUCCESS_FEATURES)
+
+
+def _serving_consensus_logrank(name: str, team: str) -> float:
+    """log(rank) when the player appears on a loaded big board; NaN otherwise."""
+    n = (name or "").lower().strip()
+    if not n:
+        return float("nan")
+    t = _normalize_team(team or "")
+    for board in (_BIG_BOARDS or {}).values():
+        for idx, entry in enumerate(board or []):
+            ename, _, eteam = str(entry).partition("|")
+            if ename.lower().strip() == n:
+                if not t or not eteam or _normalize_team(eteam) == t:
+                    return math.log(idx + 1.0)
+    return float("nan")
 
 
 def proxy_success_score(position: str, stats: Dict[str, float]) -> float:
@@ -1890,6 +1916,8 @@ FEATURE_DISPLAY_NAMES = {
     "prod_car_z":           "Career Production (all positions)",
     "car_seasons":          "College Seasons Played",
     "sp_rating":            "Team SP+ Rating",
+    "consensus_logrank":    "Scout Consensus Rank",
+    "allstar_invite":       "All-Star Game Invite",
 }
 
 
@@ -2818,18 +2846,18 @@ def compute_prospect_grade(success_prob: Optional[float], draft_grade_class: Opt
     if success_prob is None:
         return "D"  # fallback path with no calibrated probability
     p = float(success_prob)
-    # Percentiles of the 2026-08-24 board (12,862 rows, games-estimator fix +
-    # pick-blend rebuild) — recompute via scripts/postprocess_board.py after
-    # any model/feature change reshapes the probability distribution.
-    if p >= 57.9: return "A+"
-    if p >= 47.4: return "A"
-    if p >= 38.6: return "A-"
-    if p >= 29.7: return "B+"
-    if p >= 23.6: return "B"
-    if p >= 17.4: return "B-"
-    if p >= 14.7: return "C+"
-    if p >= 12.3: return "C"
-    if p >= 6.6:  return "C-"
+    # Percentiles of the 2026-08-25 board (12,863 rows, v4 scout-signal
+    # models) — recompute via scripts/postprocess_board.py after any
+    # model/feature change reshapes the probability distribution.
+    if p >= 40.8: return "A+"
+    if p >= 32.3: return "A"
+    if p >= 24.8: return "A-"
+    if p >= 18.4: return "B+"
+    if p >= 15.3: return "B"
+    if p >= 12.3: return "B-"
+    if p >= 10.8: return "C+"
+    if p >= 9.4:  return "C"
+    if p >= 5.6:  return "C-"
     return "D"
 
 

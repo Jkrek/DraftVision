@@ -58,13 +58,25 @@ SP_FEATURES = ["sp_rating"]
 V3_FEATURES = (MEASURABLE_Z_FEATURES + RECRUITING_FEATURES + AGE_FEATURES
                + PRODUCTION_V3_FEATURES + SP_FEATURES)
 
+# ── v4 scout-signal block (2026-08-24) ───────────────────────────────────────
+# Consensus big-board rank + all-star circuit invites — historically the
+# strongest pre-draft predictors. Frozen-holdout gains (scripts/experiment_v4.py):
+# success AUC 0.7486 → 0.8141, pick Spearman 0.5794 → 0.7967, AND beats a
+# consensus-rank-ONLY baseline (0.8092), so the model adds value over scouts.
+#   consensus_logrank — log(consensus rank); log(400) when unranked in a
+#                       covered class year (boards passed on him); NaN outside
+#                       coverage (2004-2024 training; PFF board at serve time)
+#   allstar_invite    — senior-bowl-circuit invite flag; NaN outside coverage
+SCOUT_FEATURES = ["consensus_logrank", "allstar_invite"]
+V4_FEATURES = V3_FEATURES + SCOUT_FEATURES
+
 # Draft-grade model: predict which bracket a player will be drafted in
 # Output classes: 0=Top50(R1-2), 1=Day2(R3-4), 2=LateRound(R5-7), 3=Undrafted
-DRAFT_GRADE_FEATURES = _BASE_FEATURES + V3_FEATURES
+DRAFT_GRADE_FEATURES = _BASE_FEATURES + V4_FEATURES
 
 # Success model: predict NFL career success from college profile ONLY
 # No draft_round — that's what we're trying to predict
-SUCCESS_FEATURES = _BASE_FEATURES + V3_FEATURES
+SUCCESS_FEATURES = _BASE_FEATURES + V4_FEATURES
 
 DRAFT_GRADE_LABELS = ["Top 50 Pick", "Day 2 Pick", "Late Round Pick", "Undrafted Prospect"]
 

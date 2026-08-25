@@ -29,6 +29,7 @@ import argparse
 import json
 import os
 import re
+import sys
 import threading
 import time
 import requests
@@ -577,6 +578,19 @@ def main():
         GRADE_ORDER.get(p.get("grade"), 9),
         -(p.get("success_probability") or 0),
     ))
+
+    # Safety valve: a flaky network (DNS drops, ESPN timeouts) must never
+    # replace a healthy board with a gutted one. On 2026-08-25 a mid-outage
+    # run overwrote 12,862 rows with 0. Abort below half the existing size.
+    try:
+        with open(OUTPUT_FILE) as f:
+            existing_total = int(json.load(f).get("total") or 0)
+    except Exception:
+        existing_total = 0
+    if existing_total and len(all_prospects) < existing_total * 0.5:
+        print(f"\n✗ ABORT: new board has {len(all_prospects)} rows vs {existing_total} "
+              f"existing (<50%) — refusing to overwrite. Existing cache kept.")
+        sys.exit(1)
 
     cache = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
