@@ -188,8 +188,8 @@ export default function Compare() {
     const pa = predA.success_probability;
     const pb = predB.success_probability;
     if (typeof pa !== 'number' || typeof pb !== 'number') return null;
-    const delta = pa - pb;
-    if (Math.abs(delta) < 0.05) {
+    const delta = pa - pb; // percentage points (probabilities are 0-100)
+    if (Math.abs(delta) < 3) {
       return { even: true, text: 'Model rates this matchup even.' };
     }
     const winner = delta > 0
@@ -358,6 +358,9 @@ export default function Compare() {
           <span className="cmp-metric-label">Projection</span>
           <span className="cmp-proj-value">
             {slot.predicting ? '…' : (pred?.draft_grade || '—')}
+            {!slot.predicting && pred?.projected_pick ? (
+              <span className="cmp-proj-pick">Pick ~{pred.projected_pick}</span>
+            ) : null}
           </span>
         </div>
 

@@ -108,11 +108,11 @@ export default function Backtest() {
           <div className="bt-lede-block">
             <p className="bt-lede">
               A <strong>holdout</strong> is data the model was never allowed to learn from.
-              These models were trained on the 2010&ndash;2017 draft classes and calibrated
+              These models were trained on the 2000&ndash;2017 draft classes and calibrated
               on 2018; the <strong>2019 and 2020 classes were kept completely out of
               training</strong>. Everything below is the model meeting those {m.holdout_rows} players
-              cold, scored with the exact artifacts running in production today &mdash; then
-              compared against how their careers actually went.
+              cold, scored with the exact training recipe behind the models running in
+              production today &mdash; then compared against how their careers actually went.
             </p>
             <p className="bt-lede">
               The misses are shown on purpose. A projection page that only shows its wins
@@ -154,6 +154,35 @@ export default function Backtest() {
               became NFL successes at all.
             </p>
           </div>
+
+          {m.pick && (
+            <div className="bt-metrics-wrap">
+              <div className="bt-divider">Draft-pick projection &mdash; where the model slots each player</div>
+              <table className="bt-metrics">
+                <thead>
+                  <tr>
+                    <th>Metric</th>
+                    <th className="bt-num-h">Served projection</th>
+                    <th className="bt-num-h">4-bucket baseline</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <MetricRow label="Avg. miss on drafted players" better="picks off, lower is better" digits={1}
+                    model={m.pick.served_blend.mae_picks_drafted} baseline={m.pick.classifier_baseline.mae_picks_drafted} />
+                  <MetricRow label="Rank correlation, top 64" better="orders the top two rounds, higher is better"
+                    model={m.pick.served_blend.spearman_top64} baseline={m.pick.classifier_baseline.spearman_top64} />
+                  <MetricRow label="1st-rounders flagged by pick 45" better="share of actual R1s, higher is better"
+                    model={m.pick.served_blend.r1_recall_within_45} baseline={m.pick.classifier_baseline.r1_recall_within_45} />
+                </tbody>
+              </table>
+              <p className="bt-metrics-foot">
+                The served projection blends a pick regressor with the 4-bucket grade
+                head; the baseline is the 4-bucket head alone. An average miss of
+                ~{Math.round(m.pick.served_blend.mae_picks_drafted)} picks is honest scale for
+                this problem &mdash; the projections are round-level leans, not slot calls.
+              </p>
+            </div>
+          )}
         </section>
 
         <section aria-label="Notable calls">
@@ -180,6 +209,7 @@ export default function Backtest() {
               <span className="bt-c-year">Class</span>
               <span className="bt-c-prob">Pred. success</span>
               <span className="bt-c-bucket">Pred. bucket</span>
+              <span className="bt-c-pick">Pred. pick</span>
               <span className="bt-c-bucket">Actual draft slot</span>
               <span className="bt-c-outcome">Outcome</span>
               <span className="bt-c-note">Career</span>
@@ -193,9 +223,12 @@ export default function Backtest() {
                 <span className="bt-c-year">{p.draft_year}</span>
                 <span className="bt-c-prob">{fmtPct(p.pred_success_prob)}</span>
                 <span className="bt-c-bucket">{p.pred_grade_bucket}</span>
+                <span className="bt-c-pick">{p.pred_pick ? `~#${p.pred_pick}` : '—'}</span>
                 <span className="bt-c-bucket">
                   {p.actual_round_bucket}
-                  {p.actual_round ? <span className="bt-sub"> (Rd {p.actual_round})</span> : null}
+                  {p.actual_round ? (
+                    <span className="bt-sub"> (Rd {p.actual_round}{p.actual_pick ? `, #${p.actual_pick}` : ''})</span>
+                  ) : null}
                 </span>
                 <span className={`bt-c-outcome ${p.actual_success ? 'bt-hit' : 'bt-bust'}`}>
                   {p.actual_success ? 'Hit' : 'Bust'}
@@ -207,9 +240,9 @@ export default function Backtest() {
         </section>
 
         <p className="bt-foot">
-          Generated {new Date(data.generated_at).toLocaleDateString()} from the production
-          model artifacts. {data.holdout_note} &ldquo;Hit&rdquo; = a Pro Bowl, 3+ seasons as a
-          primary starter, or equivalent career value.
+          Generated {new Date(data.generated_at).toLocaleDateString()}. {data.holdout_note}{' '}
+          &ldquo;Hit&rdquo; = a Pro Bowl, 3+ seasons as a primary starter, or equivalent
+          career value.
         </p>
       </main>
     </div>

@@ -2,25 +2,24 @@
 # -*- coding: utf-8 -*-
 """Generate public/data/backtest.json — the "receipts" page data.
 
-Loads the PRODUCTION artifacts from disk (read-only) exactly as
-scripts/train_models.py's eval path scores them:
+Refits the EVAL-phase models exactly as scripts/train_models.py Phase 1 does —
+train on 2000-2017 draft classes (+63 curated seed rows, weight 5), calibrate
+on 2018, z-score reference 2000-2018 — then scores the 2019-2020 temporal
+holdout. Deterministic (SEED=42), so the numbers reproduce the holdout
+evaluation recorded in models/metadata.json.
 
-  success:     success_xgboost_model.json + catboost_success_model.cbm,
-               mean of member probabilities -> Platt calibrator from
-               success_calibrated_model.pkl (joblib)
-  draft grade: draft_grade_model.json + catboost_draft_grade_model.cbm,
-               mean of member probabilities -> multinomial calibrator from
-               draft_grade_calibrated_model.pkl (joblib)
+Why refit instead of loading the production artifacts: the FINAL-phase
+production fit trains on ALL draft classes (grade/pick through 2026, success
+through 2021), which include 2019-2020. Scoring those artifacts on 2019-2020
+would be in-sample — inflated, not a backtest.
 
-Feature assembly is REUSED from train_models.load_csv_rows (which itself uses
-dv_features: position_flags + raw-production -> percentile mapping), so the
-holdout rows here are byte-identical to the frame the training eval saw.
+Heads scored, each via its serving-equivalent path:
+  success:  XGB+CatBoost member-mean probability -> Platt calibrator
+  grade:    member-mean 4-class probabilities, raw argmax (the served label)
+  pick:     50/50 log-space blend of the pick regressor and the pick implied
+            by the 4-class probabilities (the served estimator)
 
-Scored rows: draft classes 2019-2020 from training_data/combine_outcomes.csv —
-the temporal HOLDOUT (train 2010-2017 + seeds, calibration 2018). These
-classes were never used to fit or calibrate anything.
-
-Nothing is trained or written except public/data/backtest.json.
+Nothing is written except public/data/backtest.json.
 
 Usage:  .venv/bin/python scripts/generate_backtest.py
 """
@@ -36,47 +35,18 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO_ROOT)
 sys.path.insert(0, os.path.join(REPO_ROOT, "scripts"))
 
-import joblib
 import numpy as np
 import pandas as pd
-import xgboost as xgb
-from catboost import CatBoostClassifier
 from sklearn.metrics import accuracy_score, brier_score_loss, roc_auc_score
 
-# Reuse train_models' loading / scoring / feature assembly verbatim.
+# Reuse train_models' loading / fitting / scoring verbatim.
 import train_models as tm
 from dv_features import SUCCESS_FEATURES, DRAFT_GRADE_LABELS
 
 OUTPUT_PATH = os.path.join(REPO_ROOT, "public", "data", "backtest.json")
-METADATA_PATH = tm.METADATA_PATH
 
-
-# ── Artifact loading (mirrors XGBOost.py / train_models eval, read-only) ──────
-
-def load_bundle(xgb_path: str, cb_path: str, cal_path: str, num_class=None) -> dict:
-    xgb_m = xgb.XGBClassifier()
-    xgb_m.load_model(xgb_path)
-    cb_m = CatBoostClassifier()
-    cb_m.load_model(cb_path)
-    cal = joblib.load(cal_path)  # dict {"kind", "model", "feature_names", ...}
-    assert list(cal.get("feature_names", SUCCESS_FEATURES)) == list(SUCCESS_FEATURES), (
-        f"feature mismatch in {os.path.basename(cal_path)}")
-    return {"xgb": xgb_m, "cb": cb_m, "calibrator": cal}
-
-
-# ── Holdout frame: train_models features + display metadata columns ───────────
-
-def load_holdout() -> pd.DataFrame:
-    raw = pd.read_csv(tm.TRAINING_DATA_PATH)
-    feat = tm.load_csv_rows()  # same order as raw (row-for-row transform)
-    assert len(raw) == len(feat), "feature frame / raw CSV row mismatch"
-    assert (raw["draft_year"].to_numpy() == feat["draft_year"].to_numpy()).all()
-    for col in ("college", "position", "draft_round", "pro_bowls",
-                "seasons_started", "career_av"):
-        feat[col] = raw[col].to_numpy()
-    holdout = feat[feat.draft_year.isin(tm.TEST_YEARS)].reset_index(drop=True)
-    assert len(holdout) > 0, "no holdout rows found"
-    return holdout
+DISPLAY_COLS = ("name", "college", "position", "draft_year", "draft_round",
+                "draft_pick", "pro_bowls", "seasons_started", "career_av")
 
 
 def career_note(row) -> str:
@@ -92,8 +62,9 @@ def career_note(row) -> str:
     return ", ".join(parts)
 
 
-def player_record(row, prob: float, grade_idx: int) -> dict:
+def player_record(row, prob: float, grade_idx: int, pick: float) -> dict:
     rnd = row.draft_round
+    actual_pick = row.draft_pick
     return {
         "name": str(row["name"]),
         "college": None if pd.isna(row.college) else str(row.college),
@@ -101,8 +72,10 @@ def player_record(row, prob: float, grade_idx: int) -> dict:
         "draft_year": int(row.draft_year),
         "pred_success_prob": round(float(prob), 4),
         "pred_grade_bucket": DRAFT_GRADE_LABELS[int(grade_idx)],
+        "pred_pick": int(round(float(pick))),
         "actual_round_bucket": DRAFT_GRADE_LABELS[int(row.draft_grade)],
         "actual_round": None if (pd.isna(rnd) or int(rnd) > 7) else int(rnd),
+        "actual_pick": None if pd.isna(actual_pick) else int(actual_pick),
         "actual_success": int(row.nfl_success),
         "career_note": career_note(row),
         "categories": [],
@@ -110,64 +83,117 @@ def player_record(row, prob: float, grade_idx: int) -> dict:
 
 
 def main() -> int:
-    print("Loading production artifacts (read-only)…")
-    s_bundle = load_bundle(tm.SUCCESS_MODEL_PATH, tm.CATBOOST_SUCCESS_PATH,
-                           tm.SUCCESS_CALIBRATED_PATH)
-    g_bundle = load_bundle(tm.DRAFT_GRADE_MODEL_PATH, tm.CATBOOST_DRAFT_GRADE_PATH,
-                           tm.DRAFT_GRADE_CALIBRATED_PATH)
+    np.random.seed(tm.SEED)
 
-    holdout = load_holdout()
+    print(f"Loading {tm.TRAINING_DATA_PATH}")
+    raw_csv = pd.read_csv(tm.TRAINING_DATA_PATH)
+    raw = tm.load_raw_rows()
+    assert len(raw_csv) == len(raw), "feature frame / raw CSV row mismatch"
+    assert (raw_csv["draft_year"].to_numpy() == raw["draft_year"].to_numpy()).all()
+    for col in DISPLAY_COLS:
+        raw[col] = raw_csv[col].to_numpy()
+
+    seeds = tm.seed_rows()
+
+    # Identical to train_models.py Phase 1 (EVAL): z-ref 2000-2018,
+    # train 2000-2017 + seeds, calibrate 2018, test 2019-2020.
+    eval_stats = tm.stats_from_ref(raw, tm.EVAL_REF_YEARS)
+    df_eval = tm.apply_z(raw, eval_stats)
+    train = pd.concat([df_eval[df_eval.draft_year.isin(tm.EVAL_TRAIN_YEARS)], seeds],
+                      ignore_index=True)
+    cal = df_eval[df_eval.draft_year.isin(tm.CAL_YEARS)].reset_index(drop=True)
+    test = df_eval[df_eval.draft_year.isin(tm.TEST_YEARS)].reset_index(drop=True)
+    tm._assert_no_leakage(train, cal, test)
     years = sorted(tm.TEST_YEARS)
-    print(f"Holdout: {len(holdout)} rows, draft classes {years} "
-          f"(never used in training or calibration)")
+    print(f"Holdout: {len(test)} rows, draft classes {years} "
+          f"(never used to fit or calibrate the eval models scored here)")
 
-    X = holdout[SUCCESS_FEATURES]
-    y_success = holdout.nfl_success.to_numpy()
-    y_grade = holdout.draft_grade.to_numpy()
+    print("Refitting eval-phase models (train "
+          f"{min(tm.EVAL_TRAIN_YEARS)}-{max(tm.EVAL_TRAIN_YEARS)} + seeds, "
+          f"calibrate {sorted(tm.CAL_YEARS)})…")
+    s_members = tm.fit_success_members(train)
+    s_bundle = {**s_members,
+                "calibrator": tm.fit_success_calibrator(s_members, cal, tm.CAL_YEARS)}
+    g_members = tm.fit_grade_members(train)
+    p_members = tm.fit_pick_members(train)
 
-    # Identical scoring path to train_models' eval (and XGBOost.py serving):
-    # member-mean probability, then the ensemble calibrator.
+    X = test[SUCCESS_FEATURES]
+    y_success = test.nfl_success.to_numpy()
+    y_grade = test.draft_grade.to_numpy()
+
+    # Serving-equivalent scoring paths.
     p = tm.ensemble_success_probs(s_bundle, X, calibrated=True)
-    G = tm.ensemble_grade_probs(g_bundle, X, calibrated=True)
-    g_pred = G.argmax(axis=1)
+    G_raw = tm.ensemble_grade_probs(g_members, X, calibrated=False)
+    g_pred = G_raw.argmax(axis=1)
+    reg_pick = tm.ensemble_pick_preds(p_members, X)
+    cls_pick = tm.classifier_expected_pick(G_raw)
+    blend_pick = np.exp(0.5 * (np.log(reg_pick) + np.log(np.maximum(cls_pick, 1.0))))
 
     metrics = {
         "auc": round(float(roc_auc_score(y_success, p)), 4),
         "brier": round(float(brier_score_loss(y_success, p)), 4),
         "accuracy": round(float(accuracy_score(y_grade, g_pred)), 4),
-        "holdout_rows": int(len(holdout)),
+        "holdout_rows": int(len(test)),
         "holdout_years": years,
         "holdout_success_rate": round(float(y_success.mean()), 4),
     }
 
-    # Baseline (rule-based heuristic) metrics come from models/metadata.json —
-    # they were computed on this same holdout by train_models.py.
-    with open(METADATA_PATH) as fh:
-        meta = json.load(fh)
-    base_s = meta["evaluation"]["success"]["rule_based_baseline"]
-    base_g = meta["evaluation"]["draft_grade"]["rule_based_baseline"]
+    # Rule-based heuristic baseline, recomputed on the same holdout.
+    p_base = tm.baseline_success_probs(test)
+    g_base = tm.baseline_grade_preds(test)
     metrics["baseline"] = {
-        "auc": base_s["auc"],
-        "brier": base_s["brier"],
-        "accuracy": base_g["accuracy"],
-        "source": "models/metadata.json (rule_based_baseline, same holdout)",
+        "auc": round(float(roc_auc_score(y_success, p_base)), 4),
+        "brier": round(float(brier_score_loss(y_success, p_base)), 4),
+        "accuracy": round(float(accuracy_score(y_grade, g_base)), 4),
+        "source": "rule-based heuristic fallback, same holdout",
     }
-    # Sanity: our recomputed numbers should match the metadata's holdout eval.
-    meta_ens = meta["evaluation"]["success"]["ensemble_calibrated"]
-    for k in ("auc", "brier"):
-        if abs(metrics[k] - meta_ens[k]) > 0.005:
-            print(f"WARNING: recomputed {k}={metrics[k]} differs from "
-                  f"metadata {meta_ens[k]} — artifacts may be newer than metadata")
+
+    # Pick metrics: served blend vs the classifier-implied baseline, over rows
+    # with a known pick target (drafted, or confirmed round-8/UDFA).
+    y_pick = np.exp(tm._pick_target(test))
+    pick_m = np.isfinite(y_pick)
+    metrics["pick"] = {
+        "served_blend": tm.pick_metrics(y_pick[pick_m], blend_pick[pick_m]),
+        "classifier_baseline": tm.pick_metrics(y_pick[pick_m], cls_pick[pick_m]),
+        "n_scored": int(pick_m.sum()),
+    }
 
     print(f"Success:  AUC {metrics['auc']:.4f}  Brier {metrics['brier']:.4f}  "
-          f"(baseline AUC {base_s['auc']:.4f}, Brier {base_s['brier']:.4f})")
+          f"(baseline AUC {metrics['baseline']['auc']:.4f}, "
+          f"Brier {metrics['baseline']['brier']:.4f})")
     print(f"Grade:    accuracy {metrics['accuracy']:.4f}  "
-          f"(baseline {base_g['accuracy']:.4f})")
+          f"(baseline {metrics['baseline']['accuracy']:.4f})")
+    pk, pb = metrics["pick"]["served_blend"], metrics["pick"]["classifier_baseline"]
+    print(f"Pick:     MAE {pk['mae_picks_drafted']:.1f}  "
+          f"Spearman {pk['spearman_all']:.4f}  "
+          f"R1-recall@45 {pk['r1_recall_within_45']}  "
+          f"(classifier baseline MAE {pb['mae_picks_drafted']:.1f})")
+
+    # Sanity: the refit must reproduce the holdout eval in models/metadata.json.
+    with open(tm.METADATA_PATH) as fh:
+        meta = json.load(fh)
+    checks = [
+        ("success AUC", metrics["auc"],
+         meta["evaluation"]["success"]["ensemble_calibrated"]["auc"], 0.005),
+        ("success Brier", metrics["brier"],
+         meta["evaluation"]["success"]["ensemble_calibrated"]["brier"], 0.005),
+        ("grade accuracy", metrics["accuracy"],
+         meta["evaluation"]["draft_grade"]["ensemble_raw_mean"]["accuracy"], 0.005),
+        ("pick Spearman", pk["spearman_all"],
+         meta["pick_eval"]["blend_50_50_SERVED"]["spearman_all"], 0.005),
+        ("pick MAE", pk["mae_picks_drafted"],
+         meta["pick_eval"]["blend_50_50_SERVED"]["mae_picks_drafted"], 0.5),
+    ]
+    for label, ours, theirs, tol in checks:
+        if abs(ours - theirs) > tol:
+            print(f"WARNING: recomputed {label}={ours} differs from "
+                  f"metadata {theirs} — training recipe may have drifted")
 
     # ── Notable rows ─────────────────────────────────────────────────────────
-    df = holdout.copy()
+    df = test.copy()
     df["prob"] = p
     df["g_pred"] = g_pred
+    df["pick_pred"] = blend_pick
 
     order = df.sort_values("prob", ascending=False)
     top20 = order.head(20)
@@ -186,7 +212,7 @@ def main() -> int:
         for _, row in rows.iterrows():
             key = (row["name"], int(row.draft_year))
             if key not in players:
-                players[key] = player_record(row, row.prob, row.g_pred)
+                players[key] = player_record(row, row.prob, row.g_pred, row.pick_pred)
             players[key]["categories"].append(category)
 
     add(top20, "top20")
@@ -205,9 +231,11 @@ def main() -> int:
     payload = {
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "holdout_note": ("Draft classes 2019-2020 are a temporal holdout: the "
-                         "models were trained on 2010-2017 (plus 63 curated seed "
-                         "rows) and calibrated on 2018. No 2019-2020 player was "
-                         "used to fit or calibrate anything."),
+                         "models scored here were trained on the 2000-2017 "
+                         "classes (plus 63 curated seed rows) and calibrated "
+                         "on 2018 — the exact evaluation recipe behind the "
+                         "production pipeline's reported metrics. No "
+                         "2019-2020 player was used to fit or calibrate them."),
         "metrics": metrics,
         "players": player_list,
     }
