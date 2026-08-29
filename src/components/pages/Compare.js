@@ -452,13 +452,23 @@ export default function Compare() {
   // ── render ────────────────────────────────────────────────────
   return (
     <main className="cmp-page">
+      {/* Cinematic photo header — house hero pattern */}
+      <header className="cmp-hero">
+        <div className="cmp-hero-media" aria-hidden="true">
+          <img src={`${process.env.PUBLIC_URL}/images/CFB Content/action-1.jpg`} alt="" />
+        </div>
+        <div className="cmp-hero-scrim-x" aria-hidden="true" />
+        <div className="cmp-hero-scrim-y" aria-hidden="true" />
+        <div className="cmp-hero-inner">
+          <div className="eyebrow">Head to head</div>
+          <h1 className="cmp-title">Compare</h1>
+          <p className="cmp-lede">
+            Pick two college prospects and the ensemble scores them side by side —
+            probability, projection, factor attributions and historical comps.
+          </p>
+        </div>
+      </header>
       <div className="cmp-shell">
-        <div className="eyebrow">Head to head</div>
-        <h1 className="cmp-title">Compare</h1>
-        <p className="cmp-lede">
-          Pick two college prospects and the ensemble scores them side by side —
-          probability, projection, factor attributions and historical comps.
-        </p>
 
         {/* ── Two search boxes ── */}
         <div className="cmp-search-grid">

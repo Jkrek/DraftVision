@@ -318,6 +318,54 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Activity feed + users ── */
+
+.ins-c-when {
+  flex: 0 0 110px;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ins-c-vis {
+  flex: 0 0 110px;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ins-vis-user { color: var(--color-accent-300); }
+
+.ins-method {
+  color: var(--color-accent-300);
+  font-weight: 600;
+}
+.ins-status-err { color: #d98c8c; }
+
+.ins-row-activity .ins-c-num { flex-basis: 64px; }
+.ins-thead-activity .ins-c-num { flex-basis: 64px; }
+
+.ins-foot-note {
+  margin-top: 28px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--color-neutral-600);
+}
+.ins-foot-note code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--color-neutral-400);
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+@media (max-width: 720px) {
+  .ins-c-when { flex-basis: 78px; }
+  .ins-c-vis  { display: none; }
+}
+
 /* focus rings */
 .ins-btn:focus-visible {
   outline: 2px solid var(--color-accent);

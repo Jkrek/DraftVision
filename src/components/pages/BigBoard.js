@@ -503,7 +503,7 @@ export default function BigBoard() {
         <div className="bb-hero-scrim-y" aria-hidden="true" />
         <div className="bb-hero-inner">
           <div className="bb-hero-text">
-            <div className="bb-eyebrow">Owner&rsquo;s draft board</div>
+            <div className="bb-eyebrow">Curated boards — Jared&rsquo;s, the model&rsquo;s &amp; yours</div>
             <h1 className="bb-title">The Big Board</h1>
           </div>
           <div className="bb-count">

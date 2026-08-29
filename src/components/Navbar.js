@@ -10,7 +10,7 @@ const NAV_LINKS = [
   { to: '/services',     label: 'College Stars'  },
   { to: '/hs-prospects', label: 'HS Prospects'   },
   { to: '/mock-draft',   label: 'Mock Draft'     },
-  { to: '/leaderboard',  label: 'Leaderboard'    },
+  { to: '/leaderboard',  label: 'Model Board'    },
   { to: '/big-board',    label: 'Big Board'      },
   { to: '/predict',      label: 'Predict'        },
 ];

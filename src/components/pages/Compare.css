@@ -10,7 +10,53 @@
 .cmp-shell {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 56px 32px 100px;
+  padding: 36px 32px 100px;
+  box-sizing: border-box;
+}
+
+/* ── Cinematic photo header (house hero pattern) ─────────────── */
+.cmp-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-bottom: 1px solid var(--color-divider);
+}
+.cmp-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+.cmp-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 72% 18%;
+  filter: saturate(1.15) contrast(1.04) brightness(0.97);
+}
+[data-theme="dark"] .cmp-hero-media img {
+  filter: saturate(1.5) contrast(1.1) brightness(0.82);
+}
+.cmp-hero-scrim-x {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    var(--color-bg) 6%,
+    color-mix(in srgb, var(--color-bg) 90%, transparent) 44%,
+    color-mix(in srgb, var(--color-bg) 42%, transparent) 100%
+  );
+}
+.cmp-hero-scrim-y {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, transparent 60%, var(--color-bg));
+}
+.cmp-hero-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 104px 32px 48px;
   box-sizing: border-box;
 }
 
@@ -18,13 +64,13 @@
   margin: 0 0 10px;
   font-family: var(--font-heading);
   font-weight: 500;
-  font-size: clamp(32px, 4.6vw, 48px);
+  font-size: clamp(34px, 5vw, 54px);
   letter-spacing: -0.04em;
   line-height: 1;
 }
 
 .cmp-lede {
-  margin: 0 0 30px;
+  margin: 0;
   max-width: 620px;
   font-size: 14.5px;
   line-height: 1.6;

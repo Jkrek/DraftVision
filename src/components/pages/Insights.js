@@ -17,6 +17,16 @@ function shortDate(iso) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+// Full ISO timestamp -> "Aug 29, 2:14 PM" in the viewer's local time.
+function shortStamp(iso) {
+  if (!iso) return '';
+  const d = new Date(iso.endsWith('Z') || iso.includes('+') ? iso : `${iso}Z`);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleString('en-US', {
+    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+  });
+}
+
 export default function Insights() {
   const [storedKey, setStoredKey] = useState(
     () => sessionStorage.getItem(KEY_STORE) || ''
@@ -123,6 +133,8 @@ export default function Insights() {
   const series = Array.isArray(data.daily_series_30d) ? data.daily_series_30d : [];
   const maxVisitors = Math.max(1, ...series.map((d) => Number(d.visitors) || 0));
   const routes = Array.isArray(data.top_routes_7d) ? data.top_routes_7d : [];
+  const events = Array.isArray(data.recent_events) ? data.recent_events : [];
+  const users = Array.isArray(data.recent_users) ? data.recent_users : [];
 
   return (
     <div className="ins-page">
@@ -210,6 +222,73 @@ export default function Insights() {
             ))
           )}
         </section>
+
+        {/* Live activity feed */}
+        <section className="ins-block ins-block-flush" aria-label="Recent activity">
+          <div className="ins-block-head ins-block-head-pad">
+            <span className="ins-block-title">Live activity</span>
+            <span className="ins-block-meta">last {events.length} tracked requests</span>
+          </div>
+          <div className="ins-thead ins-thead-activity">
+            <span className="ins-c-when">When</span>
+            <span className="ins-c-route">Route</span>
+            <span className="ins-c-vis">Visitor</span>
+            <span className="ins-c-num">Status</span>
+            <span className="ins-c-num">ms</span>
+          </div>
+          {events.length === 0 ? (
+            <p className="ins-empty ins-empty-pad">Nothing yet.</p>
+          ) : (
+            events.map((e, i) => (
+              <div key={`${e.ts}-${i}`} className="ins-row ins-row-activity">
+                <span className="ins-c-when">{shortStamp(e.ts)}</span>
+                <span className="ins-c-route ins-route">
+                  {e.method !== 'GET' && <span className="ins-method">{e.method} </span>}
+                  {e.route}
+                </span>
+                <span className={`ins-c-vis${e.signed_in ? ' ins-vis-user' : ''}`}>
+                  {e.signed_in ? `user·${e.visitor}` : (e.visitor ? `anon·${e.visitor}` : '—')}
+                </span>
+                <span className={`ins-c-num ins-num${e.status >= 400 ? ' ins-status-err' : ''}`}>
+                  {e.status}
+                </span>
+                <span className="ins-c-num ins-num">{e.dur_ms != null ? fmt(e.dur_ms) : '—'}</span>
+              </div>
+            ))
+          )}
+        </section>
+
+        {/* Recent signed-in users */}
+        <section className="ins-block ins-block-flush" aria-label="Recent users">
+          <div className="ins-block-head ins-block-head-pad">
+            <span className="ins-block-title">Recent users</span>
+            <span className="ins-block-meta">by last seen</span>
+          </div>
+          <div className="ins-thead ins-thead-users">
+            <span className="ins-c-route">User</span>
+            <span className="ins-c-vis">Tier</span>
+            <span className="ins-c-when">Signed up</span>
+            <span className="ins-c-when">Last seen</span>
+          </div>
+          {users.length === 0 ? (
+            <p className="ins-empty ins-empty-pad">No signups yet.</p>
+          ) : (
+            users.map((u) => (
+              <div key={u.email || u.name} className="ins-row ins-row-users">
+                <span className="ins-c-route ins-route">{u.email || u.name || '—'}</span>
+                <span className="ins-c-vis">{u.tier || 'free'}</span>
+                <span className="ins-c-when">{shortStamp(u.created_at)}</span>
+                <span className="ins-c-when">{shortStamp(u.last_seen)}</span>
+              </div>
+            ))
+          )}
+        </section>
+
+        <p className="ins-foot-note">
+          Server logs (deploys, errors, stack traces) live in{' '}
+          <code>fly logs -a draftvision</code> — this feed is the product-side
+          view: who's here and what they're hitting.
+        </p>
       </main>
     </div>
   );

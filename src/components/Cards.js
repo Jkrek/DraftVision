@@ -65,7 +65,7 @@ function Cards() {
         <div className="board-head">
           <h2 className="board-heading">Top of the board</h2>
           <Link className="board-link" to="/leaderboard">
-            All 9,033 prospects →
+            The full board →
           </Link>
         </div>
         <div className="board-grid">

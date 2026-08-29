@@ -397,6 +397,36 @@ def _analytics_summary():
         daily_series_30d = [
             {"date": r[0], "visitors": r[1], "hits": r[2]} for r in cur.fetchall()
         ]
+
+        # Live activity feed: the last N tracked requests, newest first.
+        # anon ids are shortened — enough to follow one visitor's session
+        # without displaying the full identifier.
+        cur.execute(
+            "SELECT ts, route, method, status, user_sub, anon_id, dur_ms "
+            "FROM events ORDER BY id DESC LIMIT 80"
+        )
+        recent_events = [
+            {
+                "ts": r[0],
+                "route": r[1],
+                "method": r[2],
+                "status": r[3],
+                "signed_in": bool(r[4]),
+                "visitor": (r[4] or r[5] or "")[-6:] or None,
+                "dur_ms": r[6],
+            }
+            for r in cur.fetchall()
+        ]
+
+        cur.execute(
+            "SELECT email, name, tier, created_at, last_seen "
+            "FROM users ORDER BY last_seen DESC LIMIT 25"
+        )
+        recent_users = [
+            {"email": r[0], "name": r[1], "tier": r[2],
+             "created_at": r[3], "last_seen": r[4]}
+            for r in cur.fetchall()
+        ]
     finally:
         conn.close()
 
@@ -409,6 +439,8 @@ def _analytics_summary():
         "signed_in_wau": signed_in_wau,
         "top_routes_7d": top_routes_7d,
         "daily_series_30d": daily_series_30d,
+        "recent_events": recent_events,
+        "recent_users": recent_users,
     })
 
 

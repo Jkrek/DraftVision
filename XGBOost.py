@@ -2525,10 +2525,39 @@ def _maybe_reload_hs_prospect_cache() -> None:
         load_hs_prospect_cache()
 
 
+# committed_to is a short school name ("Ohio State"); the college board rows
+# carry full names + ESPN team ids ("Ohio State Buckeyes" → 194). Shortest
+# prefix match wins so "Miami" resolves to the Hurricanes, not Miami (OH),
+# and "Texas" to the Longhorns, not Texas A&M.
+_HS_COMMIT_INDEX: dict = {"key": None, "teams": [], "resolved": {}}
+
+
+def _commit_team_id(short) -> str | None:
+    if not short:
+        return None
+    cache = _PROSPECT_CACHE or []
+    key = (id(cache), len(cache))
+    if _HS_COMMIT_INDEX["key"] != key:
+        seen = {}
+        for r in cache:
+            t, tid = r.get("team"), r.get("espn_team_id")
+            if t and tid:
+                seen.setdefault(str(t).lower(), str(tid))
+        _HS_COMMIT_INDEX.update(key=key, teams=sorted(seen.items()), resolved={})
+    s = str(short).lower().strip()
+    resolved = _HS_COMMIT_INDEX["resolved"]
+    if s not in resolved:
+        cands = [(full, tid) for full, tid in _HS_COMMIT_INDEX["teams"]
+                 if full.startswith(s)]
+        resolved[s] = min(cands, key=lambda c: len(c[0]))[1] if cands else None
+    return resolved[s]
+
+
 @app.get("/api/hs-prospects")
 @http_cached(_hs_prospects_mtimes)
 def api_hs_prospects():
     _maybe_reload_hs_prospect_cache()
+    _maybe_reload_prospect_cache()  # commit-logo lookup reads the college board
     pos_filter   = (request.args.get("position") or "").strip().upper()
     stars_filter = request.args.get("stars", "")
     year_filter  = request.args.get("year", "")
@@ -2616,6 +2645,7 @@ def api_hs_prospects():
             q["enrolled"] = int(q.get("year") or 0) < current_hs_class
         except (TypeError, ValueError):
             q["enrolled"] = False
+        q["commit_team_id"] = _commit_team_id(q.get("committed_to"))
         out_rows.append(q)
 
     meta = dict(_HS_PROSPECT_CACHE_META)

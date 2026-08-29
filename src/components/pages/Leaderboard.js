@@ -300,7 +300,7 @@ export default function Leaderboard() {
         <div className="lb-hero-scrim-y" aria-hidden="true" />
         <div className="lb-hero-inner">
           <div className="lb-hero-text">
-            <div className="lb-eyebrow">Prospect leaderboard</div>
+            <div className="lb-eyebrow">The model&rsquo;s board — no human edits</div>
             <h1 className="lb-title">Every graded prospect</h1>
           </div>
           <div className="lb-count">

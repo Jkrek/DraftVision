@@ -222,7 +222,7 @@ export default function HSProspects() {
           >
             <option value="rank">Sort: National rank</option>
             <option value="stars">Sort: Stars</option>
-            <option value="rating">Sort: Rating</option>
+            <option value="rating">Sort: Composite</option>
             <option value="name">Sort: Name</option>
           </select>
         </div>
@@ -248,16 +248,16 @@ export default function HSProspects() {
               Stars
               <InfoTip
                 place="bottom"
-                text="Recruiting star tier. From the 247Sports composite when a class has signed; for future classes, ESPN’s 0–100 grade mapped to its published bands (90+ = 5★, 80+ = 4★, 70+ = 3★)."
+                text="Recruiting star tier from the 247Sports Composite — the industry aggregate of 247Sports, On3, Rivals and ESPN. For future classes it hasn’t ranked yet, ESPN’s 0–100 grade mapped to its published bands (90+ = 5★, 80+ = 4★, 70+ = 3★)."
               />
             </div>
             <div className="hsp-col-year">Yr</div>
             <div className="hsp-col-commit">Commit</div>
             <div className="hsp-col-rating">
-              Rating
+              Composite
               <InfoTip
                 place="bottom-left"
-                text="Numeric recruiting rating on a 0–1 scale — the 247Sports composite (aggregating 247, Rivals, ESPN and On3) for signed classes; ESPN grade ÷ 100 for future classes."
+                text="Industry-aggregate recruiting rating (0–1): the 247Sports Composite, which averages the 247Sports, On3, Rivals and ESPN rankings into one number. For classes the composite hasn’t published yet, ESPN’s grade ÷ 100 stands in."
               />
             </div>
           </div>
@@ -340,7 +340,16 @@ export default function HSProspects() {
               <div className="hsp-col-year">{p.year || '—'}</div>
 
               <div className={`hsp-col-commit${p.committed_to ? ' is-committed' : ''}`}>
-                {p.committed_to || 'Uncommitted'}
+                {p.commit_team_id && (
+                  <img
+                    className="hsp-commit-logo"
+                    src={`https://a.espncdn.com/i/teamlogos/ncaa/500/${p.commit_team_id}.png`}
+                    alt=""
+                    loading="lazy"
+                    onError={e => { e.target.style.display = 'none'; }}
+                  />
+                )}
+                <span>{p.committed_to || 'Uncommitted'}</span>
               </div>
 
               <div className={`hsp-col-rating${p.rating >= 0.99 ? ' is-elite' : ''}`}>
