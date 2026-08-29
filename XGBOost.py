@@ -2990,18 +2990,18 @@ def compute_prospect_grade(success_prob: Optional[float], draft_grade_class: Opt
     if success_prob is None:
         return "D"  # fallback path with no calibrated probability
     p = float(success_prob)
-    # Percentiles of the 2026-08-25 board (12,863 rows, v4 scout-signal
-    # models) — recompute via scripts/postprocess_board.py after any
-    # model/feature change reshapes the probability distribution.
-    if p >= 40.8: return "A+"
-    if p >= 32.3: return "A"
-    if p >= 24.8: return "A-"
-    if p >= 18.4: return "B+"
-    if p >= 15.3: return "B"
-    if p >= 12.3: return "B-"
-    if p >= 10.8: return "C+"
-    if p >= 9.4:  return "C"
-    if p >= 5.6:  return "C-"
+    # Percentiles of the 2026-08-29 board (12,641 rows, v5 wave models —
+    # seed games_played fix) — recompute via scripts/postprocess_board.py
+    # after any model/feature change reshapes the probability distribution.
+    if p >= 40.9: return "A+"
+    if p >= 35.5: return "A"
+    if p >= 30.7: return "A-"
+    if p >= 25.2: return "B+"
+    if p >= 21.4: return "B"
+    if p >= 17.3: return "B-"
+    if p >= 14.9: return "C+"
+    if p >= 12.7: return "C"
+    if p >= 8.0:  return "C-"
     return "D"
 
 
