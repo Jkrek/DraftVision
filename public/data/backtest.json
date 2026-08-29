@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-08-28T15:56:44.252316+00:00",
+  "generated_at": "2026-08-29T18:04:06.599141+00:00",
   "holdout_note": "Draft classes 2019-2020 are a temporal holdout: the models scored here were trained on the 2000-2017 classes (plus 63 curated seed rows) and calibrated on 2018 \u2014 the exact evaluation recipe behind the production pipeline's reported metrics. No 2019-2020 player was used to fit or calibrate them.",
   "metrics": {
-    "auc": 0.8144,
-    "brier": 0.1286,
-    "accuracy": 0.6535,
+    "auc": 0.8112,
+    "brier": 0.1292,
+    "accuracy": 0.6508,
     "holdout_rows": 733,
     "holdout_years": [
       2019,
@@ -19,29 +19,47 @@
     },
     "pick": {
       "served_blend": {
-        "spearman_all": 0.7962,
-        "spearman_drafted": 0.7962,
-        "spearman_top64": 0.6898,
-        "mae_picks_drafted": 45.3,
+        "spearman_all": 0.7972,
+        "spearman_drafted": 0.7972,
+        "spearman_top64": 0.6886,
+        "mae_picks_drafted": 45.1,
         "r1_recall_within_45": 0.8438
       },
       "classifier_baseline": {
-        "spearman_all": 0.7981,
-        "spearman_drafted": 0.7981,
-        "spearman_top64": 0.5406,
+        "spearman_all": 0.7971,
+        "spearman_drafted": 0.7971,
+        "spearman_top64": 0.5274,
         "mae_picks_drafted": 45.9,
-        "r1_recall_within_45": 0.8438
+        "r1_recall_within_45": 0.8281
       },
       "n_scored": 733
     }
   },
   "players": [
     {
+      "name": "Devin White",
+      "college": "LSU",
+      "position": "LB",
+      "draft_year": 2019,
+      "pred_success_prob": 0.9693,
+      "pred_grade_bucket": "Top 50 Pick",
+      "pred_pick": 12,
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_pick": 5,
+      "actual_success": 1,
+      "career_note": "1x Pro Bowl, 6 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
       "name": "Quinnen Williams",
       "college": "Alabama",
       "position": "DT",
       "draft_year": 2019,
-      "pred_success_prob": 0.9594,
+      "pred_success_prob": 0.9629,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 9,
       "actual_round_bucket": "Top 50 Pick",
@@ -59,7 +77,7 @@
       "college": "Iowa",
       "position": "OT",
       "draft_year": 2020,
-      "pred_success_prob": 0.9528,
+      "pred_success_prob": 0.9551,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 20,
       "actual_round_bucket": "Top 50 Pick",
@@ -73,47 +91,11 @@
       ]
     },
     {
-      "name": "Devin White",
-      "college": "LSU",
-      "position": "LB",
-      "draft_year": 2019,
-      "pred_success_prob": 0.9506,
-      "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 12,
-      "actual_round_bucket": "Top 50 Pick",
-      "actual_round": 1,
-      "actual_pick": 5,
-      "actual_success": 1,
-      "career_note": "1x Pro Bowl, 6 seasons as a primary starter",
-      "categories": [
-        "top20",
-        "hit"
-      ]
-    },
-    {
-      "name": "Jedrick Wills Jr.",
-      "college": "Alabama",
-      "position": "OT",
-      "draft_year": 2020,
-      "pred_success_prob": 0.9444,
-      "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 15,
-      "actual_round_bucket": "Top 50 Pick",
-      "actual_round": 1,
-      "actual_pick": 10,
-      "actual_success": 1,
-      "career_note": "3 seasons as a primary starter",
-      "categories": [
-        "top20",
-        "hit"
-      ]
-    },
-    {
       "name": "Jonah Williams",
       "college": "Alabama",
       "position": "OG",
       "draft_year": 2019,
-      "pred_success_prob": 0.9443,
+      "pred_success_prob": 0.9534,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 25,
       "actual_round_bucket": "Top 50 Pick",
@@ -127,13 +109,31 @@
       ]
     },
     {
+      "name": "Devin Bush Jr.",
+      "college": "Michigan",
+      "position": "LB",
+      "draft_year": 2019,
+      "pred_success_prob": 0.9435,
+      "pred_grade_bucket": "Top 50 Pick",
+      "pred_pick": 17,
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_pick": 10,
+      "actual_success": 1,
+      "career_note": "4 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
       "name": "Andrew Thomas",
       "college": "Georgia",
       "position": "OT",
       "draft_year": 2020,
-      "pred_success_prob": 0.9406,
+      "pred_success_prob": 0.9319,
       "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 20,
+      "pred_pick": 21,
       "actual_round_bucket": "Top 50 Pick",
       "actual_round": 1,
       "actual_pick": 4,
@@ -145,13 +145,31 @@
       ]
     },
     {
+      "name": "Jedrick Wills Jr.",
+      "college": "Alabama",
+      "position": "OT",
+      "draft_year": 2020,
+      "pred_success_prob": 0.9308,
+      "pred_grade_bucket": "Top 50 Pick",
+      "pred_pick": 15,
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_pick": 10,
+      "actual_success": 1,
+      "career_note": "3 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
       "name": "Rashan Gary",
       "college": "Michigan",
       "position": "LB",
       "draft_year": 2019,
-      "pred_success_prob": 0.9387,
+      "pred_success_prob": 0.9231,
       "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 17,
+      "pred_pick": 16,
       "actual_round_bucket": "Top 50 Pick",
       "actual_round": 1,
       "actual_pick": 12,
@@ -163,18 +181,54 @@
       ]
     },
     {
-      "name": "Christian Wilkins",
-      "college": "Clemson",
-      "position": "DT",
-      "draft_year": 2019,
-      "pred_success_prob": 0.9293,
+      "name": "CeeDee Lamb",
+      "college": "Oklahoma",
+      "position": "WR",
+      "draft_year": 2020,
+      "pred_success_prob": 0.9184,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 16,
       "actual_round_bucket": "Top 50 Pick",
       "actual_round": 1,
-      "actual_pick": 13,
+      "actual_pick": 17,
       "actual_success": 1,
-      "career_note": "5 seasons as a primary starter",
+      "career_note": "5x Pro Bowl, 6 seasons as a primary starter",
+      "categories": [
+        "top20",
+        "hit"
+      ]
+    },
+    {
+      "name": "Dwayne Haskins",
+      "college": "Ohio State",
+      "position": "QB",
+      "draft_year": 2019,
+      "pred_success_prob": 0.9094,
+      "pred_grade_bucket": "Top 50 Pick",
+      "pred_pick": 14,
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_pick": 15,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "top20",
+        "miss"
+      ]
+    },
+    {
+      "name": "Jerry Jeudy",
+      "college": "Alabama",
+      "position": "WR",
+      "draft_year": 2020,
+      "pred_success_prob": 0.9089,
+      "pred_grade_bucket": "Top 50 Pick",
+      "pred_pick": 15,
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_pick": 15,
+      "actual_success": 1,
+      "career_note": "1x Pro Bowl, 5 seasons as a primary starter",
       "categories": [
         "top20",
         "hit"
@@ -185,7 +239,7 @@
       "college": "Ohio State",
       "position": "CB",
       "draft_year": 2020,
-      "pred_success_prob": 0.9222,
+      "pred_success_prob": 0.9082,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 13,
       "actual_round_bucket": "Top 50 Pick",
@@ -203,85 +257,14 @@
       "college": "Florida",
       "position": "OT",
       "draft_year": 2019,
-      "pred_success_prob": 0.922,
+      "pred_success_prob": 0.905,
       "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 20,
+      "pred_pick": 19,
       "actual_round_bucket": "Top 50 Pick",
       "actual_round": 2,
       "actual_pick": 35,
       "actual_success": 1,
       "career_note": "7 seasons as a primary starter",
-      "categories": [
-        "top20",
-        "hit"
-      ]
-    },
-    {
-      "name": "Devin Bush Jr.",
-      "college": "Michigan",
-      "position": "LB",
-      "draft_year": 2019,
-      "pred_success_prob": 0.9129,
-      "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 17,
-      "actual_round_bucket": "Top 50 Pick",
-      "actual_round": 1,
-      "actual_pick": 10,
-      "actual_success": 1,
-      "career_note": "4 seasons as a primary starter",
-      "categories": [
-        "top20",
-        "hit"
-      ]
-    },
-    {
-      "name": "Dwayne Haskins",
-      "college": "Ohio State",
-      "position": "QB",
-      "draft_year": 2019,
-      "pred_success_prob": 0.9097,
-      "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 14,
-      "actual_round_bucket": "Top 50 Pick",
-      "actual_round": 1,
-      "actual_pick": 15,
-      "actual_success": 0,
-      "career_note": "Never a primary NFL starter, no Pro Bowls",
-      "categories": [
-        "top20",
-        "miss"
-      ]
-    },
-    {
-      "name": "Nick Bosa",
-      "college": "Ohio State",
-      "position": "DE",
-      "draft_year": 2019,
-      "pred_success_prob": 0.909,
-      "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 9,
-      "actual_round_bucket": "Top 50 Pick",
-      "actual_round": 1,
-      "actual_pick": 2,
-      "actual_success": 1,
-      "career_note": "5x Pro Bowl, 5 seasons as a primary starter",
-      "categories": [
-        "top20"
-      ]
-    },
-    {
-      "name": "D'Andre Swift",
-      "college": "Georgia",
-      "position": "RB",
-      "draft_year": 2020,
-      "pred_success_prob": 0.9075,
-      "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 25,
-      "actual_round_bucket": "Top 50 Pick",
-      "actual_round": 2,
-      "actual_pick": 35,
-      "actual_success": 1,
-      "career_note": "1x Pro Bowl, 3 seasons as a primary starter",
       "categories": [
         "top20"
       ]
@@ -291,7 +274,7 @@
       "college": "Florida",
       "position": "CB",
       "draft_year": 2020,
-      "pred_success_prob": 0.9069,
+      "pred_success_prob": 0.9037,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 18,
       "actual_round_bucket": "Top 50 Pick",
@@ -305,18 +288,69 @@
       ]
     },
     {
-      "name": "Mekhi Becton",
-      "college": "Louisville",
-      "position": "OT",
-      "draft_year": 2020,
-      "pred_success_prob": 0.8991,
+      "name": "Erik McCoy",
+      "college": "Texas A&M",
+      "position": "C",
+      "draft_year": 2019,
+      "pred_success_prob": 0.9033,
+      "pred_grade_bucket": "Top 50 Pick",
+      "pred_pick": 36,
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 2,
+      "actual_pick": 48,
+      "actual_success": 1,
+      "career_note": "2x Pro Bowl, 5 seasons as a primary starter",
+      "categories": [
+        "top20"
+      ]
+    },
+    {
+      "name": "Christian Wilkins",
+      "college": "Clemson",
+      "position": "DT",
+      "draft_year": 2019,
+      "pred_success_prob": 0.9017,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 16,
       "actual_round_bucket": "Top 50 Pick",
       "actual_round": 1,
-      "actual_pick": 11,
+      "actual_pick": 13,
       "actual_success": 1,
-      "career_note": "4 seasons as a primary starter",
+      "career_note": "5 seasons as a primary starter",
+      "categories": [
+        "top20"
+      ]
+    },
+    {
+      "name": "Chase Young",
+      "college": "Ohio State",
+      "position": "DE",
+      "draft_year": 2020,
+      "pred_success_prob": 0.9009,
+      "pred_grade_bucket": "Top 50 Pick",
+      "pred_pick": 10,
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_pick": 2,
+      "actual_success": 1,
+      "career_note": "1x Pro Bowl, 2 seasons as a primary starter",
+      "categories": [
+        "top20"
+      ]
+    },
+    {
+      "name": "D'Andre Swift",
+      "college": "Georgia",
+      "position": "RB",
+      "draft_year": 2020,
+      "pred_success_prob": 0.9003,
+      "pred_grade_bucket": "Top 50 Pick",
+      "pred_pick": 24,
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 2,
+      "actual_pick": 35,
+      "actual_success": 1,
+      "career_note": "1x Pro Bowl, 3 seasons as a primary starter",
       "categories": [
         "top20"
       ]
@@ -326,7 +360,7 @@
       "college": "Alabama",
       "position": "S",
       "draft_year": 2020,
-      "pred_success_prob": 0.8984,
+      "pred_success_prob": 0.8966,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 21,
       "actual_round_bucket": "Top 50 Pick",
@@ -339,56 +373,20 @@
       ]
     },
     {
-      "name": "Johnathan Abram",
+      "name": "Montez Sweat",
       "college": "Mississippi State",
-      "position": "S",
+      "position": "DE",
       "draft_year": 2019,
-      "pred_success_prob": 0.8972,
-      "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 21,
-      "actual_round_bucket": "Top 50 Pick",
-      "actual_round": 1,
-      "actual_pick": 27,
-      "actual_success": 0,
-      "career_note": "2 seasons as a primary starter",
-      "categories": [
-        "top20",
-        "miss"
-      ]
-    },
-    {
-      "name": "Jerry Jeudy",
-      "college": "Alabama",
-      "position": "WR",
-      "draft_year": 2020,
-      "pred_success_prob": 0.8949,
-      "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 16,
-      "actual_round_bucket": "Top 50 Pick",
-      "actual_round": 1,
-      "actual_pick": 15,
-      "actual_success": 1,
-      "career_note": "1x Pro Bowl, 5 seasons as a primary starter",
-      "categories": [
-        "top20"
-      ]
-    },
-    {
-      "name": "Andre Dillard",
-      "college": "Washington State",
-      "position": "OT",
-      "draft_year": 2019,
-      "pred_success_prob": 0.8905,
+      "pred_success_prob": 0.8916,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 20,
       "actual_round_bucket": "Top 50 Pick",
       "actual_round": 1,
-      "actual_pick": 22,
-      "actual_success": 0,
-      "career_note": "1 season as a primary starter",
+      "actual_pick": 26,
+      "actual_success": 1,
+      "career_note": "1x Pro Bowl, 6 seasons as a primary starter",
       "categories": [
-        "top20",
-        "miss"
+        "top20"
       ]
     },
     {
@@ -396,7 +394,7 @@
       "college": "Georgia",
       "position": "OT",
       "draft_year": 2020,
-      "pred_success_prob": 0.8596,
+      "pred_success_prob": 0.8845,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 31,
       "actual_round_bucket": "Top 50 Pick",
@@ -409,18 +407,35 @@
       ]
     },
     {
-      "name": "Cody Ford",
-      "college": "Oklahoma",
+      "name": "Andre Dillard",
+      "college": "Washington State",
       "position": "OT",
       "draft_year": 2019,
-      "pred_success_prob": 0.8587,
+      "pred_success_prob": 0.8769,
       "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 30,
+      "pred_pick": 21,
       "actual_round_bucket": "Top 50 Pick",
-      "actual_round": 2,
-      "actual_pick": 38,
+      "actual_round": 1,
+      "actual_pick": 22,
       "actual_success": 0,
       "career_note": "1 season as a primary starter",
+      "categories": [
+        "miss"
+      ]
+    },
+    {
+      "name": "Johnathan Abram",
+      "college": "Mississippi State",
+      "position": "S",
+      "draft_year": 2019,
+      "pred_success_prob": 0.8748,
+      "pred_grade_bucket": "Top 50 Pick",
+      "pred_pick": 22,
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 1,
+      "actual_pick": 27,
+      "actual_success": 0,
+      "career_note": "2 seasons as a primary starter",
       "categories": [
         "miss"
       ]
@@ -430,7 +445,7 @@
       "college": "Clemson",
       "position": "LB",
       "draft_year": 2020,
-      "pred_success_prob": 0.8565,
+      "pred_success_prob": 0.8708,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 8,
       "actual_round_bucket": "Top 50 Pick",
@@ -443,11 +458,28 @@
       ]
     },
     {
+      "name": "Cody Ford",
+      "college": "Oklahoma",
+      "position": "OT",
+      "draft_year": 2019,
+      "pred_success_prob": 0.8656,
+      "pred_grade_bucket": "Top 50 Pick",
+      "pred_pick": 29,
+      "actual_round_bucket": "Top 50 Pick",
+      "actual_round": 2,
+      "actual_pick": 38,
+      "actual_success": 0,
+      "career_note": "1 season as a primary starter",
+      "categories": [
+        "miss"
+      ]
+    },
+    {
       "name": "Henry Ruggs III",
       "college": "Alabama",
       "position": "WR",
       "draft_year": 2020,
-      "pred_success_prob": 0.8437,
+      "pred_success_prob": 0.8568,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 18,
       "actual_round_bucket": "Top 50 Pick",
@@ -464,9 +496,9 @@
       "college": "Wisconsin",
       "position": "LB",
       "draft_year": 2020,
-      "pred_success_prob": 0.7975,
+      "pred_success_prob": 0.8399,
       "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 36,
+      "pred_pick": 37,
       "actual_round_bucket": "Day 2 Pick",
       "actual_round": 3,
       "actual_pick": 74,
@@ -481,9 +513,9 @@
       "college": "Houston",
       "position": "OT",
       "draft_year": 2020,
-      "pred_success_prob": 0.7572,
+      "pred_success_prob": 0.7697,
       "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 42,
+      "pred_pick": 43,
       "actual_round_bucket": "Day 2 Pick",
       "actual_round": 3,
       "actual_pick": 72,
@@ -498,9 +530,9 @@
       "college": "Wyoming",
       "position": "LB",
       "draft_year": 2020,
-      "pred_success_prob": 0.7423,
+      "pred_success_prob": 0.7485,
       "pred_grade_bucket": "Top 50 Pick",
-      "pred_pick": 43,
+      "pred_pick": 41,
       "actual_round_bucket": "Day 2 Pick",
       "actual_round": 3,
       "actual_pick": 65,
@@ -515,7 +547,7 @@
       "college": "Texas",
       "position": "DT",
       "draft_year": 2020,
-      "pred_success_prob": 0.6824,
+      "pred_success_prob": 0.7003,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 47,
       "actual_round_bucket": "Day 2 Pick",
@@ -532,7 +564,7 @@
       "college": "Notre Dame",
       "position": "CB",
       "draft_year": 2019,
-      "pred_success_prob": 0.6285,
+      "pred_success_prob": 0.6346,
       "pred_grade_bucket": "Top 50 Pick",
       "pred_pick": 50,
       "actual_round_bucket": "Day 2 Pick",
@@ -545,47 +577,13 @@
       ]
     },
     {
-      "name": "Shea Patterson",
-      "college": "Michigan",
-      "position": "QB",
-      "draft_year": 2020,
-      "pred_success_prob": 0.0081,
-      "pred_grade_bucket": "Undrafted Prospect",
-      "pred_pick": 251,
-      "actual_round_bucket": "Undrafted Prospect",
-      "actual_round": null,
-      "actual_pick": null,
-      "actual_success": 0,
-      "career_note": "Never a primary NFL starter, no Pro Bowls",
-      "categories": [
-        "fade"
-      ]
-    },
-    {
-      "name": "John Battle",
-      "college": "LSU",
-      "position": "S",
-      "draft_year": 2019,
-      "pred_success_prob": 0.0076,
-      "pred_grade_bucket": "Undrafted Prospect",
-      "pred_pick": 268,
-      "actual_round_bucket": "Undrafted Prospect",
-      "actual_round": null,
-      "actual_pick": null,
-      "actual_success": 0,
-      "career_note": "Never a primary NFL starter, no Pro Bowls",
-      "categories": [
-        "fade"
-      ]
-    },
-    {
       "name": "Jauan Jennings",
       "college": "Tennessee",
       "position": "WR",
       "draft_year": 2020,
-      "pred_success_prob": 0.0073,
+      "pred_success_prob": 0.0093,
       "pred_grade_bucket": "Undrafted Prospect",
-      "pred_pick": 268,
+      "pred_pick": 265,
       "actual_round_bucket": "Late Round Pick",
       "actual_round": 7,
       "actual_pick": 217,
@@ -596,13 +594,47 @@
       ]
     },
     {
+      "name": "Nyqwan Murray",
+      "college": "Florida State",
+      "position": "WR",
+      "draft_year": 2019,
+      "pred_success_prob": 0.0088,
+      "pred_grade_bucket": "Undrafted Prospect",
+      "pred_pick": 294,
+      "actual_round_bucket": "Undrafted Prospect",
+      "actual_round": null,
+      "actual_pick": null,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "fade"
+      ]
+    },
+    {
+      "name": "JaMycal Hasty",
+      "college": "Baylor",
+      "position": "RB",
+      "draft_year": 2020,
+      "pred_success_prob": 0.0085,
+      "pred_grade_bucket": "Undrafted Prospect",
+      "pred_pick": 274,
+      "actual_round_bucket": "Undrafted Prospect",
+      "actual_round": null,
+      "actual_pick": null,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "fade"
+      ]
+    },
+    {
       "name": "Brian Lewerke",
       "college": "Michigan State",
       "position": "QB",
       "draft_year": 2020,
-      "pred_success_prob": 0.007,
+      "pred_success_prob": 0.0071,
       "pred_grade_bucket": "Undrafted Prospect",
-      "pred_pick": 282,
+      "pred_pick": 285,
       "actual_round_bucket": "Undrafted Prospect",
       "actual_round": null,
       "actual_pick": null,
@@ -617,9 +649,9 @@
       "college": "Florida State",
       "position": "DT",
       "draft_year": 2019,
-      "pred_success_prob": 0.0064,
+      "pred_success_prob": 0.006,
       "pred_grade_bucket": "Undrafted Prospect",
-      "pred_pick": 267,
+      "pred_pick": 270,
       "actual_round_bucket": "Late Round Pick",
       "actual_round": 6,
       "actual_pick": 209,
@@ -630,13 +662,13 @@
       ]
     },
     {
-      "name": "JaMycal Hasty",
-      "college": "Baylor",
-      "position": "RB",
-      "draft_year": 2020,
-      "pred_success_prob": 0.0059,
+      "name": "John Battle",
+      "college": "LSU",
+      "position": "S",
+      "draft_year": 2019,
+      "pred_success_prob": 0.0055,
       "pred_grade_bucket": "Undrafted Prospect",
-      "pred_pick": 273,
+      "pred_pick": 271,
       "actual_round_bucket": "Undrafted Prospect",
       "actual_round": null,
       "actual_pick": null,
@@ -651,26 +683,9 @@
       "college": "South Carolina",
       "position": "LB",
       "draft_year": 2019,
-      "pred_success_prob": 0.0057,
+      "pred_success_prob": 0.005,
       "pred_grade_bucket": "Undrafted Prospect",
-      "pred_pick": 278,
-      "actual_round_bucket": "Undrafted Prospect",
-      "actual_round": null,
-      "actual_pick": null,
-      "actual_success": 0,
-      "career_note": "Never a primary NFL starter, no Pro Bowls",
-      "categories": [
-        "fade"
-      ]
-    },
-    {
-      "name": "Lj Scott",
-      "college": "Michigan State",
-      "position": "RB",
-      "draft_year": 2019,
-      "pred_success_prob": 0.0034,
-      "pred_grade_bucket": "Undrafted Prospect",
-      "pred_pick": 278,
+      "pred_pick": 275,
       "actual_round_bucket": "Undrafted Prospect",
       "actual_round": null,
       "actual_pick": null,
@@ -685,7 +700,7 @@
       "college": "Colorado",
       "position": "WR",
       "draft_year": 2020,
-      "pred_success_prob": 0.0031,
+      "pred_success_prob": 0.0039,
       "pred_grade_bucket": "Undrafted Prospect",
       "pred_pick": 294,
       "actual_round_bucket": "Undrafted Prospect",
@@ -702,9 +717,26 @@
       "college": "LSU",
       "position": "RB",
       "draft_year": 2019,
-      "pred_success_prob": 0.0023,
+      "pred_success_prob": 0.0036,
       "pred_grade_bucket": "Undrafted Prospect",
       "pred_pick": 286,
+      "actual_round_bucket": "Undrafted Prospect",
+      "actual_round": null,
+      "actual_pick": null,
+      "actual_success": 0,
+      "career_note": "Never a primary NFL starter, no Pro Bowls",
+      "categories": [
+        "fade"
+      ]
+    },
+    {
+      "name": "Lj Scott",
+      "college": "Michigan State",
+      "position": "RB",
+      "draft_year": 2019,
+      "pred_success_prob": 0.003,
+      "pred_grade_bucket": "Undrafted Prospect",
+      "pred_pick": 274,
       "actual_round_bucket": "Undrafted Prospect",
       "actual_round": null,
       "actual_pick": null,

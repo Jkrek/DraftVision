@@ -114,6 +114,13 @@ CATBOOST_DRAFT_GRADE_PATH   = os.path.join(REPO_ROOT, "catboost_draft_grade_mode
 DRAFT_GRADE_CALIBRATED_PATH = os.path.join(REPO_ROOT, "draft_grade_calibrated_model.pkl")
 DRAFT_PICK_MODEL_PATH       = os.path.join(REPO_ROOT, "draft_pick_model.json")
 CATBOOST_DRAFT_PICK_PATH    = os.path.join(REPO_ROOT, "catboost_draft_pick_model.cbm")
+CAREER_AV_MODEL_PATH        = os.path.join(REPO_ROOT, "career_av_model.json")
+CATBOOST_CAREER_AV_PATH     = os.path.join(REPO_ROOT, "catboost_career_av_model.cbm")
+CATBOOST_PICK_Q10_PATH      = os.path.join(REPO_ROOT, "catboost_draft_pick_q10_model.cbm")
+CATBOOST_PICK_Q90_PATH      = os.path.join(REPO_ROOT, "catboost_draft_pick_q90_model.cbm")
+
+# Pick-interval nominal coverage (conformalized on a held-out fold)
+PICK_INTERVAL_COVERAGE = 0.80
 
 # Pick-regression target: overall pick 1-262 for drafted rows; undrafted rows
 # train at a pseudo-pick past the end of the draft so the model learns the
@@ -217,6 +224,9 @@ def load_raw_rows() -> pd.DataFrame:
                 if _nan_float(r.get("consensus_covered")) == 1.0 else float("nan")
             ),
             "allstar_invite":      _nan_float(r.get("allstar_invite")),
+            # label passthrough for the career-value head — in
+            # FORBIDDEN_FEATURES, so it can never enter X
+            "career_av":           _nan_float(r.get("career_av")),
             "_pos_group":          _production_group(pos),
             "_grp":                _composite_group(pos),
         }
@@ -312,7 +322,14 @@ def seed_rows() -> pd.DataFrame:
             "draft_year":          -1,  # curated exemplars — pinned to the train fold
             "sample_weight":       SEED_ROW_WEIGHT,
             "production_score":    float(sp["production_score"]),
-            "games_played":        float(sp["games_played"]),
+            # games_played MUST stay NaN: the CSV's games_college column is
+            # empty on all 9,965 rows, so a value here would make this
+            # feature a seed-row indicator — and CatBoost's quantile heads
+            # measurably learned "games_played present → seed-bust → UDFA",
+            # sending every LIVE player (who always has a games count) to a
+            # pick-300 upper bound. All-NaN in training = unsplittable =
+            # harmless at serve.
+            "games_played":        float("nan"),
             "combine_speed_score": float(sp["combine_speed_score"]),
             "conference_tier":     float(sp["conference_tier"]),
             **position_flags(sp["position"]),
@@ -541,6 +558,94 @@ def ensemble_pick_preds(bundle: dict, X: pd.DataFrame) -> np.ndarray:
     return np.clip(np.exp(logp), 1.0, UDFA_PICK)
 
 
+def fit_av_members(train: pd.DataFrame):
+    """XGB+CatBoost regressors on log1p(career_av clipped at 0) — the
+    continuous career-value head. Display-only: it ranks likely hits by
+    career ceiling (stars vs starters), which the binary success head cannot
+    express. Seed rows carry no career_av and drop out via the NaN mask."""
+    y_raw = pd.to_numeric(train.get("career_av"), errors="coerce").to_numpy(dtype=float)
+    m = np.isfinite(y_raw)
+    y = np.log1p(np.clip(y_raw[m], 0.0, None))
+    X_tr, w_tr = train[SUCCESS_FEATURES][m], train.sample_weight.to_numpy()[m]
+    xgb_m = xgb.XGBRegressor(
+        n_estimators=400, max_depth=4, learning_rate=0.05,
+        subsample=0.85, colsample_bytree=0.85, min_child_weight=3,
+        random_state=SEED, objective="reg:squarederror",
+    )
+    xgb_m.fit(X_tr, y, sample_weight=w_tr)
+    cb_m = CatBoostRegressor(
+        iterations=400, depth=5, learning_rate=0.05, loss_function="RMSE",
+        random_seed=SEED, verbose=0, allow_writing_files=False,
+    )
+    cb_m.fit(X_tr, y, sample_weight=w_tr)
+    return {"xgb": xgb_m, "cb": cb_m, "n_rows": int(m.sum())}
+
+
+def ensemble_av_preds(bundle: dict, X: pd.DataFrame) -> np.ndarray:
+    """Serving-equivalent: expm1(mean of member log1p-AV predictions), >= 0."""
+    logv = np.mean([bundle["xgb"].predict(X), bundle["cb"].predict(X.values)], axis=0)
+    return np.maximum(np.expm1(logv), 0.0)
+
+
+def fit_pick_quantile_members(train: pd.DataFrame, alpha: float):
+    """CatBoost quantile regressor on log(pick) — one bundle per side of the
+    pick interval (alpha 0.1 = optimistic bound, 0.9 = pessimistic).
+
+    CatBoost-ONLY by measurement, not preference: ~45% of the target mass
+    sits exactly at the UDFA ceiling (log 300), and XGBoost's
+    reg:quantileerror at alpha=0.9 collapses onto that point mass — it
+    predicts the global quantile (300) for every row, including actual
+    top-10 picks, across all tested configs. CatBoost's Quantile loss
+    handles the ceiling correctly (top-10-pick q90 median ~51). Coverage is
+    guaranteed by the conformal offsets either way."""
+    y = _pick_target(train)
+    m = np.isfinite(y)
+    X_tr, y_tr, w_tr = train[SUCCESS_FEATURES][m], y[m], train.sample_weight.to_numpy()[m]
+    cb_m = CatBoostRegressor(
+        iterations=400, depth=5, learning_rate=0.05,
+        loss_function=f"Quantile:alpha={alpha}",
+        random_seed=SEED, verbose=0, allow_writing_files=False,
+    )
+    cb_m.fit(X_tr, y_tr, sample_weight=w_tr)
+    return {"cb": cb_m}
+
+
+def pick_quantile_log_preds(bundle: dict, X: pd.DataFrame) -> np.ndarray:
+    """Quantile prediction in LOG-pick space (no exp)."""
+    return np.asarray(bundle["cb"].predict(X.values), dtype=float)
+
+
+def conformal_pick_offsets(q10_log, q90_log, y_log,
+                           coverage: float = PICK_INTERVAL_COVERAGE):
+    """Split-conformal per-side additive offsets in log-pick space.
+
+    Widens each bound so the calibration fold misses ~(1-coverage)/2 per
+    side. Offsets are clipped at 0 — conformal only widens, never narrows
+    (a negative offset would trade honesty for cosmetics)."""
+    miss = (1.0 - coverage) / 2.0
+    lo = float(np.quantile(q10_log - y_log, 1.0 - miss))  # how far q10 overshoots
+    hi = float(np.quantile(y_log - q90_log, 1.0 - miss))  # how far q90 undershoots
+    return max(lo, 0.0), max(hi, 0.0)
+
+
+def interval_metrics(y_pick, lo_pick, hi_pick, blend=None) -> dict:
+    """Coverage + width diagnostics for conformalized pick intervals."""
+    cov = float(np.mean((y_pick >= lo_pick) & (y_pick <= hi_pick)))
+    width = hi_pick - lo_pick
+    out = {
+        "coverage": round(cov, 4),
+        "median_width_picks": round(float(np.median(width)), 1),
+        "mean_width_picks": round(float(np.mean(width)), 1),
+    }
+    if blend is not None:
+        top = blend <= 64
+        if top.any():
+            out["coverage_top64"] = round(
+                float(np.mean((y_pick[top] >= lo_pick[top]) & (y_pick[top] <= hi_pick[top]))), 4)
+            out["median_width_picks_top64"] = round(float(np.median(width[top])), 1)
+    return out
+
+
 def classifier_expected_pick(P: np.ndarray) -> np.ndarray:
     """Baseline the regressor must beat: expected pick implied by the 4-class
     head's probabilities (class midpoints 25/85/190/300)."""
@@ -750,6 +855,56 @@ def main() -> int:
           f"R1-recall {r['r1_recall_within_45']} vs {c['r1_recall_within_45']} "
           f"→ serve_pick = {pick_wins}")
 
+    # ── Career-value head (display-only; measured in experiment_career_av) ───
+    print("\n[EVAL] Training career-AV regressor (log1p AV, 2000-2017 + seeds)…")
+    av_members = fit_av_members(train)
+    av_pred = ensemble_av_preds(av_members, X_te)
+    av_true = pd.to_numeric(test["career_av"], errors="coerce").to_numpy(dtype=float)
+    drafted_m = np.isfinite(test["draft_pick"].to_numpy(dtype=float))
+    top100 = np.argsort(-p_calib)[:100]
+    av_eval = {
+        "spearman_all": round(float(spearmanr(av_true, av_pred).statistic), 4),
+        "spearman_drafted": round(float(spearmanr(av_true[drafted_m], av_pred[drafted_m]).statistic), 4),
+        "spearman_success_top100": round(float(spearmanr(av_true[top100], av_pred[top100]).statistic), 4),
+        "pearson_vs_success_prob": round(float(np.corrcoef(av_pred, p_calib)[0, 1]), 4),
+        "n_fit_rows": av_members["n_rows"],
+    }
+    # Gate (pre-registered in models/experiments/career_av_results.json):
+    # useful ordering overall AND not a duplicate of the success head.
+    serve_av = (av_eval["spearman_all"] >= 0.55
+                and av_eval["pearson_vs_success_prob"] < 0.95)
+    print(f"  Spearman(all) {av_eval['spearman_all']}  "
+          f"drafted {av_eval['spearman_drafted']}  "
+          f"success-top100 {av_eval['spearman_success_top100']}  "
+          f"pearson-vs-success {av_eval['pearson_vs_success_prob']}")
+    print(f"  DECISION GATE (career AV): spearman >= 0.55 and pearson < 0.95 "
+          f"→ serve_av = {serve_av}")
+
+    # ── Pick intervals: quantile heads + split conformal (report-only here;
+    #    production offsets come from the FINAL phase's OOF fold) ─────────────
+    print("\n[EVAL] Training pick quantile heads (alpha 0.1 / 0.9)…")
+    q10_members = fit_pick_quantile_members(train, 0.1)
+    q90_members = fit_pick_quantile_members(train, 0.9)
+    y_cal_pick = _pick_target(cal)
+    cal_pm = np.isfinite(y_cal_pick)
+    X_cal_p = cal[SUCCESS_FEATURES][cal_pm]
+    eval_lo_off, eval_hi_off = conformal_pick_offsets(
+        pick_quantile_log_preds(q10_members, X_cal_p),
+        pick_quantile_log_preds(q90_members, X_cal_p),
+        y_cal_pick[cal_pm])
+    lo_pick = np.clip(np.exp(
+        pick_quantile_log_preds(q10_members, X_te[pick_m]) - eval_lo_off), 1.0, UDFA_PICK)
+    hi_pick = np.clip(np.exp(
+        pick_quantile_log_preds(q90_members, X_te[pick_m]) + eval_hi_off), 1.0, UDFA_PICK)
+    interval_eval = interval_metrics(y_pick_te[pick_m], lo_pick, hi_pick,
+                                     blend=blend_pick)
+    interval_eval["lo_offset_log"] = round(eval_lo_off, 4)
+    interval_eval["hi_offset_log"] = round(eval_hi_off, 4)
+    print(f"  holdout coverage {interval_eval['coverage']:.3f} "
+          f"(target {PICK_INTERVAL_COVERAGE}), median width "
+          f"{interval_eval['median_width_picks']} picks "
+          f"(top64: {interval_eval.get('median_width_picks_top64')})")
+
     # ── Decision gate: serve whichever of {ensemble, heuristic} wins ─────────
     ens = success_eval["ensemble_calibrated"]
     base = success_eval["rule_based_baseline"]
@@ -812,6 +967,44 @@ def main() -> int:
     p_final["cb"].save_model(CATBOOST_DRAFT_PICK_PATH)
     print(f"  pick members    → {DRAFT_PICK_MODEL_PATH}, {CATBOOST_DRAFT_PICK_PATH}")
 
+    # Career-AV head: label-mature classes only (same window as success)
+    print(f"[FINAL] Career-AV: members on {min(FINAL_SUCCESS_YEARS)}-{max(FINAL_SUCCESS_YEARS)}")
+    av_final = fit_av_members(
+        df_final[df_final.draft_year.isin(FINAL_SUCCESS_YEARS)].reset_index(drop=True))
+    av_final["xgb"].save_model(CAREER_AV_MODEL_PATH)
+    av_final["cb"].save_model(CATBOOST_CAREER_AV_PATH)
+    print(f"  AV members      → {CAREER_AV_MODEL_PATH}, {CATBOOST_CAREER_AV_PATH}")
+
+    # Pick quantile heads + production conformal offsets. House shadow
+    # pattern (mirrors the grade calibrator): shadow quantiles fit WITHOUT
+    # the conformal fold, offsets computed out-of-fold on 2025-2026 (their
+    # picks are known — pick labels mature on draft night), final members
+    # refit on all classes with those offsets carried over.
+    q_shadow_years = FINAL_GRADE_YEARS - GRADE_CAL_FOLD
+    print(f"[FINAL] Pick quantiles: shadow {min(q_shadow_years)}-{max(q_shadow_years)} "
+          f"→ conformal offsets on {sorted(GRADE_CAL_FOLD)}; members on all classes")
+    q_shadow_frame = pd.concat(
+        [df_final[df_final.draft_year.isin(q_shadow_years)], seeds], ignore_index=True)
+    q10_shadow = fit_pick_quantile_members(q_shadow_frame, 0.1)
+    q90_shadow = fit_pick_quantile_members(q_shadow_frame, 0.9)
+    conf = df_final[df_final.draft_year.isin(GRADE_CAL_FOLD)].reset_index(drop=True)
+    y_conf = _pick_target(conf)
+    conf_m = np.isfinite(y_conf)
+    X_conf = conf[SUCCESS_FEATURES][conf_m]
+    final_lo_off, final_hi_off = conformal_pick_offsets(
+        pick_quantile_log_preds(q10_shadow, X_conf),
+        pick_quantile_log_preds(q90_shadow, X_conf),
+        y_conf[conf_m])
+    print(f"  conformal offsets (log-pick): lo {final_lo_off:.4f}, hi {final_hi_off:.4f} "
+          f"on {int(conf_m.sum())} OOF rows")
+    q_final_frame = pd.concat(
+        [df_final[df_final.draft_year.isin(FINAL_GRADE_YEARS)], seeds], ignore_index=True)
+    q10_final = fit_pick_quantile_members(q_final_frame, 0.1)
+    q90_final = fit_pick_quantile_members(q_final_frame, 0.9)
+    q10_final["cb"].save_model(CATBOOST_PICK_Q10_PATH)
+    q90_final["cb"].save_model(CATBOOST_PICK_Q90_PATH)
+    print(f"  quantile members → {CATBOOST_PICK_Q10_PATH}, {CATBOOST_PICK_Q90_PATH}")
+
     print(f"  success members → {SUCCESS_MODEL_PATH}, {CATBOOST_SUCCESS_PATH}")
     print(f"  grade members   → {DRAFT_GRADE_MODEL_PATH}, {CATBOOST_DRAFT_GRADE_PATH}")
     print(f"  calibrators     → {SUCCESS_CALIBRATED_PATH}, {DRAFT_GRADE_CALIBRATED_PATH}")
@@ -821,6 +1014,15 @@ def main() -> int:
         "serve": serve,
         "serve_pick": bool(pick_wins),
         "pick_eval": pick_eval,
+        "serve_av": bool(serve_av),
+        "av_eval": av_eval,
+        "pick_interval": {
+            "coverage_target": PICK_INTERVAL_COVERAGE,
+            "lo_offset_log": round(final_lo_off, 4),
+            "hi_offset_log": round(final_hi_off, 4),
+            "conformal_fold": sorted(GRADE_CAL_FOLD),
+            "eval": interval_eval,
+        },
         "serve_gate": {
             "rule": "serve ensemble iff eval-holdout AUC(ensemble) > AUC(baseline) "
                     "AND Brier(ensemble) < Brier(baseline); else heuristic",

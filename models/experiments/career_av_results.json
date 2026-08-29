@@ -1,0 +1,165 @@
+{
+  "experiment": "career_av_regression_head",
+  "generated_at": "2026-08-29T17:37:04.059897+00:00",
+  "target": "log1p(max(career_av, 0))",
+  "features": [
+    "production_score",
+    "games_played",
+    "combine_speed_score",
+    "conference_tier",
+    "position_qb",
+    "position_rb",
+    "position_wr",
+    "position_te",
+    "position_db",
+    "position_lb",
+    "position_dl",
+    "position_ol",
+    "position_other",
+    "height_in_z",
+    "weight_lb_z",
+    "vertical_z",
+    "bench_z",
+    "broad_in_z",
+    "cone_z",
+    "shuttle_z",
+    "rec_stars",
+    "rec_rating",
+    "rec_ranking",
+    "years_in_college",
+    "early_declare",
+    "prod_fs_z",
+    "prod_car_z",
+    "car_seasons",
+    "sp_rating",
+    "consensus_logrank",
+    "allstar_invite"
+  ],
+  "split": {
+    "train_years": "2000-2017",
+    "cal_years": [
+      2018
+    ],
+    "holdout_years": [
+      2019,
+      2020
+    ],
+    "holdout_rows": 733,
+    "seed": 42
+  },
+  "data_checks": {
+    "csv_career_av_populated_frac": 1.0,
+    "csv_negative_av_rows_clipped": 3,
+    "seeds_have_career_av": false,
+    "seeds_excluded_from_av_fit": true,
+    "av_fit_rows": 6594
+  },
+  "holdout_metrics": {
+    "spearman_all": 0.6579,
+    "spearman_drafted_only": 0.5293,
+    "n_drafted": 509,
+    "spearman_model_top100": 0.4592,
+    "auc_av_pred_as_success_ranker": 0.8136,
+    "auc_success_head_refit": 0.8144,
+    "auc_success_head_v4_baseline": 0.8144,
+    "pearson_av_pred_vs_success_prob": 0.9428,
+    "spearman_av_pred_vs_success_prob": 0.9346
+  },
+  "decile_table_pred_vs_actual_av": [
+    {
+      "decile": 1,
+      "count": 74,
+      "mean_pred_av": 0.15,
+      "mean_actual_av": 1.07,
+      "median_actual_av": 0.0,
+      "max_actual_av": 33.0,
+      "frac_av_ge_30": 0.0135
+    },
+    {
+      "decile": 2,
+      "count": 73,
+      "mean_pred_av": 0.55,
+      "mean_actual_av": 2.23,
+      "median_actual_av": 0.0,
+      "max_actual_av": 28.0,
+      "frac_av_ge_30": 0.0
+    },
+    {
+      "decile": 3,
+      "count": 73,
+      "mean_pred_av": 0.92,
+      "mean_actual_av": 4.21,
+      "median_actual_av": 0.0,
+      "max_actual_av": 45.0,
+      "frac_av_ge_30": 0.0548
+    },
+    {
+      "decile": 4,
+      "count": 74,
+      "mean_pred_av": 1.35,
+      "mean_actual_av": 3.2,
+      "median_actual_av": 0.0,
+      "max_actual_av": 35.0,
+      "frac_av_ge_30": 0.027
+    },
+    {
+      "decile": 5,
+      "count": 73,
+      "mean_pred_av": 1.89,
+      "mean_actual_av": 5.12,
+      "median_actual_av": 1.0,
+      "max_actual_av": 45.0,
+      "frac_av_ge_30": 0.0137
+    },
+    {
+      "decile": 6,
+      "count": 73,
+      "mean_pred_av": 2.76,
+      "mean_actual_av": 8.68,
+      "median_actual_av": 4.0,
+      "max_actual_av": 41.0,
+      "frac_av_ge_30": 0.0822
+    },
+    {
+      "decile": 7,
+      "count": 74,
+      "mean_pred_av": 4.46,
+      "mean_actual_av": 9.55,
+      "median_actual_av": 7.0,
+      "max_actual_av": 45.0,
+      "frac_av_ge_30": 0.0541
+    },
+    {
+      "decile": 8,
+      "count": 73,
+      "mean_pred_av": 8.19,
+      "mean_actual_av": 14.81,
+      "median_actual_av": 10.0,
+      "max_actual_av": 71.0,
+      "frac_av_ge_30": 0.1781
+    },
+    {
+      "decile": 9,
+      "count": 73,
+      "mean_pred_av": 15.71,
+      "mean_actual_av": 19.68,
+      "median_actual_av": 14.0,
+      "max_actual_av": 79.0,
+      "frac_av_ge_30": 0.2466
+    },
+    {
+      "decile": 10,
+      "count": 73,
+      "mean_pred_av": 35.6,
+      "mean_actual_av": 33.44,
+      "median_actual_av": 32.0,
+      "max_actual_av": 74.0,
+      "frac_av_ge_30": 0.5616
+    }
+  ],
+  "decision_inputs": {
+    "redundant_r_gt_0.95": false,
+    "auc_within_0.01_of_success_head": true
+  },
+  "recommendation": "serve as a display-only 4th head: it orders career value within the top of the board where the binary success head saturates, and is not a duplicate (r <= 0.95)"
+}

@@ -1,0 +1,104 @@
+{
+  "experiment": "v5_traj (trajectory-shape features)",
+  "generated_at": "2026-08-29T17:37:24.917702+00:00",
+  "git_sha": "7f10da4d260e00042885ba503595ec93c2660732",
+  "split": {
+    "train_years": "2000-2017 + 63 seeds (w=5)",
+    "cal_years": [
+      2018
+    ],
+    "test_years": [
+      2019,
+      2020
+    ],
+    "z_ref_years": "2000-2018"
+  },
+  "features": {
+    "prod_ascension": "prod_fs_raw / prod_car_raw; NaN if either missing or car<=0",
+    "prod_per_season_z": "z(prod_car_raw / car_seasons) per _grp, stats from z-ref years only"
+  },
+  "coverage": {
+    "prod_ascension": {
+      "non_nan_frac": 0.3491,
+      "min": 0.0,
+      "median": 0.4049,
+      "max": 1.0048,
+      "frac_above_1": 0.0006
+    },
+    "prod_per_season_z": {
+      "non_nan_frac": 0.3501,
+      "min": -2.3995,
+      "median": -0.2596,
+      "max": 3.7136,
+      "test_rows_non_nan": 554
+    }
+  },
+  "v4_recorded_baselines": {
+    "success_auc": 0.8144,
+    "success_brier": 0.1286,
+    "grade_acc_raw": 0.6535,
+    "pick_blend_mae": 45.3,
+    "pick_blend_spearman": 0.7962,
+    "pick_blend_top64": 0.6898,
+    "pick_blend_r1_recall_45": 0.8438
+  },
+  "results": {
+    "v4_baseline": {
+      "n_features": 31,
+      "success_auc": 0.8144,
+      "success_brier": 0.1286,
+      "grade_acc_raw": 0.6535,
+      "pick_blend_mae": 45.3,
+      "pick_blend_spearman": 0.7962,
+      "pick_blend_top64": 0.6898,
+      "pick_blend_r1_recall_45": 0.8438
+    },
+    "v4_plus_A_ascension": {
+      "n_features": 32,
+      "success_auc": 0.8134,
+      "success_brier": 0.1292,
+      "grade_acc_raw": 0.6617,
+      "pick_blend_mae": 45.3,
+      "pick_blend_spearman": 0.7961,
+      "pick_blend_top64": 0.6848,
+      "pick_blend_r1_recall_45": 0.8438
+    },
+    "v4_plus_B_per_season": {
+      "n_features": 32,
+      "success_auc": 0.812,
+      "success_brier": 0.1294,
+      "grade_acc_raw": 0.6535,
+      "pick_blend_mae": 45.3,
+      "pick_blend_spearman": 0.7944,
+      "pick_blend_top64": 0.6863,
+      "pick_blend_r1_recall_45": 0.8438
+    },
+    "v4_plus_A_plus_B": {
+      "n_features": 33,
+      "success_auc": 0.8139,
+      "success_brier": 0.1277,
+      "grade_acc_raw": 0.6589,
+      "pick_blend_mae": 45.2,
+      "pick_blend_spearman": 0.7959,
+      "pick_blend_top64": 0.6909,
+      "pick_blend_r1_recall_45": 0.8438
+    }
+  },
+  "gates": {
+    "v4_plus_A_ascension": {
+      "strictly_better_somewhere": false,
+      "non_inferior_everywhere": true,
+      "adopt": false
+    },
+    "v4_plus_B_per_season": {
+      "strictly_better_somewhere": false,
+      "non_inferior_everywhere": true,
+      "adopt": false
+    },
+    "v4_plus_A_plus_B": {
+      "strictly_better_somewhere": false,
+      "non_inferior_everywhere": true,
+      "adopt": false
+    }
+  }
+}

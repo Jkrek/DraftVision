@@ -1,0 +1,5125 @@
+team,season,sos_sp,n_rated_opponents
+Air Force,2000,-3.67,10
+Akron,2000,-8.5364,11
+Alabama,2000,8.4818,11
+App State,2000,-18.8,1
+Arizona,2000,9.7636,11
+Arizona State,2000,6.4909,11
+Arkansas,2000,6.9,10
+Arkansas State,2000,-1.01,10
+Army,2000,-2.3091,11
+Auburn,2000,4.4727,11
+Austin Peay,2000,-35.3,1
+BYU,2000,2.675,12
+Ball State,2000,-1.99,10
+Baylor,2000,3.7,11
+Boise State,2000,-8.6222,9
+Boston College,2000,3.6455,11
+Bowling Green,2000,-4.1091,11
+Buffalo,2000,-7.5727,11
+Cal State Northridge,2000,1.8,1
+California,2000,9.3545,11
+Central Michigan,2000,-1.8727,11
+Chattanooga,2000,1.4,1
+Cincinnati,2000,-1.1727,11
+Clemson,2000,2.7,10
+Colgate,2000,-29.4,1
+Colorado,2000,10.5182,11
+Colorado State,2000,-3.03,10
+Duke,2000,5.9727,11
+East Carolina,2000,1.0091,11
+East Tennessee State,2000,7.5,1
+Eastern Illinois,2000,17.0,1
+Eastern Kentucky,2000,-0.4,1
+Eastern Michigan,2000,-2.9,11
+Eastern Washington,2000,16.0,2
+Florida,2000,7.5364,11
+Florida State,2000,6.3083,12
+Fresno State,2000,-1.8182,11
+Georgia,2000,6.73,10
+Georgia Southern,2000,16.0,1
+Georgia Tech,2000,1.4545,11
+Grambling,2000,10.8,1
+Hawai'i,2000,-3.2182,11
+Houston,2000,-0.0182,11
+Idaho,2000,0.1889,9
+Idaho State,2000,-14.6,1
+Illinois,2000,4.0091,11
+Illinois State,2000,5.6,1
+Indiana,2000,5.9727,11
+Indiana State,2000,13.4,1
+Iowa,2000,10.3917,12
+Iowa State,2000,4.7909,11
+Jacksonville State,2000,-32.2,2
+James Madison,2000,-35.3,1
+Kansas,2000,9.72,10
+Kansas State,2000,4.4833,12
+Kent State,2000,-4.36,10
+Kentucky,2000,6.3182,11
+LSU,2000,6.87,10
+Liberty,2000,-35.3,1
+Louisiana,2000,-8.9875,8
+Louisiana Tech,2000,-3.25,10
+Louisville,2000,-1.64,10
+Marshall,2000,-5.32,10
+Maryland,2000,2.4818,11
+McNeese,2000,35.9,1
+Memphis,2000,-3.1636,11
+Miami,2000,10.15,10
+Miami (OH),2000,-7.8727,11
+Michigan,2000,5.1727,11
+Michigan State,2000,9.0818,11
+Middle Tennessee,2000,-9.69,10
+Minnesota,2000,0.9455,11
+Mississippi State,2000,5.3182,11
+Mississippi Valley State,2000,-14.6,1
+Missouri,2000,8.4,10
+Missouri State,2000,5.1,1
+Montana,2000,-10.8,1
+Montana State,2000,-10.8,1
+Murray State,2000,-14.5,1
+NC State,2000,-0.4,11
+Navy,2000,1.3182,11
+Nebraska,2000,6.8,11
+Nevada,2000,-2.075,12
+New Mexico,2000,0.9182,11
+New Mexico State,2000,-3.6909,11
+Nicholls,2000,-35.7,1
+North Carolina,2000,2.7091,11
+North Texas,2000,-5.69,10
+Northeastern,2000,-29.4,1
+Northern Arizona,2000,2.1,1
+Northern Illinois,2000,-2.2,10
+Northern Iowa,2000,7.9,1
+Northwestern,2000,5.4455,11
+Northwestern State,2000,-14.75,2
+Notre Dame,2000,6.6545,11
+Ohio,2000,-8.15,10
+Ohio State,2000,5.8727,11
+Oklahoma,2000,5.2182,11
+Oklahoma State,2000,6.77,10
+Ole Miss,2000,2.9273,11
+Oregon,2000,6.4545,11
+Oregon State,2000,8.06,10
+Penn State,2000,6.325,12
+Pittsburgh,2000,4.7273,11
+Portland State,2000,-13.3,1
+Purdue,2000,4.2,11
+Rhode Island,2000,-29.4,1
+Rice,2000,-0.5545,11
+Richmond,2000,-5.4,2
+Rutgers,2000,7.53,10
+SMU,2000,-4.35,12
+Sam Houston,2000,-29.1,1
+Samford,2000,-22.0,1
+San Diego State,2000,3.0364,11
+San José State,2000,-0.8273,11
+South Carolina,2000,5.4727,11
+South Florida,2000,-10.8,5
+Southeast Missouri State,2000,4.0,1
+Southern Illinois,2000,0.7,1
+Southern Miss,2000,-2.4273,11
+Southern Utah,2000,-8.0,2
+Stanford,2000,10.9455,11
+Stephen F. Austin,2000,-14.6,1
+Syracuse,2000,6.2636,11
+TCU,2000,-7.3636,11
+Temple,2000,4.5818,11
+Tennessee,2000,3.4727,11
+Tennessee Tech,2000,-0.7,1
+Texas,2000,0.7364,11
+Texas A&M,2000,6.9909,11
+Texas State,2000,-19.7,2
+Texas Tech,2000,2.3917,12
+The Citadel,2000,15.7,1
+Toledo,2000,-5.3111,9
+Troy,2000,-35.3,1
+Tulane,2000,-5.9636,11
+Tulsa,2000,-5.3083,12
+UAB,2000,-2.23,10
+UCF,2000,-2.35,8
+UCLA,2000,11.8364,11
+UConn,2000,-11.2875,8
+UL Monroe,2000,-6.1625,8
+UNLV,2000,-5.1917,12
+USC,2000,9.6667,12
+UTEP,2000,-1.8273,11
+Utah,2000,-0.6636,11
+Utah State,2000,-3.9222,9
+Vanderbilt,2000,3.9455,11
+Villanova,2000,-9.5,1
+Virginia,2000,5.94,10
+Virginia Tech,2000,6.8909,11
+Wake Forest,2000,2.45,10
+Washington,2000,11.2545,11
+Washington State,2000,8.4818,11
+Weber State,2000,17.0,1
+West Virginia,2000,9.2818,11
+Western Carolina,2000,11.0,1
+Western Illinois,2000,-5.95,2
+Western Kentucky,2000,-35.3,1
+Western Michigan,2000,-2.32,10
+William & Mary,2000,-0.4,1
+Wisconsin,2000,7.4,12
+Wofford,2000,-35.7,1
+Wyoming,2000,-0.3091,11
+Youngstown State,2000,-25.0,1
+Air Force,2001,-3.2182,11
+Akron,2001,-1.5364,11
+Alabama,2001,7.2727,11
+App State,2001,1.5,1
+Arizona,2001,3.1545,11
+Arizona State,2001,3.8545,11
+Arkansas,2001,10.99,10
+Arkansas State,2001,-12.2222,9
+Army,2001,-6.2909,11
+Auburn,2001,8.9727,11
+BYU,2001,-4.6615,13
+Ball State,2001,-5.34,10
+Baylor,2001,5.44,10
+Boise State,2001,-7.5917,12
+Boston College,2001,4.2727,11
+Bowling Green,2001,-3.2727,11
+Bucknell,2001,-3.8,1
+Buffalo,2001,-9.8455,11
+Cal State Northridge,2001,1.4,1
+California,2001,9.5,11
+Central Michigan,2001,-4.83,10
+Chattanooga,2001,-1.0,1
+Cincinnati,2001,-6.2091,11
+Clemson,2001,6.05,10
+Colorado,2001,8.1667,12
+Colorado State,2001,0.6,11
+Duke,2001,4.3636,11
+East Carolina,2001,1.46,10
+East Tennessee State,2001,12.0,1
+Eastern Illinois,2001,-14.8,1
+Eastern Kentucky,2001,-15.6,1
+Eastern Michigan,2001,-7.9444,9
+Eastern Washington,2001,-25.1,1
+Florida,2001,8.6455,11
+Florida State,2001,8.4182,11
+Fresno State,2001,-3.0385,13
+Furman,2001,-19.1,1
+Georgia,2001,5.0273,11
+Georgia Tech,2001,4.2727,11
+Hawai'i,2001,-8.1364,11
+Houston,2001,1.4273,11
+Idaho,2001,-9.74,10
+Idaho State,2001,-3.5,1
+Illinois,2001,5.7545,11
+Illinois State,2001,-1.4,1
+Indiana,2001,8.5909,11
+Indiana State,2001,-27.25,2
+Iowa,2001,5.9818,11
+Iowa State,2001,5.1,10
+Jacksonville State,2001,-17.05,2
+Kansas,2001,11.57,10
+Kansas State,2001,6.8909,11
+Kent State,2001,-1.32,10
+Kentucky,2001,11.0545,11
+LSU,2001,9.2667,12
+Liberty,2001,2.95,2
+Louisiana,2001,-11.31,10
+Louisiana Tech,2001,-6.0455,11
+Louisville,2001,-1.0727,11
+Marshall,2001,-1.74,10
+Maryland,2001,0.9909,11
+Massachusetts,2001,15.4,1
+McNeese,2001,10.8,1
+Memphis,2001,1.62,10
+Miami,2001,8.0273,11
+Miami (OH),2001,-0.4583,12
+Michigan,2001,8.2818,11
+Michigan State,2001,5.2182,11
+Middle Tennessee,2001,-13.7182,11
+Minnesota,2001,5.68,10
+Mississippi State,2001,11.1182,11
+Missouri,2001,8.76,10
+Missouri State,2001,-6.8,1
+Montana,2001,-11.5,2
+Montana State,2001,7.7,2
+Murray State,2001,2.95,2
+NC State,2001,1.8,11
+Navy,2001,-4.22,10
+Nebraska,2001,4.45,12
+Nevada,2001,-3.7727,11
+New Mexico,2001,-5.5545,11
+New Mexico State,2001,-8.7667,12
+Nicholls,2001,-21.0667,3
+North Carolina,2001,6.1083,12
+North Texas,2001,-9.3182,11
+Northern Arizona,2001,8.8,1
+Northern Illinois,2001,-2.12,10
+Northern Iowa,2001,-3.8,2
+Northwestern,2001,5.1364,11
+Northwestern State,2001,1.3,2
+Notre Dame,2001,9.9455,11
+Ohio,2001,-0.4455,11
+Ohio State,2001,5.2273,11
+Oklahoma,2001,2.7917,12
+Oklahoma State,2001,7.47,10
+Ole Miss,2001,2.31,10
+Oregon,2001,7.0364,11
+Oregon State,2001,6.61,10
+Penn State,2001,10.8273,11
+Pittsburgh,2001,8.01,10
+Purdue,2001,6.6182,11
+Rice,2001,-9.3,12
+Richmond,2001,-5.7,2
+Rutgers,2001,1.6364,11
+SMU,2001,-5.7818,11
+Sam Houston,2001,-14.0,2
+San Diego State,2001,0.2,10
+San José State,2001,-1.3667,12
+South Carolina,2001,10.67,10
+South Florida,2001,-4.55,8
+Southeast Missouri State,2001,-26.4,1
+Southern,2001,-11.3,1
+Southern Illinois,2001,-12.8,1
+Southern Miss,2001,-1.0636,11
+Southern Utah,2001,1.8,2
+Stanford,2001,7.0818,11
+Stephen F. Austin,2001,14.7,1
+Syracuse,2001,9.9083,12
+TCU,2001,-2.84,10
+Temple,2001,4.2818,11
+Tennessee,2001,12.9083,12
+Tennessee Tech,2001,-10.8,1
+Texas,2001,3.5333,12
+Texas A&M,2001,8.04,10
+Texas Southern,2001,-28.8,1
+Texas State,2001,-3.8,1
+Texas Tech,2001,6.1,10
+The Citadel,2001,11.0,1
+Toledo,2001,-6.7909,11
+Troy,2001,4.6429,7
+Tulane,2001,0.9455,11
+Tulsa,2001,-5.05,10
+UAB,2001,-1.7,10
+UCF,2001,-1.85,10
+UCLA,2001,8.6636,11
+UConn,2001,-7.93,10
+UL Monroe,2001,-9.17,10
+UNLV,2001,-2.1091,11
+USC,2001,6.9273,11
+UTEP,2001,-7.12,10
+Utah,2001,-0.7364,11
+Utah State,2001,4.2889,9
+Vanderbilt,2001,8.69,10
+Virginia,2001,7.8818,11
+Virginia Tech,2001,3.2182,11
+Wake Forest,2001,5.41,10
+Washington,2001,7.9727,11
+Washington State,2001,3.77,10
+Weber State,2001,5.25,2
+West Virginia,2001,7.6727,11
+Western Carolina,2001,14.0,1
+Western Illinois,2001,2.2,1
+Western Kentucky,2001,8.1,1
+Western Michigan,2001,-0.9,10
+William & Mary,2001,10.8,1
+Wisconsin,2001,10.8,11
+Wofford,2001,12.5,2
+Wyoming,2001,-0.31,10
+Youngstown State,2001,15.4,1
+Air Force,2002,-5.625,12
+Akron,2002,-4.1545,11
+Alabama,2002,7.3846,13
+App State,2002,0.5,1
+Arizona,2002,9.2455,11
+Arizona State,2002,7.8417,12
+Arkansas,2002,6.1615,13
+Arkansas State,2002,-7.9909,11
+Army,2002,-5.1909,11
+Auburn,2002,8.5364,11
+Austin Peay,2002,-18.9,1
+BYU,2002,-3.6083,12
+Ball State,2002,-4.9091,11
+Baylor,2002,7.9182,11
+Boise State,2002,-11.175,12
+Boston College,2002,2.2417,12
+Bowling Green,2002,-7.2455,11
+Buffalo,2002,-6.3636,11
+Cal Poly,2002,-5.75,2
+California,2002,6.175,12
+Central Michigan,2002,-5.4909,11
+Charleston Southern,2002,15.2,1
+Chattanooga,2002,13.7,1
+Cincinnati,2002,1.2308,13
+Clemson,2002,6.3167,12
+Colorado,2002,11.0846,13
+Colorado State,2002,-0.2231,13
+Duke,2002,5.0083,12
+East Carolina,2002,-0.0083,12
+East Tennessee State,2002,19.2,1
+Eastern Illinois,2002,13.9,2
+Eastern Kentucky,2002,13.4,1
+Eastern Michigan,2002,-3.72,10
+Eastern Washington,2002,10.2,1
+Florida,2002,8.1,12
+Florida A&M,2002,4.9,2
+Florida Atlantic,2002,-2.5333,3
+Florida State,2002,10.6615,13
+Fresno State,2002,-4.1462,13
+Furman,2002,-6.7,1
+Georgia,2002,7.475,12
+Georgia Tech,2002,6.6,12
+Hawai'i,2002,-7.2167,12
+Holy Cross,2002,-29.2,1
+Houston,2002,-3.05,12
+Idaho,2002,-3.2273,11
+Idaho State,2002,-16.0,1
+Illinois,2002,4.4667,12
+Illinois State,2002,11.3,1
+Indiana,2002,5.4091,11
+Indiana State,2002,-8.7,2
+Iowa,2002,2.7167,12
+Iowa State,2002,10.8333,12
+Jackson State,2002,4.0,1
+Jacksonville State,2002,-11.5,1
+Kansas,2002,3.4818,11
+Kansas State,2002,6.17,10
+Kent State,2002,-2.0,10
+Kentucky,2002,1.1333,12
+LSU,2002,6.6545,11
+Lehigh,2002,-26.0,1
+Liberty,2002,-7.0,2
+Louisiana,2002,-4.775,12
+Louisiana Tech,2002,-5.0083,12
+Louisville,2002,-1.7083,12
+Marshall,2002,-8.1273,11
+Maryland,2002,4.55,12
+Massachusetts,2002,19.2,1
+McNeese,2002,-5.4,2
+Memphis,2002,-1.6727,11
+Miami,2002,7.2091,11
+Miami (OH),2002,-1.3833,12
+Michigan,2002,9.7083,12
+Michigan State,2002,4.55,12
+Middle Tennessee,2002,-6.3364,11
+Minnesota,2002,3.8727,11
+Mississippi State,2002,6.1727,11
+Missouri,2002,6.325,12
+Missouri State,2002,-20.9,1
+Montana,2002,-15.9,1
+Montana State,2002,21.6,1
+Murray State,2002,-10.3,1
+NC State,2002,5.3364,11
+Navy,2002,-3.0,12
+Nebraska,2002,6.9333,12
+Nevada,2002,-5.725,12
+New Hampshire,2002,-19.1,1
+New Mexico,2002,-3.4833,12
+New Mexico State,2002,-7.825,12
+Nicholls,2002,3.7,1
+North Carolina,2002,10.2667,12
+North Texas,2002,-3.0,11
+Northeastern,2002,-11.1,1
+Northern Arizona,2002,-2.7,1
+Northern Illinois,2002,-3.1,11
+Northern Iowa,2002,7.9,1
+Northwestern,2002,4.825,12
+Northwestern State,2002,25.2,1
+Notre Dame,2002,8.075,12
+Ohio,2002,-4.9182,11
+Ohio State,2002,5.6,13
+Oklahoma,2002,6.6077,13
+Oklahoma State,2002,4.3909,11
+Ole Miss,2002,5.1083,12
+Oregon,2002,6.9727,11
+Oregon State,2002,6.6455,11
+Penn State,2002,5.375,12
+Pittsburgh,2002,4.4417,12
+Portland State,2002,5.3,1
+Purdue,2002,6.2545,11
+Rhode Island,2002,-3.2,1
+Rice,2002,-10.7455,11
+Richmond,2002,-3.5,1
+Rutgers,2002,4.6455,11
+SMU,2002,-7.4917,12
+Sacramento State,2002,-27.0,1
+Sam Houston,2002,-18.7,1
+Samford,2002,-16.0,1
+San Diego State,2002,0.1385,13
+San José State,2002,-5.1,13
+South Carolina,2002,5.95,12
+South Florida,2002,3.2556,9
+Southeast Missouri State,2002,-20.4,2
+Southern,2002,1.0,1
+Southern Illinois,2002,-27.8,1
+Southern Miss,2002,0.5,11
+Southern Utah,2002,-19.9,2
+Stanford,2002,11.6636,11
+Syracuse,2002,6.4182,11
+TCU,2002,-6.2727,11
+Temple,2002,7.8273,11
+Tennessee,2002,4.275,12
+Tennessee Tech,2002,7.85,2
+Texas,2002,6.8583,12
+Texas A&M,2002,4.3417,12
+Texas State,2002,7.3,1
+Texas Tech,2002,8.7692,13
+The Citadel,2002,0.85,2
+Toledo,2002,-3.45,12
+Troy,2002,0.475,8
+Tulane,2002,-5.4727,11
+Tulsa,2002,-9.2083,12
+UAB,2002,-3.7083,12
+UCF,2002,-3.3909,11
+UCLA,2002,10.6167,12
+UConn,2002,-2.7727,11
+UL Monroe,2002,-3.9273,11
+UNLV,2002,-1.8083,12
+USC,2002,14.3333,12
+UT Martin,2002,-20.9,1
+UTEP,2002,-6.4455,11
+Utah,2002,-3.8364,11
+Utah State,2002,-4.13,10
+Vanderbilt,2002,8.5909,11
+Villanova,2002,-16.9,1
+Virginia,2002,7.8923,13
+Virginia Tech,2002,4.1615,13
+Wake Forest,2002,5.6083,12
+Washington,2002,7.6333,12
+Washington State,2002,8.0273,11
+Weber State,2002,-4.4,1
+West Virginia,2002,7.4273,11
+Western Carolina,2002,19.2,1
+Western Illinois,2002,4.0,1
+Western Kentucky,2002,25.3,1
+Western Michigan,2002,-1.8545,11
+William & Mary,2002,-12.8,1
+Wisconsin,2002,6.7308,13
+Wofford,2002,16.6,1
+Wyoming,2002,-0.6545,11
+Air Force,2003,-0.4545,11
+Akron,2003,-8.16,10
+Alabama,2003,10.6077,13
+App State,2003,-0.7,1
+Arizona,2003,8.9,12
+Arizona State,2003,6.5364,11
+Arkansas,2003,7.2583,12
+Arkansas State,2003,-9.4,10
+Army,2003,-4.7692,13
+Auburn,2003,10.7727,11
+BYU,2003,7.5167,12
+Ball State,2003,-0.7727,11
+Baylor,2003,4.9727,11
+Boise State,2003,-9.0083,12
+Boston College,2003,5.725,12
+Bowling Green,2003,-0.4364,11
+Buffalo,2003,-2.1091,11
+Cal Poly,2003,-21.75,2
+California,2003,6.8692,13
+Central Michigan,2003,-5.2,10
+Charleston Southern,2003,-5.6,1
+Chattanooga,2003,-8.6,1
+Cincinnati,2003,-2.3545,11
+Clemson,2003,9.7091,11
+Colgate,2003,-20.1,1
+Colorado,2003,9.3,12
+Colorado State,2003,5.4636,11
+Delaware,2003,-3.8,1
+Duke,2003,10.4182,11
+East Carolina,2003,-1.0667,12
+East Tennessee State,2003,-22.0,1
+Eastern Illinois,2003,8.1,1
+Eastern Kentucky,2003,-5.75,2
+Eastern Michigan,2003,-5.6,10
+Eastern Washington,2003,-10.7,2
+Florida,2003,12.1727,11
+Florida A&M,2003,21.6,1
+Florida Atlantic,2003,-18.75,2
+Florida International,2003,-13.75,2
+Florida State,2003,11.5833,12
+Fresno State,2003,-2.025,12
+Furman,2003,19.3,1
+Georgia,2003,10.4154,13
+Georgia Tech,2003,11.1083,12
+Grambling,2003,-20.2,1
+Hawai'i,2003,-4.7667,12
+Hofstra,2003,5.4,1
+Houston,2003,-7.0333,12
+Howard,2003,-12.5,1
+Idaho,2003,-10.27,10
+Idaho State,2003,12.8,1
+Illinois,2003,9.4727,11
+Illinois State,2003,-12.1,1
+Indiana,2003,6.6636,11
+Indiana State,2003,-15.1,2
+Iowa,2003,6.4333,12
+Iowa State,2003,9.8545,11
+Jacksonville State,2003,-5.4,1
+James Madison,2003,16.0,1
+Kansas,2003,3.2182,11
+Kansas State,2003,6.2083,12
+Kent State,2003,-3.3,11
+Kentucky,2003,4.8455,11
+LSU,2003,8.4,12
+Lehigh,2003,-1.8,1
+Liberty,2003,5.1,2
+Louisiana,2003,-5.2364,11
+Louisiana Tech,2003,-2.8833,12
+Louisville,2003,-9.5083,12
+Marshall,2003,-3.6,11
+Maryland,2003,6.6455,11
+Massachusetts,2003,25.8,1
+McNeese,2003,25.8,1
+Memphis,2003,-7.5,11
+Miami,2003,6.9667,12
+Miami (OH),2003,-3.0231,13
+Michigan,2003,3.5,12
+Michigan State,2003,4.8,12
+Middle Tennessee,2003,-6.6545,11
+Minnesota,2003,-0.75,12
+Mississippi State,2003,7.6,12
+Missouri,2003,2.3364,11
+Missouri State,2003,12.2,1
+Montana,2003,-18.9,1
+Montana State,2003,-3.5,1
+Murray State,2003,-4.5,1
+NC State,2003,10.8273,11
+Navy,2003,-9.32,10
+Nebraska,2003,3.3917,12
+Nevada,2003,-4.7909,11
+New Hampshire,2003,-22.8,1
+New Mexico,2003,1.6273,11
+New Mexico State,2003,-6.2364,11
+Nicholls,2003,-5.6,1
+North Carolina,2003,9.05,12
+North Texas,2003,-9.925,12
+Northern Arizona,2003,0.0,1
+Northern Illinois,2003,-6.3818,11
+Northern Iowa,2003,-9.6,1
+Northwestern,2003,5.9417,12
+Northwestern State,2003,-19.4,2
+Notre Dame,2003,11.9667,12
+Ohio,2003,-4.8636,11
+Ohio State,2003,8.3417,12
+Oklahoma,2003,4.7154,13
+Oklahoma State,2003,2.4909,11
+Ole Miss,2003,4.175,12
+Oregon,2003,4.6417,12
+Oregon State,2003,5.0455,11
+Penn State,2003,6.825,12
+Pittsburgh,2003,3.6,12
+Portland State,2003,-2.4,1
+Purdue,2003,6.3417,12
+Rhode Island,2003,-3.1,1
+Rice,2003,-8.0917,12
+Rutgers,2003,2.3917,12
+SE Louisiana,2003,-6.2,1
+SMU,2003,-5.5833,12
+Sacramento State,2003,16.3,1
+Sam Houston,2003,-23.6,2
+Samford,2003,-2.5,1
+San Diego State,2003,2.23,10
+San José State,2003,-6.17,10
+South Carolina,2003,10.2833,12
+South Florida,2003,-3.8111,9
+Southeast Missouri State,2003,-26.15,2
+Southern Miss,2003,-2.575,12
+Southern Utah,2003,-9.0,1
+Stanford,2003,7.5727,11
+Stephen F. Austin,2003,-26.0,1
+Syracuse,2003,3.9667,12
+TCU,2003,-8.8167,12
+Temple,2003,5.7909,11
+Tennessee,2003,7.3167,12
+Tennessee Tech,2003,-0.95,2
+Texas,2003,3.4417,12
+Texas A&M,2003,7.1,12
+Texas State,2003,1.5,2
+Texas Tech,2003,4.9083,12
+The Citadel,2003,20.8,1
+Toledo,2003,-5.0364,11
+Troy,2003,0.2,10
+Tulane,2003,-4.4909,11
+Tulsa,2003,-8.7364,11
+UAB,2003,-2.875,12
+UCF,2003,-4.2273,11
+UCLA,2003,6.6833,12
+UConn,2003,-4.4909,11
+UL Monroe,2003,-5.61,10
+UNLV,2003,2.1333,12
+USC,2003,5.85,12
+UT Martin,2003,-32.6,1
+UTEP,2003,-6.7818,11
+Utah,2003,2.1273,11
+Utah State,2003,-7.4667,12
+VMI,2003,-3.8,1
+Vanderbilt,2003,8.8273,11
+Villanova,2003,-7.7,1
+Virginia,2003,8.25,12
+Virginia Tech,2003,4.0818,11
+Wake Forest,2003,8.3167,12
+Washington,2003,4.1333,12
+Washington State,2003,3.975,12
+Weber State,2003,11.0,1
+West Virginia,2003,3.6583,12
+Western Carolina,2003,6.65,2
+Western Illinois,2003,4.45,2
+Western Kentucky,2003,17.9,1
+Western Michigan,2003,-3.6,11
+Western New Mexico,2003,-17.7,1
+William & Mary,2003,-10.2,1
+Wisconsin,2003,5.7,12
+Wofford,2003,2.1,1
+Wyoming,2003,3.4636,11
+Youngstown State,2003,-12.1,1
+Air Force,2004,2.37,10
+Akron,2004,-6.6364,11
+Alabama,2004,5.18,10
+App State,2004,-1.6,1
+Arizona,2004,13.41,10
+Arizona State,2004,12.1364,11
+Arkansas,2004,8.8273,11
+Arkansas State,2004,-6.5364,11
+Army,2004,-2.7,11
+Auburn,2004,6.3636,11
+BYU,2004,7.2455,11
+Ball State,2004,-4.8727,11
+Baylor,2004,9.61,10
+Bethune-Cookman,2004,-37.4,2
+Boise State,2004,-4.0727,11
+Boston College,2004,-0.02,10
+Bowling Green,2004,-7.57,10
+Buffalo,2004,-10.4182,11
+California,2004,7.2273,11
+Central Michigan,2004,-8.45,10
+Chattanooga,2004,2.8,1
+Cincinnati,2004,-0.3273,11
+Clemson,2004,8.3,11
+Colorado,2004,7.975,12
+Colorado State,2004,6.68,10
+Delaware,2004,-3.4,1
+Duke,2004,9.28,10
+East Carolina,2004,0.2545,11
+Eastern Illinois,2004,-20.2,1
+Eastern Kentucky,2004,-6.2,1
+Eastern Michigan,2004,-9.0,10
+Eastern Washington,2004,-0.9,1
+Edward Waters,2004,-11.7,2
+Florida,2004,4.3818,11
+Florida A&M,2004,-12.1125,8
+Florida Atlantic,2004,-16.2222,9
+Florida International,2004,-20.6667,6
+Florida State,2004,8.1545,11
+Fresno State,2004,-4.37,10
+Furman,2004,6.4,1
+Georgia,2004,10.21,10
+Georgia Southern,2004,-11.2667,3
+Georgia Tech,2004,11.36,10
+Hawai'i,2004,-4.0083,12
+Houston,2004,1.1818,11
+Idaho,2004,-7.5417,12
+Idaho State,2004,-4.0,1
+Illinois,2004,2.6636,11
+Illinois State,2004,-4.2333,3
+Indiana,2004,3.9364,11
+Indiana State,2004,-0.3,1
+Iowa,2004,8.1909,11
+Iowa State,2004,7.59,10
+James Madison,2004,8.1,1
+Kansas,2004,7.7727,11
+Kansas State,2004,9.01,10
+Kent State,2004,-10.39,10
+Kentucky,2004,7.9818,11
+LSU,2004,7.2455,11
+Liberty,2004,-10.0,1
+Louisiana,2004,-10.02,10
+Louisiana Tech,2004,2.7417,12
+Louisville,2004,-2.3727,11
+Maine,2004,-5.7,1
+Marshall,2004,-4.7182,11
+Maryland,2004,7.1727,11
+Massachusetts,2004,8.5,1
+McNeese,2004,-27.8,2
+Memphis,2004,-4.31,10
+Miami,2004,10.9818,11
+Miami (OH),2004,-7.3636,11
+Michigan,2004,5.9,11
+Michigan State,2004,3.85,12
+Middle Tennessee,2004,-10.1091,11
+Minnesota,2004,4.49,10
+Mississippi State,2004,5.63,10
+Missouri,2004,2.4818,11
+Missouri State,2004,-14.0,1
+Montana State,2004,-0.9,1
+Morgan State,2004,-22.8,1
+Murray State,2004,-0.4,1
+NC State,2004,10.2,10
+Navy,2004,-7.2778,9
+Nebraska,2004,7.62,10
+Nevada,2004,-6.9636,11
+New Hampshire,2004,-6.7,1
+New Mexico,2004,3.7636,11
+New Mexico State,2004,-3.2818,11
+Nicholls,2004,-37.4,2
+North Carolina,2004,14.65,10
+North Carolina A&T,2004,-0.9,1
+North Texas,2004,-8.8455,11
+Northeastern,2004,-3.4,1
+Northern Arizona,2004,3.1,1
+Northern Colorado,2004,-11.7,2
+Northern Illinois,2004,-9.49,10
+Northern Iowa,2004,3.9,1
+Northwestern,2004,7.2833,12
+Northwestern State,2004,-15.9,1
+Notre Dame,2004,9.6909,11
+Ohio,2004,-5.85,10
+Ohio State,2004,8.3182,11
+Oklahoma,2004,8.7167,12
+Oklahoma State,2004,6.9,11
+Ole Miss,2004,5.7727,11
+Oregon,2004,6.6909,11
+Oregon State,2004,11.6364,11
+Penn State,2004,4.8727,11
+Pittsburgh,2004,-0.85,10
+Portland State,2004,14.9,1
+Purdue,2004,5.1273,11
+Rice,2004,-2.9091,11
+Richmond,2004,8.1,1
+Rutgers,2004,-0.01,10
+SMU,2004,0.6,11
+Sacramento State,2004,-19.0,1
+Samford,2004,12.4,1
+San Diego State,2004,2.76,10
+San José State,2004,-2.32,10
+Savannah State,2004,-37.4,2
+South Carolina,2004,6.0636,11
+South Florida,2004,0.44,10
+Southeast Missouri State,2004,-5.15,2
+Southern Illinois,2004,4.0,1
+Southern Miss,2004,-0.7636,11
+Stanford,2004,8.8727,11
+Stephen F. Austin,2004,-27.8,2
+Syracuse,2004,3.7727,11
+TCU,2004,-1.0273,11
+Temple,2004,1.8364,11
+Tennessee,2004,8.0,12
+Tennessee State,2004,-37.4,2
+Tennessee Tech,2004,-9.7,1
+Texas,2004,7.3455,11
+Texas A&M,2004,11.5273,11
+Texas State,2004,-10.4667,3
+Texas Tech,2004,7.4636,11
+The Citadel,2004,9.85,2
+Toledo,2004,-6.1833,12
+Troy,2004,-6.9727,11
+Tulane,2004,-6.2091,11
+Tulsa,2004,-2.0091,11
+UAB,2004,-3.0818,11
+UCF,2004,-4.6636,11
+UCLA,2004,7.4182,11
+UConn,2004,-3.01,10
+UL Monroe,2004,-8.9909,11
+UNLV,2004,1.7455,11
+USC,2004,9.5583,12
+UT Martin,2004,-21.7,1
+UTEP,2004,-1.44,10
+Utah,2004,0.7455,11
+Utah State,2004,-5.2909,11
+VMI,2004,-14.8,1
+Vanderbilt,2004,5.64,10
+Virginia,2004,7.0545,11
+Virginia Tech,2004,4.8333,12
+Virginia Union,2004,-37.4,2
+Wake Forest,2004,8.2,10
+Washington,2004,9.5727,11
+Washington State,2004,6.8727,11
+Weber State,2004,9.0,1
+West Virginia,2004,-1.63,10
+Western Carolina,2004,9.2,1
+Western Illinois,2004,1.9,1
+Western Kentucky,2004,-15.9,3
+Western Michigan,2004,-3.54,10
+William & Mary,2004,12.8,1
+Wisconsin,2004,3.4545,11
+Wyoming,2004,1.65,10
+Youngstown State,2004,-27.8,2
+Air Force,2005,-1.8545,11
+Akron,2005,-8.6333,12
+Alabama,2005,2.5091,11
+App State,2005,14.4,2
+Arizona,2005,11.54,10
+Arizona State,2005,7.2,11
+Arkansas,2005,8.65,10
+Arkansas State,2005,-15.99,10
+Army,2005,1.03,10
+Auburn,2005,4.4,10
+BYU,2005,3.09,10
+Ball State,2005,0.5727,11
+Baylor,2005,8.78,10
+Boise State,2005,-4.97,10
+Boston College,2005,2.5818,11
+Bowling Green,2005,-10.2,11
+Buffalo,2005,-6.9364,11
+Cal Poly,2005,-17.2,1
+California,2005,4.2,10
+Central Michigan,2005,-5.0364,11
+Chattanooga,2005,-3.4,1
+Cincinnati,2005,5.1,10
+Clemson,2005,3.3,11
+Colorado,2005,9.7083,12
+Colorado State,2005,1.5182,11
+Duke,2005,6.82,10
+East Carolina,2005,-5.6818,11
+Eastern Illinois,2005,2.8,1
+Eastern Kentucky,2005,9.4,1
+Eastern Michigan,2005,-7.6182,11
+Eastern Washington,2005,-14.7,1
+Florida,2005,4.8273,11
+Florida A&M,2005,-10.6,2
+Florida Atlantic,2005,-8.6636,11
+Florida International,2005,-12.3333,9
+Florida State,2005,7.2273,11
+Fresno State,2005,-1.83,10
+Georgia,2005,3.5333,12
+Georgia Tech,2005,8.7455,11
+Grambling,2005,13.0,1
+Hawai'i,2005,-0.8091,11
+Houston,2005,-5.07,10
+Idaho,2005,-6.2273,11
+Idaho State,2005,-12.5,1
+Illinois,2005,11.6545,11
+Illinois State,2005,13.0,1
+Indiana,2005,9.25,10
+Indiana State,2005,25.4,1
+Iowa,2005,7.71,10
+Iowa State,2005,5.65,10
+Jacksonville State,2005,2.3,1
+Kansas,2005,9.56,10
+Kansas State,2005,3.5273,11
+Kent State,2005,-7.15,10
+Kentucky,2005,6.89,10
+LSU,2005,5.5182,11
+Liberty,2005,1.4,1
+Louisiana,2005,-14.32,10
+Louisiana Tech,2005,-7.61,10
+Louisville,2005,-2.7,11
+Maine,2005,10.3,1
+Marshall,2005,-1.24,10
+Maryland,2005,5.0182,11
+Massachusetts,2005,-16.3,1
+McNeese,2005,1.1,1
+Memphis,2005,-1.13,10
+Miami,2005,1.2364,11
+Miami (OH),2005,-9.4182,11
+Michigan,2005,12.1636,11
+Michigan State,2005,9.1545,11
+Middle Tennessee,2005,-11.9182,11
+Minnesota,2005,9.4818,11
+Mississippi State,2005,6.56,10
+Missouri,2005,4.9636,11
+Missouri State,2005,10.6,1
+Montana,2005,18.1,1
+Montana State,2005,1.1,1
+Murray State,2005,-7.0,1
+NC State,2005,5.73,10
+Navy,2005,-8.3,11
+Nebraska,2005,9.35,10
+Nevada,2005,-6.68,10
+New Mexico,2005,-2.6,11
+New Mexico State,2005,-0.5636,11
+Nicholls,2005,-4.7,1
+North Carolina,2005,10.9091,11
+North Texas,2005,-10.4455,11
+Northern Arizona,2005,1.5,1
+Northern Illinois,2005,-5.0545,11
+Northern Iowa,2005,20.9,1
+Northwestern,2005,11.2818,11
+Northwestern State,2005,-20.15,2
+Notre Dame,2005,8.1,11
+Ohio,2005,-2.9727,11
+Ohio State,2005,11.3455,11
+Oklahoma,2005,10.5364,11
+Oklahoma State,2005,7.81,10
+Ole Miss,2005,5.3,10
+Oregon,2005,9.37,10
+Oregon State,2005,9.95,10
+Penn State,2005,7.6818,11
+Pittsburgh,2005,3.45,10
+Portland State,2005,3.0,2
+Purdue,2005,9.2818,11
+Rice,2005,0.0636,11
+Richmond,2005,-3.8,1
+Rutgers,2005,-1.35,10
+SE Louisiana,2005,-17.1,1
+SMU,2005,-2.5909,11
+Sacramento State,2005,18.4,1
+Sam Houston,2005,12.2,2
+Samford,2005,1.2,1
+San Diego State,2005,1.45,12
+San José State,2005,-7.1778,9
+South Carolina,2005,5.4636,11
+South Florida,2005,7.13,10
+Southeast Missouri State,2005,-19.0,1
+Southern Illinois,2005,-13.9,1
+Southern Miss,2005,-1.42,10
+Stanford,2005,12.81,10
+Syracuse,2005,4.0818,11
+TCU,2005,-2.5545,11
+Temple,2005,6.1909,11
+Tennessee,2005,6.8727,11
+Tennessee Tech,2005,5.9,1
+Texas,2005,6.9583,12
+Texas A&M,2005,11.27,10
+Texas Southern,2005,2.4,1
+Texas State,2005,7.3,1
+Texas Tech,2005,7.2556,9
+The Citadel,2005,0.6,2
+Toledo,2005,-12.19,10
+Troy,2005,-13.45,10
+Tulane,2005,-6.08,10
+Tulsa,2005,-5.2667,12
+UAB,2005,-6.51,10
+UC Davis,2005,0.6,1
+UCF,2005,-5.1083,12
+UCLA,2005,7.1909,11
+UConn,2005,-0.94,10
+UL Monroe,2005,-11.45,10
+UNLV,2005,-2.24,10
+USC,2005,9.5667,12
+UT Martin,2005,-15.6,1
+UTEP,2005,-9.07,10
+Utah,2005,-3.6727,11
+Utah State,2005,-3.25,10
+VMI,2005,-20.2,1
+Vanderbilt,2005,4.26,10
+Villanova,2005,4.0,1
+Virginia,2005,1.3273,11
+Virginia Tech,2005,3.6167,12
+Wake Forest,2005,6.4091,11
+Washington,2005,12.68,10
+Washington State,2005,9.9889,9
+Weber State,2005,10.6,1
+West Virginia,2005,4.41,10
+Western Carolina,2005,-9.9,1
+Western Illinois,2005,7.6,1
+Western Kentucky,2005,-1.4,2
+Western Michigan,2005,-10.36,10
+William & Mary,2005,-9.4,1
+Wisconsin,2005,4.5083,12
+Wofford,2005,15.8,1
+Wyoming,2005,-2.1273,11
+Youngstown State,2005,6.8,1
+Air Force,2006,1.8417,12
+Akron,2006,-8.3,12
+Alabama,2006,4.825,12
+Alabama State,2006,-11.5,1
+Alcorn State,2006,-15.0,1
+App State,2006,0.2,1
+Arizona,2006,12.6909,11
+Arizona State,2006,6.7727,11
+Arkansas,2006,8.5083,12
+Arkansas State,2006,-12.1,12
+Army,2006,-2.8909,11
+Auburn,2006,4.7833,12
+BYU,2006,-2.4167,12
+Ball State,2006,-7.2455,11
+Baylor,2006,9.2727,11
+Boise State,2006,-5.5,11
+Boston College,2006,3.7091,11
+Bowling Green,2006,-9.975,12
+Buffalo,2006,-3.75,12
+Cal Poly,2006,-7.5,2
+California,2006,8.2,11
+Central Michigan,2006,-7.9154,13
+Chattanooga,2006,-13.2,1
+Cincinnati,2006,10.4545,11
+Clemson,2006,0.8583,12
+Colorado,2006,8.9636,11
+Colorado State,2006,0.8273,11
+Duke,2006,8.3091,11
+East Carolina,2006,-2.5667,12
+Eastern Illinois,2006,5.15,2
+Eastern Kentucky,2006,7.9,1
+Eastern Michigan,2006,-7.5,12
+Eastern Washington,2006,18.35,2
+Florida,2006,11.975,12
+Florida A&M,2006,13.9,1
+Florida Atlantic,2006,-7.2727,11
+Florida International,2006,-8.225,12
+Florida State,2006,3.2667,12
+Fresno State,2006,-1.6333,12
+Furman,2006,-6.2,1
+Georgia,2006,7.4182,11
+Georgia Tech,2006,4.9667,12
+Grambling,2006,7.6,1
+Hawai'i,2006,-5.4917,12
+Hofstra,2006,-7.9,1
+Houston,2006,-4.425,12
+Howard,2006,14.8,1
+Idaho,2006,-2.2091,11
+Idaho State,2006,-19.1,2
+Illinois,2006,5.6545,11
+Illinois State,2006,5.8,1
+Indiana,2006,6.2455,11
+Indiana State,2006,0.95,2
+Iowa,2006,4.2273,11
+Iowa State,2006,8.7455,11
+Jacksonville State,2006,-6.7,1
+Kansas,2006,3.3,11
+Kansas State,2006,5.7182,11
+Kent State,2006,-12.075,12
+Kentucky,2006,10.1909,11
+LSU,2006,3.7667,12
+Liberty,2006,6.5,1
+Louisiana,2006,-9.8455,11
+Louisiana Tech,2006,-2.1833,12
+Louisville,2006,3.4417,12
+Maine,2006,14.8,1
+Marshall,2006,-1.3455,11
+Maryland,2006,5.8455,11
+Massachusetts,2006,-1.9,1
+McNeese,2006,0.55,2
+Memphis,2006,-3.0273,11
+Miami,2006,4.5364,11
+Miami (OH),2006,-6.625,12
+Michigan,2006,4.975,12
+Michigan State,2006,2.7583,12
+Middle Tennessee,2006,-6.0818,11
+Minnesota,2006,6.0091,11
+Mississippi State,2006,10.6818,11
+Missouri,2006,5.5273,11
+Missouri State,2006,13.7,1
+Montana,2006,13.4,1
+Montana State,2006,1.8,1
+Murray State,2006,14.4,1
+NC State,2006,5.3727,11
+Navy,2006,-8.8545,11
+Nebraska,2006,7.3333,12
+Nevada,2006,-6.4833,12
+New Hampshire,2006,-4.9,1
+New Mexico,2006,0.6909,11
+New Mexico State,2006,-6.19,10
+Nicholls,2006,-3.75,2
+North Carolina,2006,8.5364,11
+North Carolina A&T,2006,-19.3,1
+North Dakota State,2006,-1.85,2
+North Texas,2006,-11.8667,12
+Northeastern,2006,21.0,1
+Northern Arizona,2006,12.65,2
+Northern Illinois,2006,-8.9091,11
+Northern Iowa,2006,-6.7,1
+Northwestern,2006,5.5455,11
+Northwestern State,2006,0.0333,3
+Notre Dame,2006,2.975,12
+Ohio,2006,-6.75,12
+Ohio State,2006,3.9,12
+Oklahoma,2006,5.4538,13
+Oklahoma State,2006,5.7636,11
+Ole Miss,2006,9.5818,11
+Oregon,2006,8.1182,11
+Oregon State,2006,6.825,12
+Penn State,2006,3.6364,11
+Pittsburgh,2006,5.7273,11
+Portland State,2006,9.4333,3
+Purdue,2006,2.85,12
+Rhode Island,2006,-2.9,1
+Rice,2006,-1.95,12
+Richmond,2006,-19.5,1
+Rutgers,2006,5.3455,11
+SE Louisiana,2006,2.4667,3
+SMU,2006,-6.4091,11
+Sacramento State,2006,18.7,1
+Sam Houston,2006,7.1,2
+Samford,2006,13.5,1
+San Diego State,2006,3.0364,11
+San José State,2006,-8.2364,11
+South Carolina,2006,7.6091,11
+South Florida,2006,4.0,11
+Southeast Missouri State,2006,20.6,1
+Southern Illinois,2006,-9.9,1
+Southern Miss,2006,0.5333,12
+Southern Utah,2006,-19.6,1
+Stanford,2006,8.9167,12
+Stephen F. Austin,2006,0.55,2
+Syracuse,2006,8.5,12
+TCU,2006,-1.6545,11
+Temple,2006,-0.4833,12
+Tennessee,2006,9.8583,12
+Tennessee State,2006,1.9,1
+Tennessee Tech,2006,-13.5,1
+Texas,2006,6.1273,11
+Texas A&M,2006,3.9636,11
+Texas Southern,2006,-10.2,1
+Texas State,2006,1.7,1
+Texas Tech,2006,7.1364,11
+The Citadel,2006,12.25,2
+Toledo,2006,-5.1818,11
+Troy,2006,-10.4182,11
+Tulane,2006,-1.1,12
+Tulsa,2006,-4.6091,11
+UAB,2006,-2.825,12
+UC Davis,2006,17.3,1
+UCF,2006,0.0091,11
+UCLA,2006,7.4417,12
+UConn,2006,6.1182,11
+UL Monroe,2006,-9.0273,11
+UNLV,2006,2.8091,11
+USC,2006,8.4667,12
+UT Martin,2006,-9.5,1
+UTEP,2006,-5.1583,12
+Utah,2006,-0.6818,11
+Utah State,2006,1.7917,12
+VMI,2006,-24.3,1
+Vanderbilt,2006,7.5091,11
+Villanova,2006,-10.3,1
+Virginia,2006,3.8417,12
+Virginia Tech,2006,4.1545,11
+Wake Forest,2006,3.9417,12
+Washington,2006,8.2,12
+Washington State,2006,5.8167,12
+Weber State,2006,-5.4,1
+West Virginia,2006,5.2455,11
+Western Carolina,2006,26.5,1
+Western Illinois,2006,19.1,1
+Western Kentucky,2006,17.8,1
+Western Michigan,2006,-8.5833,12
+William & Mary,2006,4.6,1
+Wisconsin,2006,-1.6636,11
+Wofford,2006,19.1,1
+Wyoming,2006,-0.3,12
+Youngstown State,2006,12.7,1
+Air Force,2007,-4.4182,11
+Akron,2007,-7.6667,12
+Alabama,2007,8.8273,11
+Alcorn State,2007,-21.7,1
+App State,2007,13.3,1
+Arizona,2007,11.6909,11
+Arizona State,2007,6.5917,12
+Arkansas,2007,4.8545,11
+Arkansas State,2007,-9.2333,12
+Arkansas-Pine Bluff,2007,-18.7,1
+Army,2007,-1.9182,11
+Auburn,2007,11.6818,11
+BYU,2007,0.7,11
+Ball State,2007,-9.9167,12
+Baylor,2007,10.9818,11
+Boise State,2007,-8.4455,11
+Boston College,2007,3.8,12
+Bowling Green,2007,-11.1,12
+Buffalo,2007,-7.0083,12
+Cal Poly,2007,-25.5,1
+California,2007,8.1,12
+Central Arkansas,2007,-14.8,1
+Central Connecticut,2007,-12.1,1
+Central Michigan,2007,-7.3333,12
+Charleston Southern,2007,12.4,1
+Chattanooga,2007,-2.25,2
+Cincinnati,2007,4.8,11
+Clemson,2007,2.5545,11
+Colorado,2007,9.1333,12
+Colorado State,2007,2.6182,11
+Delaware,2007,-9.8,1
+Delaware State,2007,-12.4,1
+Duke,2007,4.95,12
+East Carolina,2007,-1.6333,12
+Eastern Illinois,2007,12.4,1
+Eastern Kentucky,2007,-4.55,2
+Eastern Michigan,2007,-4.6636,11
+Eastern Washington,2007,15.4,1
+Elon,2007,15.8,1
+Florida,2007,7.9167,12
+Florida Atlantic,2007,-5.825,12
+Florida International,2007,-3.4,12
+Florida State,2007,5.725,12
+Fresno State,2007,-3.0091,11
+Furman,2007,16.2,1
+Gardner-Webb,2007,-4.65,2
+Georgia,2007,11.9364,11
+Georgia Southern,2007,-7.7,1
+Georgia Tech,2007,3.1091,11
+Grambling,2007,-6.75,2
+Hawai'i,2007,-10.02,10
+Houston,2007,-4.9091,11
+Howard,2007,-24.8,1
+Idaho,2007,-3.2545,11
+Idaho State,2007,11.6,1
+Illinois,2007,6.7727,11
+Illinois State,2007,21.4,1
+Indiana,2007,2.5364,11
+Indiana State,2007,-11.35,2
+Iowa,2007,0.4667,12
+Iowa State,2007,12.8091,11
+Jacksonville State,2007,-12.9,1
+James Madison,2007,1.9,1
+Kansas,2007,-0.4727,11
+Kansas State,2007,7.5636,11
+Kent State,2007,-7.0636,11
+Kentucky,2007,11.5818,11
+LSU,2007,7.8692,13
+Liberty,2007,-12.8,1
+Louisiana,2007,-8.6364,11
+Louisiana Tech,2007,-1.9909,11
+Louisville,2007,8.0182,11
+Maine,2007,8.5,1
+Marshall,2007,-0.2636,11
+Maryland,2007,6.8636,11
+Massachusetts,2007,16.7,1
+McNeese,2007,-22.3,1
+Memphis,2007,-9.6818,11
+Miami,2007,3.0917,12
+Miami (OH),2007,-7.2692,13
+Michigan,2007,6.6818,11
+Michigan State,2007,5.1417,12
+Middle Tennessee,2007,-9.725,12
+Minnesota,2007,4.8909,11
+Mississippi State,2007,10.7727,11
+Missouri,2007,11.6417,12
+Missouri State,2007,17.5,1
+Montana State,2007,7.6,1
+Morehead State,2007,-22.5,1
+Murray State,2007,12.1,1
+NC State,2007,7.4818,11
+Navy,2007,-8.1455,11
+Nebraska,2007,11.25,12
+Nevada,2007,-7.3818,11
+New Hampshire,2007,-9.1,1
+New Mexico,2007,-1.6182,11
+New Mexico State,2007,-3.8818,11
+Nicholls,2007,-9.3,2
+Norfolk State,2007,14.3,1
+North Carolina,2007,5.3818,11
+North Carolina Central,2007,-22.5,1
+North Dakota State,2007,-9.1,2
+North Texas,2007,-9.9917,12
+Northeastern,2007,-2.4,1
+Northern Arizona,2007,7.3,1
+Northern Colorado,2007,12.4,1
+Northern Illinois,2007,-10.4273,11
+Northern Iowa,2007,-9.1,1
+Northwestern,2007,2.3,11
+Northwestern State,2007,11.1,2
+Notre Dame,2007,7.6417,12
+Ohio,2007,-11.8455,11
+Ohio State,2007,4.0182,11
+Oklahoma,2007,3.7,13
+Oklahoma State,2007,12.4273,11
+Ole Miss,2007,11.9091,11
+Oregon,2007,8.6167,12
+Oregon State,2007,12.1727,11
+Penn State,2007,1.05,12
+Pittsburgh,2007,6.1455,11
+Portland State,2007,-12.6,1
+Purdue,2007,3.2636,11
+Rhode Island,2007,-28.4,1
+Rice,2007,-2.4,11
+Richmond,2007,2.5,1
+Rutgers,2007,2.3182,11
+SE Louisiana,2007,-3.1,3
+SMU,2007,-4.9417,12
+Sacramento State,2007,3.1,2
+Sam Houston,2007,13.1,1
+Samford,2007,8.7,1
+San Diego State,2007,4.6273,11
+San José State,2007,-3.6455,11
+South Carolina,2007,12.1091,11
+South Carolina State,2007,10.95,2
+South Florida,2007,8.1818,11
+Southeast Missouri State,2007,17.5,1
+Southern Illinois,2007,-17.0,1
+Southern Miss,2007,-5.3,11
+Stanford,2007,8.625,12
+Syracuse,2007,8.0333,12
+TCU,2007,-0.775,12
+Temple,2007,-9.6333,12
+Tennessee,2007,9.5462,13
+Tennessee Tech,2007,20.7,1
+Texas,2007,5.075,12
+Texas A&M,2007,11.0364,11
+Texas Southern,2007,-5.85,2
+Texas State,2007,-13.6,1
+Texas Tech,2007,4.1364,11
+The Citadel,2007,10.4,1
+Toledo,2007,-6.9182,11
+Troy,2007,-6.875,12
+Tulane,2007,-6.6091,11
+Tulsa,2007,-6.3,13
+UAB,2007,-1.7,11
+UC Davis,2007,-16.0,1
+UCF,2007,-3.6846,13
+UCLA,2007,10.2083,12
+UConn,2007,2.9636,11
+UL Monroe,2007,-8.0636,11
+UNLV,2007,0.7917,12
+USC,2007,4.9083,12
+UT Martin,2007,-0.5,1
+UTEP,2007,-3.2273,11
+Utah,2007,0.0333,12
+Utah State,2007,-2.3,12
+Vanderbilt,2007,9.3455,11
+Villanova,2007,5.9,1
+Virginia,2007,1.4333,12
+Virginia Tech,2007,6.2833,12
+WVU Tech,2007,-22.5,1
+Wake Forest,2007,0.75,12
+Washington,2007,11.8385,13
+Washington State,2007,7.1,12
+Weber State,2007,13.1,1
+West Virginia,2007,4.1667,12
+Western Carolina,2007,18.2,2
+Western Illinois,2007,12.7,1
+Western Kentucky,2007,-3.4833,6
+Western Michigan,2007,-4.5909,11
+William & Mary,2007,19.3,1
+Wisconsin,2007,5.1636,11
+Wofford,2007,-1.1,1
+Wyoming,2007,-0.6917,12
+Youngstown State,2007,29.2,1
+Air Force,2008,-1.6273,11
+Akron,2008,-6.175,12
+Alabama,2008,4.9923,13
+Alabama A&M,2008,-26.7,1
+Alabama State,2008,-10.3,1
+Alcorn State,2008,-8.35,2
+App State,2008,20.8,2
+Arizona,2008,1.1083,12
+Arizona State,2008,6.9909,11
+Arkansas,2008,10.0455,11
+Arkansas State,2008,-7.9455,11
+Army,2008,-7.4727,11
+Auburn,2008,6.4,11
+BYU,2008,-4.8818,11
+Ball State,2008,-10.25,12
+Baylor,2008,13.0091,11
+Boise State,2008,-7.0364,11
+Boston College,2008,5.4,12
+Bowling Green,2008,-6.0333,12
+Buffalo,2008,-2.4385,13
+Cal Poly,2008,-3.7,2
+California,2008,5.3917,12
+Central Arkansas,2008,7.0,1
+Central Michigan,2008,-3.8091,11
+Charleston Southern,2008,-2.45,2
+Chattanooga,2008,25.55,2
+Cincinnati,2008,0.9167,12
+Clemson,2008,7.76,10
+Coastal Carolina,2008,29.5,1
+Colorado,2008,12.5,11
+Colorado State,2008,2.1636,11
+Delaware,2008,7.6,1
+Delaware State,2008,-8.5,1
+Duke,2008,5.4545,11
+East Carolina,2008,-1.6769,13
+Eastern Illinois,2008,1.65,2
+Eastern Kentucky,2008,-6.75,2
+Eastern Michigan,2008,-2.4727,11
+Eastern Washington,2008,10.15,2
+Florida,2008,10.3833,12
+Florida Atlantic,2008,-7.6917,12
+Florida International,2008,-6.725,12
+Florida State,2008,9.92,10
+Fresno State,2008,-6.4833,12
+Furman,2008,8.1,1
+Gardner-Webb,2008,8.6,1
+Georgia,2008,9.3,11
+Georgia Southern,2008,20.9,1
+Georgia Tech,2008,7.65,10
+Grambling,2008,0.9,1
+Hawai'i,2008,-2.925,12
+Hofstra,2008,4.9,1
+Houston,2008,-1.8727,11
+Idaho,2008,-5.3273,11
+Idaho State,2008,-4.5,2
+Illinois,2008,9.2364,11
+Illinois State,2008,-4.2,1
+Indiana,2008,7.3,11
+Indiana State,2008,-11.8,2
+Iowa,2008,4.4364,11
+Iowa State,2008,8.0545,11
+Jacksonville State,2008,8.6,1
+James Madison,2008,-6.7,1
+Kansas,2008,10.5273,11
+Kansas State,2008,5.2909,11
+Kent State,2008,-3.9455,11
+Kentucky,2008,4.7545,11
+LSU,2008,5.2364,11
+Louisiana,2008,-8.0083,12
+Louisiana Tech,2008,-7.8273,11
+Louisville,2008,0.9364,11
+Maine,2008,25.5,1
+Marshall,2008,1.6727,11
+Maryland,2008,4.4909,11
+Massachusetts,2008,23.0,1
+McNeese,2008,10.2,1
+Memphis,2008,-4.7636,11
+Miami,2008,5.4364,11
+Miami (OH),2008,-2.7,11
+Michigan,2008,7.3917,12
+Michigan State,2008,7.125,12
+Middle Tennessee,2008,-10.5917,12
+Minnesota,2008,5.7182,11
+Mississippi State,2008,5.3818,11
+Missouri,2008,10.55,12
+Missouri State,2008,23.4,1
+Montana State,2008,4.5,2
+Morgan State,2008,2.4,1
+Murray State,2008,-15.2,2
+NC State,2008,8.0,11
+Navy,2008,-1.6636,11
+Nebraska,2008,5.8333,12
+Nevada,2008,-4.4545,11
+New Hampshire,2008,-20.3,1
+New Mexico,2008,-0.2667,12
+New Mexico State,2008,-4.2545,11
+Nicholls,2008,-3.4,1
+Norfolk State,2008,-1.8,1
+North Carolina,2008,4.9818,11
+North Dakota State,2008,-14.5,1
+North Texas,2008,-5.55,12
+Northeastern,2008,-0.15,2
+Northern Arizona,2008,3.4,1
+Northern Colorado,2008,2.4,1
+Northern Illinois,2008,-3.4727,11
+Northern Iowa,2008,12.2,1
+Northwestern,2008,2.8909,11
+Northwestern State,2008,4.0,1
+Notre Dame,2008,1.8917,12
+Ohio,2008,-4.1455,11
+Ohio State,2008,9.3182,11
+Oklahoma,2008,12.6833,12
+Oklahoma State,2008,9.2909,11
+Ole Miss,2008,5.2727,11
+Oregon,2008,4.625,12
+Oregon State,2008,8.1417,12
+Penn State,2008,5.4636,11
+Pittsburgh,2008,2.4417,12
+Portland State,2008,-17.5,1
+Purdue,2008,9.8818,11
+Rhode Island,2008,11.0,1
+Rice,2008,-3.9083,12
+Richmond,2008,-0.6,1
+Rutgers,2008,0.1818,11
+SE Louisiana,2008,-9.25,2
+SMU,2008,1.8818,11
+Sacramento State,2008,-3.3,1
+Sam Houston,2008,16.0,1
+Samford,2008,17.1,1
+San Diego State,2008,-1.6818,11
+San José State,2008,-6.0273,11
+South Carolina,2008,10.0727,11
+South Carolina State,2008,-1.5,2
+South Dakota State,2008,-2.8,1
+South Florida,2008,-0.1636,11
+Southeast Missouri State,2008,24.0,1
+Southern,2008,6.4,1
+Southern Illinois,2008,7.3,1
+Southern Miss,2008,-4.0167,12
+Southern Utah,2008,-0.7,1
+Stanford,2008,6.8667,12
+Stephen F. Austin,2008,19.2,1
+Syracuse,2008,6.6364,11
+TCU,2008,-0.3909,11
+Temple,2008,-6.2333,12
+Tennessee,2008,4.0583,12
+Tennessee Tech,2008,-3.05,2
+Texas,2008,9.4083,12
+Texas A&M,2008,8.2,12
+Texas Southern,2008,-9.5,1
+Texas State,2008,-18.5,1
+Texas Tech,2008,11.35,10
+The Citadel,2008,23.75,2
+Toledo,2008,-3.4167,12
+Towson,2008,-3.5,1
+Troy,2008,-6.7455,11
+Tulane,2008,-1.55,12
+Tulsa,2008,-7.0417,12
+UAB,2008,-1.0636,11
+UC Davis,2008,-13.2,1
+UCF,2008,0.2,11
+UCLA,2008,7.7167,12
+UConn,2008,1.8909,11
+UL Monroe,2008,-7.4,11
+UNLV,2008,-0.5167,12
+USC,2008,5.3083,12
+UT Martin,2008,4.7,2
+UTEP,2008,-3.3583,12
+Utah,2008,-2.0455,11
+Utah State,2008,-2.1833,12
+VMI,2008,-9.3,1
+Vanderbilt,2008,6.0,12
+Villanova,2008,6.2,1
+Virginia,2008,9.1909,11
+Virginia Tech,2008,5.7333,12
+Wake Forest,2008,5.925,12
+Washington,2008,12.0417,12
+Washington State,2008,9.0917,12
+Weber State,2008,5.3,2
+West Virginia,2008,1.0091,11
+Western Carolina,2008,18.7,1
+Western Illinois,2008,4.8,1
+Western Kentucky,2008,-3.14,10
+Western Michigan,2008,-5.4909,11
+William & Mary,2008,1.8,1
+Wisconsin,2008,6.8273,11
+Wofford,2008,7.8,1
+Wyoming,2008,1.6727,11
+Youngstown State,2008,22.7,1
+Air Force,2009,-2.8545,11
+Akron,2009,-5.6091,11
+Alabama,2009,10.4333,12
+Alcorn State,2009,2.95,2
+App State,2009,-2.3,1
+Arizona,2009,7.2727,11
+Arizona State,2009,5.6,11
+Arkansas,2009,12.1091,11
+Arkansas State,2009,-9.0636,11
+Army,2009,-8.9,11
+Auburn,2009,10.9727,11
+BYU,2009,-1.575,12
+Ball State,2009,-8.1273,11
+Baylor,2009,11.6364,11
+Boise State,2009,-7.1583,12
+Boston College,2009,5.8727,11
+Bowling Green,2009,-5.325,12
+Buffalo,2009,-6.1,11
+Cal Poly,2009,-16.9,2
+California,2009,5.0909,11
+Central Arkansas,2009,-18.3,2
+Central Michigan,2009,-7.2333,12
+Charleston Southern,2009,17.8,2
+Chattanooga,2009,30.2,1
+Cincinnati,2009,2.4455,11
+Clemson,2009,8.65,12
+Coastal Carolina,2009,2.25,2
+Colorado,2009,7.0667,12
+Colorado State,2009,-0.7091,11
+Delaware,2009,-2.9,1
+Delaware State,2009,8.2,1
+Duke,2009,5.78,10
+East Carolina,2009,-0.7833,12
+Eastern Illinois,2009,21.9,1
+Eastern Kentucky,2009,-2.3,2
+Eastern Michigan,2009,-6.1583,12
+Eastern Washington,2009,6.5,1
+Elon,2009,3.3,1
+Florida,2009,8.225,12
+Florida A&M,2009,25.0,1
+Florida Atlantic,2009,-9.9833,12
+Florida International,2009,-5.0583,12
+Florida State,2009,10.9455,11
+Fresno State,2009,-3.6182,11
+Furman,2009,14.6,2
+Gardner-Webb,2009,-5.5,2
+Georgia,2009,13.4364,11
+Georgia Southern,2009,8.5,1
+Georgia Tech,2009,9.925,12
+Grambling,2009,14.0,1
+Hawai'i,2009,-6.3333,12
+Hofstra,2009,-12.0,1
+Houston,2009,-3.125,12
+Howard,2009,3.1,1
+Idaho,2009,-6.2333,12
+Idaho State,2009,15.25,2
+Illinois,2009,8.0545,11
+Illinois State,2009,-5.7,1
+Indiana,2009,4.6909,11
+Indiana State,2009,-5.4,1
+Iowa,2009,5.1091,11
+Iowa State,2009,4.2364,11
+Jackson State,2009,4.7,1
+Jacksonville State,2009,9.25,2
+James Madison,2009,-4.1,1
+Kansas,2009,9.5818,11
+Kansas State,2009,7.62,10
+Kent State,2009,-9.0636,11
+Kentucky,2009,8.0818,11
+LSU,2009,6.7833,12
+Liberty,2009,13.8,1
+Louisiana,2009,-7.0909,11
+Louisiana Tech,2009,-2.1636,11
+Louisville,2009,5.4364,11
+Maine,2009,-2.8,1
+Marshall,2009,-2.0182,11
+Maryland,2009,6.5182,11
+Massachusetts,2009,5.0,1
+McNeese,2009,-22.2,1
+Memphis,2009,0.8909,11
+Miami,2009,8.0727,11
+Miami (OH),2009,-2.3417,12
+Michigan,2009,4.0727,11
+Michigan State,2009,5.6818,11
+Middle Tennessee,2009,-12.0833,12
+Minnesota,2009,8.1455,11
+Mississippi State,2009,13.1182,11
+Mississippi Valley State,2009,-18.2,1
+Missouri,2009,6.0,11
+Missouri State,2009,16.0,1
+Montana State,2009,8.7,1
+Morgan State,2009,-17.8,1
+Murray State,2009,0.6,1
+NC State,2009,9.91,10
+Navy,2009,-3.4333,12
+Nebraska,2009,5.2154,13
+Nevada,2009,-4.9,12
+New Hampshire,2009,-17.3,1
+New Mexico,2009,1.6083,12
+New Mexico State,2009,-4.2833,12
+Nicholls,2009,0.45,2
+North Carolina,2009,8.23,10
+North Carolina Central,2009,-6.1,1
+North Dakota,2009,24.6,1
+North Dakota State,2009,1.0,1
+North Texas,2009,-12.6667,12
+Northeastern,2009,12.7,1
+Northern Arizona,2009,11.9,2
+Northern Colorado,2009,8.0,1
+Northern Illinois,2009,-9.0727,11
+Northern Iowa,2009,17.3,1
+Northwestern,2009,0.3091,11
+Northwestern State,2009,0.2,2
+Notre Dame,2009,5.0417,12
+Ohio,2009,-6.6917,12
+Ohio State,2009,2.925,12
+Oklahoma,2009,12.9182,11
+Oklahoma State,2009,8.2727,11
+Ole Miss,2009,9.47,10
+Oregon,2009,7.0,12
+Oregon State,2009,5.4909,11
+Penn State,2009,1.2364,11
+Pittsburgh,2009,2.9273,11
+Portland State,2009,12.6,1
+Prairie View A&M,2009,-28.5,1
+Purdue,2009,5.0083,12
+Rhode Island,2009,5.4,1
+Rice,2009,-1.2833,12
+Richmond,2009,-6.1,1
+Rutgers,2009,-0.62,10
+SE Louisiana,2009,16.7,1
+SMU,2009,-5.9727,11
+Sacramento State,2009,-11.5,1
+Sam Houston,2009,-1.1,1
+Samford,2009,-5.4,1
+San Diego State,2009,-2.3545,11
+San José State,2009,0.2273,11
+South Carolina,2009,11.5727,11
+South Carolina State,2009,13.9,1
+South Dakota State,2009,0.3,1
+South Florida,2009,5.62,10
+Southeast Missouri State,2009,18.2,1
+Southern,2009,-23.8,1
+Southern Illinois,2009,-6.1,1
+Southern Miss,2009,-4.6364,11
+Southern Utah,2009,-11.85,2
+Stanford,2009,3.725,12
+Stephen F. Austin,2009,-6.1,1
+Syracuse,2009,5.1091,11
+TCU,2009,-1.5455,11
+Temple,2009,-11.7182,11
+Tennessee,2009,6.7083,12
+Tennessee Tech,2009,12.05,2
+Texas,2009,4.9,13
+Texas A&M,2009,5.9083,12
+Texas Southern,2009,-6.25,2
+Texas State,2009,25.6,1
+Texas Tech,2009,5.6455,11
+The Citadel,2009,8.5,1
+Toledo,2009,-7.85,12
+Towson,2009,-4.0,1
+Troy,2009,-9.2917,12
+Tulane,2009,-2.7273,11
+Tulsa,2009,-4.2909,11
+UAB,2009,-4.675,12
+UC Davis,2009,12.0,2
+UCF,2009,-2.5455,11
+UCLA,2009,5.9917,12
+UConn,2009,4.9909,11
+UL Monroe,2009,-8.5273,11
+UNLV,2009,1.2182,11
+USC,2009,4.7083,12
+UT Martin,2009,-14.4,1
+UTEP,2009,-6.7333,12
+Utah,2009,-3.2,12
+Utah State,2009,-1.5455,11
+VMI,2009,-21.7,1
+Vanderbilt,2009,8.2273,11
+Villanova,2009,-4.9,1
+Virginia,2009,10.1091,11
+Virginia Tech,2009,7.3917,12
+Wake Forest,2009,6.1091,11
+Washington,2009,7.4917,12
+Washington State,2009,7.05,12
+Weber State,2009,-9.45,2
+West Virginia,2009,4.4,11
+Western Carolina,2009,-5.5,1
+Western Illinois,2009,-4.6,1
+Western Kentucky,2009,-9.6182,11
+Western Michigan,2009,-8.2455,11
+William & Mary,2009,0.7,1
+Wisconsin,2009,3.6909,11
+Wofford,2009,9.85,2
+Wyoming,2009,2.2636,11
+Youngstown State,2009,17.9,1
+Air Force,2010,-2.2091,11
+Akron,2010,-5.4182,11
+Alabama,2010,9.9364,11
+Alcorn State,2010,10.6,1
+App State,2010,14.0,1
+Arizona,2010,10.1727,11
+Arizona State,2010,12.37,10
+Arkansas,2010,9.2182,11
+Arkansas State,2010,-9.9667,12
+Arkansas-Pine Bluff,2010,-11.2,1
+Army,2010,-6.4545,11
+Auburn,2010,10.825,12
+Austin Peay,2010,5.3,2
+BYU,2010,-1.1583,12
+Ball State,2010,-9.86,10
+Baylor,2010,4.7727,11
+Boise State,2010,-4.2,12
+Boston College,2010,5.6909,11
+Bowling Green,2010,-7.35,12
+Buffalo,2010,-9.2091,11
+Cal Poly,2010,3.7,1
+California,2010,10.3727,11
+Central Arkansas,2010,0.4,1
+Central Michigan,2010,-6.0636,11
+Charleston Southern,2010,9.4,2
+Chattanooga,2010,26.5,1
+Cincinnati,2010,5.3273,11
+Clemson,2010,9.0273,11
+Coastal Carolina,2010,16.2,1
+Colgate,2010,5.3,1
+Colorado,2010,7.3083,12
+Colorado State,2010,-1.5,12
+Duke,2010,6.3182,11
+East Carolina,2010,-1.9583,12
+Eastern Illinois,2010,17.0,1
+Eastern Kentucky,2010,10.9,1
+Eastern Michigan,2010,-5.8083,12
+Eastern Washington,2010,10.8,1
+Elon,2010,-9.6,1
+Florida,2010,10.9727,11
+Florida A&M,2010,21.6,1
+Florida Atlantic,2010,-10.4583,12
+Florida International,2010,-10.4833,12
+Florida State,2010,9.625,12
+Fresno State,2010,-1.9182,11
+Furman,2010,20.3,1
+Gardner-Webb,2010,-28.2,1
+Georgia,2010,6.8182,11
+Georgia Southern,2010,-4.2,1
+Georgia State,2010,30.1,1
+Georgia Tech,2010,3.5273,11
+Grambling,2010,-7.4,1
+Hampton,2010,-14.7,1
+Hawai'i,2010,-5.7833,12
+Houston,2010,-4.0091,11
+Idaho,2010,-3.825,12
+Idaho State,2010,1.5,2
+Illinois,2010,5.9455,11
+Illinois State,2010,-1.1,1
+Indiana,2010,1.2455,11
+Indiana State,2010,2.5,1
+Iowa,2010,5.2636,11
+Iowa State,2010,9.6455,11
+Jacksonville State,2010,2.8,1
+James Madison,2010,21.2,1
+Kansas,2010,5.6818,11
+Kansas State,2010,4.3636,11
+Kent State,2010,-8.7909,11
+Kentucky,2010,4.4727,11
+LSU,2010,9.8727,11
+Liberty,2010,-15.6,1
+Louisiana,2010,-7.575,12
+Louisiana Tech,2010,-0.7909,11
+Louisville,2010,-0.9,11
+Maine,2010,5.3,1
+Marshall,2010,-4.0583,12
+Maryland,2010,3.9727,11
+Massachusetts,2010,7.7,1
+McNeese,2010,19.85,2
+Memphis,2010,-1.4333,12
+Miami,2010,9.4091,11
+Miami (OH),2010,-8.8769,13
+Michigan,2010,6.9727,11
+Michigan State,2010,3.1091,11
+Middle Tennessee,2010,-16.6727,11
+Minnesota,2010,9.2545,11
+Mississippi State,2010,9.9727,11
+Missouri,2010,5.3,11
+Missouri State,2010,8.6,1
+Montana State,2010,-7.4,1
+Morgan State,2010,11.9,1
+Murray State,2010,-7.6,1
+NC State,2010,6.4364,11
+Navy,2010,-4.5909,11
+Nebraska,2010,3.4,12
+Nevada,2010,-5.8,12
+New Hampshire,2010,11.3,1
+New Mexico,2010,-0.4417,12
+New Mexico State,2010,-3.8333,12
+Nicholls,2010,2.2,2
+Norfolk State,2010,-11.7,1
+North Carolina,2010,6.9545,11
+North Dakota,2010,-2.15,2
+North Dakota State,2010,-17.0,1
+North Texas,2010,-13.3583,12
+Northern Arizona,2010,14.6,1
+Northern Colorado,2010,13.8,1
+Northern Illinois,2010,-12.0083,12
+Northern Iowa,2010,-5.7,1
+Northwestern,2010,0.5091,11
+Northwestern State,2010,3.9,1
+Notre Dame,2010,5.5,12
+Ohio,2010,-13.2,11
+Ohio State,2010,1.0417,12
+Oklahoma,2010,7.6692,13
+Oklahoma State,2010,2.5583,12
+Ole Miss,2010,6.6182,11
+Oregon,2010,6.3545,11
+Oregon State,2010,14.425,12
+Penn State,2010,7.0545,11
+Pittsburgh,2010,5.2727,11
+Portland State,2010,21.4,2
+Prairie View A&M,2010,5.6,1
+Presbyterian,2010,-1.0,2
+Purdue,2010,5.6182,11
+Rhode Island,2010,-27.0,1
+Rice,2010,-4.2667,12
+Richmond,2010,-2.1,1
+Rutgers,2010,0.2455,11
+SE Louisiana,2010,-22.6,2
+SMU,2010,-4.3231,13
+Sacramento State,2010,28.1,1
+Sam Houston,2010,4.6,1
+Samford,2010,19.7,1
+San Diego State,2010,-5.7545,11
+San José State,2010,4.6545,11
+South Carolina,2010,13.45,12
+South Carolina State,2010,2.9,1
+South Dakota,2010,-2.65,2
+South Dakota State,2010,18.8,1
+South Florida,2010,1.4636,11
+Southeast Missouri State,2010,-15.6,1
+Southern Illinois,2010,8.6,1
+Southern Miss,2010,-7.1364,11
+Southern Utah,2010,-15.05,2
+Stanford,2010,8.3182,11
+Stephen F. Austin,2010,13.8,1
+Stony Brook,2010,0.4,1
+Syracuse,2010,0.81,10
+TCU,2010,-4.0273,11
+Temple,2010,-10.7545,11
+Tennessee,2010,9.0273,11
+Tennessee Tech,2010,26.15,2
+Texas,2010,4.0333,12
+Texas A&M,2010,9.1364,11
+Texas Southern,2010,-3.6,1
+Texas State,2010,-4.7,1
+Texas Tech,2010,5.2182,11
+The Citadel,2010,14.8,1
+Toledo,2010,-6.0333,12
+Towson,2010,-5.3,1
+Troy,2010,-12.1667,12
+Tulane,2010,-5.6545,11
+Tulsa,2010,-5.6909,11
+UAB,2010,-6.1333,12
+UC Davis,2010,-3.55,2
+UCF,2010,-8.6,12
+UCLA,2010,10.4833,12
+UConn,2010,0.0364,11
+UL Monroe,2010,-5.9364,11
+UNLV,2010,3.8385,13
+USC,2010,8.9846,13
+UT Martin,2010,7.7,1
+UTEP,2010,-11.0091,11
+Utah,2010,-2.6917,12
+Utah State,2010,2.1455,11
+VMI,2010,-8.35,2
+Vanderbilt,2010,6.2083,12
+Villanova,2010,-5.2,1
+Virginia,2010,6.85,10
+Virginia Tech,2010,4.2417,12
+Wake Forest,2010,7.8636,11
+Washington,2010,11.6167,12
+Washington State,2010,13.2091,11
+Weber State,2010,7.25,2
+West Virginia,2010,0.8455,11
+Western Carolina,2010,9.3,1
+Western Illinois,2010,-6.5,1
+Western Kentucky,2010,-9.6583,12
+Western Michigan,2010,-8.9364,11
+William & Mary,2010,7.7,1
+Wisconsin,2010,1.7,11
+Wofford,2010,-6.6,1
+Wyoming,2010,1.7636,11
+Youngstown State,2010,6.6,1
+Air Force,2011,-5.47,10
+Akron,2011,-4.2455,11
+Alabama,2011,6.6818,11
+Alabama State,2011,-15.3,1
+App State,2011,15.4,1
+Arizona,2011,9.2,11
+Arizona State,2011,7.0636,11
+Arkansas,2011,7.4182,11
+Arkansas State,2011,-13.2455,11
+Army,2011,-3.2818,11
+Auburn,2011,10.6091,11
+Austin Peay,2011,-6.55,2
+BYU,2011,-2.3818,11
+Ball State,2011,-3.175,12
+Baylor,2011,10.5909,11
+Bethune-Cookman,2011,16.4,1
+Boise State,2011,-3.3417,12
+Boston College,2011,5.4,11
+Bowling Green,2011,-3.8636,11
+Buffalo,2011,-4.1909,11
+Cal Poly,2011,0.35,2
+California,2011,6.7182,11
+Central Arkansas,2011,-0.7,2
+Central Michigan,2011,-4.1182,11
+Charleston Southern,2011,13.95,2
+Chattanooga,2011,14.5,1
+Cincinnati,2011,0.6909,11
+Clemson,2011,4.7583,12
+Coastal Carolina,2011,22.9,1
+Colorado,2011,7.8615,13
+Colorado State,2011,-5.0364,11
+Delaware,2011,-9.4,1
+Duke,2011,4.6727,11
+East Carolina,2011,-1.3833,12
+Eastern Illinois,2011,0.6,1
+Eastern Kentucky,2011,7.6,1
+Eastern Michigan,2011,-5.19,10
+Eastern Washington,2011,3.9,1
+Elon,2011,8.1,1
+Florida,2011,8.8909,11
+Florida A&M,2011,9.7,1
+Florida Atlantic,2011,-7.4917,12
+Florida International,2011,-13.9083,12
+Florida State,2011,2.4182,11
+Fordham,2011,-10.95,2
+Fresno State,2011,-1.425,12
+Furman,2011,14.7,1
+Gardner-Webb,2011,-1.3,2
+Georgia,2011,7.6583,12
+Georgia Southern,2011,32.5,1
+Georgia State,2011,14.2,1
+Georgia Tech,2011,0.9636,11
+Grambling,2011,-15.7,1
+Hawai'i,2011,-8.625,12
+Houston,2011,-5.4917,12
+Howard,2011,-15.3,1
+Idaho,2011,-0.6182,11
+Idaho State,2011,2.6,2
+Illinois,2011,5.4636,11
+Indiana,2011,6.0273,11
+Indiana State,2011,-2.3,2
+Iowa,2011,3.5182,11
+Iowa State,2011,12.3545,11
+Jacksonville State,2011,-5.0,1
+James Madison,2011,6.4,1
+Kansas,2011,13.2727,11
+Kansas State,2011,11.1,11
+Kent State,2011,-2.9636,11
+Kentucky,2011,6.6909,11
+LSU,2011,10.7333,12
+Liberty,2011,-1.1,1
+Louisiana,2011,-10.8091,11
+Louisiana Tech,2011,-3.5273,11
+Louisville,2011,2.4273,11
+Maine,2011,5.6,1
+Marshall,2011,1.1833,12
+Maryland,2011,7.7545,11
+Massachusetts,2011,-4.5,1
+McNeese,2011,-15.0,1
+Memphis,2011,-6.0364,11
+Miami,2011,5.2818,11
+Miami (OH),2011,-3.875,12
+Michigan,2011,5.625,12
+Michigan State,2011,5.0167,12
+Middle Tennessee,2011,-10.9583,12
+Minnesota,2011,9.5273,11
+Mississippi State,2011,7.1455,11
+Missouri,2011,10.3,11
+Missouri State,2011,24.4,2
+Montana,2011,6.9,1
+Montana State,2011,6.4,1
+Morgan State,2011,-2.0,1
+Murray State,2011,7.2,1
+NC State,2011,2.37,10
+Navy,2011,-2.0,11
+Nebraska,2011,7.6636,11
+Nevada,2011,-4.85,12
+New Hampshire,2011,6.2,1
+New Mexico,2011,-0.6455,11
+New Mexico State,2011,-3.6923,13
+Nicholls,2011,-5.05,2
+Norfolk State,2011,16.8,1
+North Carolina,2011,3.2273,11
+North Carolina Central,2011,0.8,1
+North Dakota,2011,-14.75,2
+North Dakota State,2011,-3.8,1
+North Texas,2011,-7.9083,12
+Northern Arizona,2011,-2.4,1
+Northern Colorado,2011,-12.6,1
+Northern Illinois,2011,-6.8917,12
+Northern Iowa,2011,-0.4,1
+Northwestern,2011,2.5182,11
+Northwestern State,2011,16.1,2
+Notre Dame,2011,6.4333,12
+Ohio,2011,-9.825,12
+Ohio State,2011,5.8333,12
+Oklahoma,2011,8.775,12
+Oklahoma State,2011,7.05,12
+Ole Miss,2011,11.9818,11
+Oregon,2011,7.3,12
+Oregon State,2011,10.1818,11
+Penn State,2011,7.4545,11
+Pittsburgh,2011,5.4818,11
+Portland State,2011,15.7,1
+Presbyterian,2011,12.2,1
+Purdue,2011,4.5727,11
+Rhode Island,2011,-2.9,1
+Rice,2011,0.2083,12
+Richmond,2011,-13.3,1
+Rutgers,2011,2.2909,11
+SE Louisiana,2011,-4.85,2
+SMU,2011,-0.0818,11
+Sacramento State,2011,-5.2,1
+Sam Houston,2011,-27.9,1
+Samford,2011,9.0,1
+San Diego State,2011,-4.4909,11
+San José State,2011,-3.4417,12
+South Alabama,2011,-5.75,2
+South Carolina,2011,7.4182,11
+South Carolina State,2011,-17.9,2
+South Dakota,2011,12.7,2
+South Dakota State,2011,6.8,1
+South Florida,2011,5.0182,11
+Southeast Missouri State,2011,3.1,1
+Southern Illinois,2011,-9.7,1
+Southern Miss,2011,-4.7,12
+Southern Utah,2011,-24.1,1
+Stanford,2011,3.7833,12
+Stephen F. Austin,2011,10.9,1
+Stony Brook,2011,-11.8,2
+Syracuse,2011,5.2182,11
+TCU,2011,-5.0545,11
+Temple,2011,-8.2,11
+Tennessee,2011,10.3636,11
+Tennessee State,2011,-0.7,1
+Tennessee Tech,2011,12.8,1
+Texas,2011,8.625,12
+Texas A&M,2011,8.2833,12
+Texas State,2011,-4.7,2
+Texas Tech,2011,8.2364,11
+The Citadel,2011,18.6,1
+Toledo,2011,-1.3909,11
+Towson,2011,-8.0,1
+Troy,2011,-10.5,12
+Tulane,2011,-7.2,12
+Tulsa,2011,1.5667,12
+UAB,2011,-4.275,12
+UC Davis,2011,3.9,2
+UCF,2011,-4.6636,11
+UCLA,2011,7.9385,13
+UConn,2011,3.4455,11
+UL Monroe,2011,-7.1182,11
+UNLV,2011,0.3364,11
+USC,2011,6.8667,12
+UT Martin,2011,8.0,1
+UTEP,2011,-2.2,11
+Utah,2011,4.4182,11
+Utah State,2011,-6.5091,11
+VMI,2011,-29.1,1
+Vanderbilt,2011,7.0091,11
+Villanova,2011,4.6,1
+Virginia,2011,1.4091,11
+Virginia Tech,2011,0.9667,12
+Wake Forest,2011,4.3545,11
+Washington,2011,7.7091,11
+Washington State,2011,3.9545,11
+Weber State,2011,-7.55,2
+West Virginia,2011,4.1909,11
+Western Carolina,2011,5.1,1
+Western Illinois,2011,15.0,1
+Western Kentucky,2011,-10.1545,11
+Western Michigan,2011,-4.5455,11
+William & Mary,2011,3.7,1
+Wisconsin,2011,3.475,12
+Wofford,2011,7.8,1
+Wyoming,2011,-1.65,10
+Youngstown State,2011,20.2,1
+Air Force,2012,-6.4455,11
+Akron,2012,-5.2,11
+Alabama,2012,11.3417,12
+Alabama A&M,2012,4.8,1
+Alcorn State,2012,1.2,1
+App State,2012,-5.5,1
+Arizona,2012,11.3545,11
+Arizona State,2012,6.3727,11
+Arkansas,2012,10.3727,11
+Arkansas State,2012,-3.8909,11
+Army,2012,-5.0273,11
+Auburn,2012,12.1909,11
+Austin Peay,2012,4.0,2
+BYU,2012,-0.7182,11
+Ball State,2012,-6.0583,12
+Baylor,2012,9.4545,11
+Bethune-Cookman,2012,8.2,1
+Boise State,2012,-5.975,12
+Boston College,2012,5.9273,11
+Bowling Green,2012,-10.1273,11
+Buffalo,2012,-2.8273,11
+Cal Poly,2012,-14.2,1
+California,2012,12.6818,11
+Central Arkansas,2012,14.2,1
+Central Michigan,2012,-8.3909,11
+Charleston Southern,2012,-9.8,1
+Chattanooga,2012,-3.2,1
+Cincinnati,2012,-0.1,10
+Clemson,2012,3.9636,11
+Coastal Carolina,2012,-4.0,1
+Colorado,2012,10.2091,11
+Colorado State,2012,-3.7818,11
+Delaware State,2012,11.1,1
+Duke,2012,6.4273,11
+East Carolina,2012,-5.1727,11
+East Texas A&M,2012,-20.1,1
+Eastern Illinois,2012,-9.8,1
+Eastern Kentucky,2012,-1.0,1
+Eastern Michigan,2012,-3.5818,11
+Eastern Washington,2012,-17.5,2
+Elon,2012,14.1,1
+Florida,2012,13.0636,11
+Florida A&M,2012,28.5,1
+Florida Atlantic,2012,-2.1727,11
+Florida International,2012,-6.6417,12
+Florida State,2012,4.1818,11
+Fordham,2012,11.1,1
+Fresno State,2012,-3.6364,11
+Furman,2012,18.5,1
+Gardner-Webb,2012,5.7,1
+Georgia,2012,7.6417,12
+Georgia Southern,2012,28.0,1
+Georgia State,2012,-2.5,2
+Georgia Tech,2012,8.1417,12
+Grambling,2012,12.9,1
+Hawai'i,2012,-1.4727,11
+Houston,2012,-6.7917,12
+Howard,2012,0.0,1
+Idaho,2012,-1.3545,11
+Idaho State,2012,5.15,2
+Illinois,2012,7.3273,11
+Illinois State,2012,-23.0,1
+Indiana,2012,1.5091,11
+Indiana State,2012,-4.6,1
+Iowa,2012,6.6545,11
+Iowa State,2012,12.1182,11
+Jackson State,2012,8.1,1
+Jacksonville State,2012,19.8,2
+James Madison,2012,8.1,1
+Kansas,2012,13.8182,11
+Kansas State,2012,9.6091,11
+Kent State,2012,-9.9,12
+Kentucky,2012,11.5,11
+LSU,2012,9.9273,11
+Lamar,2012,-9.55,2
+Liberty,2012,-11.9,1
+Louisiana,2012,-5.4545,11
+Louisiana Tech,2012,-7.2833,12
+Louisville,2012,-1.7091,11
+Maine,2012,-2.8,1
+Marshall,2012,-4.5818,11
+Maryland,2012,5.0545,11
+Massachusetts,2012,-3.9833,12
+McNeese,2012,-13.8,2
+Memphis,2012,-7.4,11
+Miami,2012,8.8636,11
+Miami (OH),2012,-4.3818,11
+Michigan,2012,5.3167,12
+Michigan State,2012,6.6083,12
+Middle Tennessee,2012,-7.7636,11
+Minnesota,2012,3.9909,11
+Mississippi State,2012,8.1364,11
+Missouri,2012,16.5909,11
+Missouri State,2012,16.6,2
+Morgan State,2012,-17.9,2
+Murray State,2012,30.8,1
+NC State,2012,3.4273,11
+Navy,2012,-4.1909,11
+Nebraska,2012,8.6667,12
+Nevada,2012,-5.0818,11
+New Hampshire,2012,-0.9,1
+New Mexico,2012,-4.7,12
+New Mexico State,2012,-5.8636,11
+Nicholls,2012,-2.1667,3
+Norfolk State,2012,-8.0,1
+North Carolina,2012,-1.8545,11
+North Carolina Central,2012,-7.1,1
+North Dakota,2012,2.4,1
+North Dakota State,2012,-9.7,1
+North Texas,2012,-2.6455,11
+Northern Arizona,2012,-0.05,2
+Northern Colorado,2012,3.8,1
+Northern Illinois,2012,-13.0417,12
+Northern Iowa,2012,7.5,2
+Northwestern,2012,5.9545,11
+Northwestern (OK),2012,-20.1,1
+Northwestern State,2012,7.5,2
+Notre Dame,2012,8.3,12
+Ohio,2012,-12.4273,11
+Ohio State,2012,4.225,12
+Oklahoma,2012,9.9273,11
+Oklahoma State,2012,10.8,11
+Ole Miss,2012,11.9545,11
+Oregon,2012,7.4455,11
+Oregon State,2012,10.7545,11
+Penn State,2012,1.9083,12
+Pittsburgh,2012,2.75,10
+Portland State,2012,6.1,1
+Presbyterian,2012,8.0,2
+Purdue,2012,4.8091,11
+Rhode Island,2012,-4.0,1
+Rice,2012,-8.075,12
+Richmond,2012,-0.3,1
+Rutgers,2012,-1.5,11
+SE Louisiana,2012,-3.6,2
+SMU,2012,-1.7091,11
+Sacramento State,2012,-25.25,2
+Sam Houston,2012,19.9,2
+Samford,2012,-8.7,1
+San Diego State,2012,-4.8273,11
+San José State,2012,-6.8091,11
+Savannah State,2012,27.4,2
+South Alabama,2012,-7.7083,12
+South Carolina,2012,10.3182,11
+South Carolina State,2012,18.5,2
+South Dakota,2012,7.2,1
+South Dakota State,2012,-12.6,1
+South Florida,2012,5.0182,11
+Southeast Missouri State,2012,-11.6,1
+Southern,2012,-13.4,1
+Southern Illinois,2012,-16.2,1
+Southern Miss,2012,-1.125,12
+Southern Utah,2012,8.15,2
+Stanford,2012,8.8385,13
+Stephen F. Austin,2012,-10.25,2
+Stony Brook,2012,-8.65,2
+Syracuse,2012,3.9909,11
+TCU,2012,10.3455,11
+Temple,2012,1.24,10
+Tennessee,2012,9.4818,11
+Tennessee Tech,2012,27.2,1
+Texas,2012,8.55,12
+Texas A&M,2012,12.34,10
+Texas Southern,2012,-14.4,1
+Texas State,2012,-6.8364,11
+Texas Tech,2012,8.3,11
+The Citadel,2012,5.4,1
+Toledo,2012,-6.3,11
+Towson,2012,11.8,2
+Troy,2012,-6.4583,12
+Tulane,2012,-4.8917,12
+Tulsa,2012,-2.5667,12
+UAB,2012,-1.6636,11
+UC Davis,2012,9.7,1
+UCF,2012,-5.3538,13
+UCLA,2012,6.7923,13
+UConn,2012,-3.7167,12
+UL Monroe,2012,-6.3833,12
+UNLV,2012,-3.8917,12
+USC,2012,7.1667,12
+UT Martin,2012,1.2,2
+UTEP,2012,-2.8833,12
+UTSA,2012,-11.125,8
+Utah,2012,8.1455,11
+Utah State,2012,-7.6545,11
+VMI,2012,-8.1,1
+Vanderbilt,2012,5.6636,11
+Villanova,2012,-11.6,1
+Virginia,2012,4.2545,11
+Virginia Tech,2012,7.2909,11
+Wagner,2012,-17.9,1
+Wake Forest,2012,5.1727,11
+Washington,2012,9.3273,11
+Washington State,2012,7.5,11
+Weber State,2012,11.7,2
+West Virginia,2012,10.6636,11
+Western Carolina,2012,17.55,2
+Western Illinois,2012,4.4,1
+Western Kentucky,2012,-5.2364,11
+Western Michigan,2012,-8.2727,11
+William & Mary,2012,-7.8,1
+Wisconsin,2012,7.1583,12
+Wofford,2012,16.1,1
+Wyoming,2012,-3.5909,11
+Youngstown State,2012,5.7,1
+Abilene Christian,2013,-35.1,1
+Air Force,2013,-5.0091,11
+Akron,2013,-4.6455,11
+Alabama,2013,7.8909,11
+Alabama A&M,2013,11.4,1
+Alabama State,2013,-2.5,1
+Alcorn State,2013,10.7,1
+App State,2013,25.1,1
+Arizona,2013,9.3727,11
+Arizona State,2013,15.65,12
+Arkansas,2013,10.4727,11
+Arkansas State,2013,-9.7364,11
+Arkansas-Pine Bluff,2013,-16.2,1
+Army,2013,-5.8455,11
+Auburn,2013,11.8917,12
+Austin Peay,2013,0.4,3
+BYU,2013,5.0818,11
+Ball State,2013,-14.1727,11
+Baylor,2013,4.5818,11
+Bethune-Cookman,2013,-0.2,2
+Boise State,2013,-4.2455,11
+Boston College,2013,5.6273,11
+Bowling Green,2013,-12.1583,12
+Buffalo,2013,-9.2182,11
+Cal Poly,2013,5.9,2
+California,2013,16.3636,11
+Central Arkansas,2013,-0.7,1
+Central Michigan,2013,-10.7909,11
+Charleston Southern,2013,-0.7,1
+Chattanooga,2013,0.75,2
+Cincinnati,2013,-7.7727,11
+Clemson,2013,10.42,10
+Coastal Carolina,2013,19.8,1
+Colgate,2013,-16.9,1
+Colorado,2013,14.18,10
+Colorado State,2013,-6.8333,12
+Delaware,2013,-0.3,1
+Duke,2013,6.525,12
+East Carolina,2013,-8.4455,11
+Eastern Illinois,2013,0.75,2
+Eastern Kentucky,2013,24.2,1
+Eastern Michigan,2013,-5.4727,11
+Eastern Washington,2013,8.3,2
+Elon,2013,11.4,1
+Florida,2013,14.9636,11
+Florida A&M,2013,28.4,1
+Florida Atlantic,2013,-8.1833,12
+Florida International,2013,-4.2091,11
+Florida State,2013,2.25,12
+Fordham,2013,-10.7,1
+Fresno State,2013,-9.9545,11
+Furman,2013,28.7,1
+Gardner-Webb,2013,8.3,1
+Georgia,2013,13.5455,11
+Georgia Southern,2013,9.0,1
+Georgia State,2013,-7.0222,9
+Georgia Tech,2013,11.43,10
+Grambling,2013,-26.2,1
+Hawai'i,2013,-2.2167,12
+Houston,2013,-0.5909,11
+Howard,2013,-35.7,1
+Idaho,2013,-1.4364,11
+Idaho State,2013,15.25,2
+Illinois,2013,7.2909,11
+Illinois State,2013,7.5,1
+Indiana,2013,9.2818,11
+Indiana State,2013,-7.15,2
+Iowa,2013,5.5636,11
+Iowa State,2013,9.8545,11
+Jackson State,2013,-8.0,1
+Jacksonville State,2013,-32.6,1
+James Madison,2013,-15.3,1
+Kansas,2013,8.8545,11
+Kansas State,2013,3.2455,11
+Kent State,2013,-3.5636,11
+Kentucky,2013,11.1545,11
+LSU,2013,10.5636,11
+Lamar,2013,2.5,2
+Liberty,2013,-13.8,1
+Louisiana,2013,-13.0636,11
+Louisiana Tech,2013,-14.6273,11
+Louisville,2013,-7.1364,11
+Maine,2013,-15.95,2
+Marshall,2013,-12.2833,12
+Maryland,2013,2.1364,11
+Massachusetts,2013,-3.7545,11
+McNeese,2013,-15.5,1
+Memphis,2013,-2.5818,11
+Miami,2013,6.5273,11
+Miami (OH),2013,-6.4583,12
+Michigan,2013,4.9917,12
+Michigan State,2013,2.4167,12
+Middle Tennessee,2013,-7.4909,11
+Minnesota,2013,4.2091,11
+Mississippi State,2013,14.2455,11
+Missouri,2013,9.325,12
+Missouri State,2013,17.3,1
+Montana State,2013,-15.2,1
+Morgan State,2013,-13.85,2
+Murray State,2013,14.55,2
+NC State,2013,6.2455,11
+Navy,2013,-3.6818,11
+Nebraska,2013,2.2,11
+Nevada,2013,3.6727,11
+New Hampshire,2013,-18.8,1
+New Mexico,2013,-6.75,12
+New Mexico State,2013,-5.8818,11
+Nicholls,2013,-3.1,3
+Norfolk State,2013,-8.1,1
+North Carolina,2013,6.7727,11
+North Carolina Central,2013,5.0,1
+North Dakota State,2013,21.7,1
+North Texas,2013,-10.9333,12
+Northern Arizona,2013,14.6,1
+Northern Colorado,2013,-15.3,1
+Northern Illinois,2013,-13.1,12
+Northern Iowa,2013,-3.8,1
+Northwestern,2013,6.8,11
+Northwestern State,2013,-6.5,2
+Notre Dame,2013,7.325,12
+Ohio,2013,-10.4,11
+Ohio State,2013,3.5667,12
+Oklahoma,2013,4.5583,12
+Oklahoma State,2013,8.0273,11
+Old Dominion,2013,1.16,5
+Ole Miss,2013,9.8,11
+Oregon,2013,9.0182,11
+Oregon State,2013,9.3091,11
+Penn State,2013,1.7083,12
+Pittsburgh,2013,8.4727,11
+Portland State,2013,-8.7,1
+Prairie View A&M,2013,-13.7,1
+Presbyterian,2013,-2.8,1
+Purdue,2013,12.0909,11
+Rice,2013,-8.9692,13
+Richmond,2013,-0.5,1
+Rutgers,2013,-2.8,11
+SE Louisiana,2013,12.4,1
+SMU,2013,1.9182,11
+Sacramento State,2013,6.2,2
+Sam Houston,2013,20.4,1
+Samford,2013,-15.55,2
+San Diego State,2013,-4.8,11
+San José State,2013,-1.9455,11
+Savannah State,2013,1.2,2
+South Alabama,2013,-12.3455,11
+South Carolina,2013,11.4727,11
+South Carolina State,2013,24.5,1
+South Dakota,2013,-9.7,1
+South Dakota State,2013,11.6,1
+South Florida,2013,3.5909,11
+Southeast Missouri State,2013,12.4,1
+Southern,2013,4.9,1
+Southern Illinois,2013,-4.0,1
+Southern Miss,2013,-5.6167,12
+Southern Utah,2013,-1.0,2
+Stanford,2013,10.2615,13
+Stephen F. Austin,2013,14.0,1
+Stony Brook,2013,-9.0,1
+Syracuse,2013,9.4091,11
+TCU,2013,9.7364,11
+Temple,2013,-3.4091,11
+Tennessee,2013,13.9,11
+Tennessee Tech,2013,22.4,1
+Texas,2013,6.9,12
+Texas A&M,2013,8.5273,11
+Texas State,2013,-16.0636,11
+Texas Tech,2013,5.7364,11
+The Citadel,2013,24.5,1
+Toledo,2013,-4.7909,11
+Towson,2013,-13.2,1
+Troy,2013,-9.7455,11
+Tulane,2013,-9.7273,11
+Tulsa,2013,-1.3667,12
+UAB,2013,-4.7636,11
+UC Davis,2013,-16.8,1
+UCF,2013,-5.1917,12
+UCLA,2013,7.3,12
+UConn,2013,0.4091,11
+UL Monroe,2013,-6.6909,11
+UNLV,2013,-5.5909,11
+USC,2013,8.1923,13
+UT Martin,2013,4.05,2
+UTEP,2013,-10.6583,12
+UTSA,2013,-4.9167,12
+Utah,2013,14.4182,11
+Utah State,2013,-0.7667,12
+VMI,2013,-5.2,1
+Vanderbilt,2013,4.4455,11
+Villanova,2013,7.1,1
+Virginia,2013,13.8909,11
+Virginia Tech,2013,10.8182,11
+Wagner,2013,0.0,1
+Wake Forest,2013,5.3636,11
+Washington,2013,10.9545,11
+Washington State,2013,11.8273,11
+Weber State,2013,8.0,2
+West Virginia,2013,7.7364,11
+Western Carolina,2013,9.4333,3
+Western Illinois,2013,-3.8,2
+Western Kentucky,2013,-13.4727,11
+Western Michigan,2013,-4.8818,11
+William & Mary,2013,-0.9,1
+Wisconsin,2013,3.1273,11
+Wofford,2013,20.4,1
+Wyoming,2013,-5.6,11
+Youngstown State,2013,19.7,1
+Abilene Christian,2014,-19.35,2
+Air Force,2014,-6.1,11
+Akron,2014,-6.3455,11
+Alabama,2014,12.6583,12
+Alabama A&M,2014,-4.2,1
+Alcorn State,2014,-15.9,1
+App State,2014,-7.86,10
+Arizona,2014,6.0538,13
+Arizona State,2014,6.6091,11
+Arkansas,2014,17.2818,11
+Arkansas State,2014,-5.3818,11
+Arkansas-Pine Bluff,2014,-7.4,1
+Army,2014,-3.22,10
+Auburn,2014,16.2909,11
+Austin Peay,2014,5.6,1
+BYU,2014,-0.6,11
+Ball State,2014,-7.53,10
+Baylor,2014,3.9182,11
+Bethune-Cookman,2014,-5.25,2
+Boise State,2014,-1.6154,13
+Boston College,2014,7.7364,11
+Bowling Green,2014,-4.0333,12
+Buffalo,2014,-9.9444,9
+Cal Poly,2014,-23.3,1
+California,2014,9.5,11
+Campbell,2014,-8.3,1
+Central Arkansas,2014,4.9,1
+Central Michigan,2014,-7.9818,11
+Charleston Southern,2014,11.65,2
+Chattanooga,2014,3.5,2
+Cincinnati,2014,-2.0,12
+Clemson,2014,7.4545,11
+Colgate,2014,-6.6,1
+Colorado,2014,5.7583,12
+Colorado State,2014,-5.6818,11
+Delaware,2014,14.1,1
+Delaware State,2014,-4.7,1
+Duke,2014,0.0364,11
+Duquesne,2014,-7.7,1
+East Carolina,2014,-4.0727,11
+Eastern Illinois,2014,-2.45,2
+Eastern Kentucky,2014,-0.7,2
+Eastern Michigan,2014,-1.7727,11
+Eastern Washington,2014,7.8,1
+Elon,2014,7.0,1
+Florida,2014,13.72,10
+Florida A&M,2014,13.9,1
+Florida Atlantic,2014,-1.9,12
+Florida International,2014,-0.4,10
+Florida State,2014,8.6667,12
+Fordham,2014,-16.9,1
+Fresno State,2014,-1.4333,12
+Furman,2014,17.4,1
+Gardner-Webb,2014,-7.8,1
+Georgia,2014,10.7545,11
+Georgia Southern,2014,-7.8818,11
+Georgia State,2014,-3.2,11
+Georgia Tech,2014,9.3083,12
+Grambling,2014,5.4,1
+Hampton,2014,-12.7,1
+Hawai'i,2014,-3.575,12
+Houston,2014,-5.5545,11
+Howard,2014,-5.45,2
+Idaho,2014,-7.5818,11
+Idaho State,2014,7.4,2
+Illinois,2014,6.8727,11
+Indiana,2014,6.9636,11
+Indiana State,2014,-2.4,2
+Iowa,2014,3.9545,11
+Iowa State,2014,10.2636,11
+Jacksonville State,2014,24.1,1
+James Madison,2014,5.7,1
+Kansas,2014,9.7727,11
+Kansas State,2014,8.3455,11
+Kent State,2014,-5.0091,11
+Kentucky,2014,11.6818,11
+LSU,2014,13.2,11
+Lamar,2014,20.2,1
+Liberty,2014,-4.15,2
+Louisiana,2014,-5.6091,11
+Louisiana Tech,2014,-0.075,12
+Louisville,2014,6.2545,11
+Maine,2014,4.9,1
+Marshall,2014,-9.6083,12
+Maryland,2014,8.1545,11
+Massachusetts,2014,-6.6917,12
+McNeese,2014,13.1,1
+Memphis,2014,-3.6909,11
+Miami,2014,9.9364,11
+Miami (OH),2014,-3.4,11
+Michigan,2014,5.5,12
+Michigan State,2014,3.7182,11
+Middle Tennessee,2014,-3.1455,11
+Minnesota,2014,6.6818,11
+Mississippi State,2014,10.0909,11
+Missouri,2014,12.775,12
+Missouri State,2014,8.6,1
+Montana,2014,-14.0,1
+Montana State,2014,-0.3,1
+Morgan State,2014,-25.9,1
+Murray State,2014,8.1,2
+NC State,2014,3.9,11
+Navy,2014,-1.4636,11
+Nebraska,2014,4.4818,11
+Nevada,2014,-1.7455,11
+New Hampshire,2014,2.3,1
+New Mexico,2014,-3.5,12
+New Mexico State,2014,-7.2273,11
+Nicholls,2014,0.4667,3
+Norfolk State,2014,-7.7,1
+North Carolina,2014,9.5,11
+North Carolina Central,2014,8.5,1
+North Dakota,2014,-11.5,1
+North Dakota State,2014,-7.9,1
+North Texas,2014,-7.0273,11
+Northern Arizona,2014,1.0,1
+Northern Colorado,2014,-17.6,1
+Northern Illinois,2014,-7.4667,12
+Northern Iowa,2014,-4.1,2
+Northwestern,2014,6.2455,11
+Northwestern State,2014,11.1,2
+Notre Dame,2014,8.2667,12
+Ohio,2014,-5.0455,11
+Ohio State,2014,6.1462,13
+Oklahoma,2014,5.95,12
+Oklahoma State,2014,10.2182,11
+Old Dominion,2014,-5.4545,11
+Ole Miss,2014,14.7182,11
+Oregon,2014,6.4083,12
+Oregon State,2014,6.5455,11
+Penn State,2014,3.1167,12
+Pittsburgh,2014,2.5364,11
+Portland State,2014,0.75,2
+Presbyterian,2014,9.4,3
+Purdue,2014,7.2818,11
+Rhode Island,2014,16.8,1
+Rice,2014,-4.6167,12
+Richmond,2014,4.0,1
+Rutgers,2014,8.6727,11
+SE Louisiana,2014,-15.0,1
+SMU,2014,4.0333,12
+Sacramento State,2014,-0.6,1
+Sam Houston,2014,21.5,1
+Samford,2014,23.75,2
+San Diego State,2014,-7.0273,11
+San José State,2014,-1.3545,11
+Savannah State,2014,-0.3,3
+South Alabama,2014,-3.5833,12
+South Carolina,2014,13.2182,11
+South Carolina State,2014,18.1,1
+South Dakota,2014,24.7,1
+South Dakota State,2014,19.3,1
+South Florida,2014,1.4182,11
+Southeast Missouri State,2014,-9.8,1
+Southern,2014,2.2,1
+Southern Illinois,2014,-6.2,1
+Southern Miss,2014,2.0455,11
+Southern Utah,2014,-7.1,2
+Stanford,2014,7.6727,11
+Stephen F. Austin,2014,16.3,1
+Stony Brook,2014,-14.1,1
+Syracuse,2014,9.2,11
+TCU,2014,5.2909,11
+Temple,2014,-0.4091,11
+Tennessee,2014,14.8909,11
+Texas,2014,8.7833,12
+Texas A&M,2014,12.5,11
+Texas State,2014,-8.2091,11
+Texas Tech,2014,8.2909,11
+The Citadel,2014,28.5,1
+Toledo,2014,-5.4636,11
+Towson,2014,8.4,1
+Troy,2014,-5.0818,11
+Tulane,2014,1.2909,11
+Tulsa,2014,-1.8,12
+UAB,2014,-2.6909,11
+UC Davis,2014,12.95,2
+UCF,2014,-2.7273,11
+UCLA,2014,9.4917,12
+UConn,2014,-1.9182,11
+UL Monroe,2014,-2.6917,12
+UNLV,2014,-2.2917,12
+USC,2014,6.1417,12
+UT Martin,2014,14.4,2
+UTEP,2014,-6.2167,12
+UTSA,2014,-5.3917,12
+Utah,2014,9.0727,11
+Utah State,2014,-3.675,12
+VMI,2014,-1.0,2
+Vanderbilt,2014,9.6091,11
+Villanova,2014,-2.1,1
+Virginia,2014,10.3364,11
+Virginia Tech,2014,7.3455,11
+Wagner,2014,-16.2,1
+Wake Forest,2014,6.2182,11
+Washington,2014,3.6167,12
+Washington State,2014,8.6091,11
+Weber State,2014,13.5,1
+West Virginia,2014,11.5909,11
+Western Carolina,2014,11.25,2
+Western Illinois,2014,11.15,2
+Western Kentucky,2014,-4.5667,12
+Western Michigan,2014,-7.9636,11
+William & Mary,2014,7.8,1
+Wisconsin,2014,4.725,12
+Wofford,2014,11.2,1
+Wyoming,2014,0.9727,11
+Yale,2014,-16.9,1
+Youngstown State,2014,0.4,1
+Abilene Christian,2015,-12.6,1
+Air Force,2015,-2.7167,12
+Akron,2015,-3.1182,11
+Alabama,2015,12.9667,12
+Alabama A&M,2015,5.3,1
+Alcorn State,2015,9.0,1
+App State,2015,-5.2545,11
+Arizona,2015,4.9455,11
+Arizona State,2015,8.5818,11
+Arkansas,2015,12.2818,11
+Arkansas State,2015,-4.4909,11
+Army,2015,-3.77,10
+Auburn,2015,12.4636,11
+Austin Peay,2015,-0.1,2
+BYU,2015,4.1727,11
+Ball State,2015,-0.5455,11
+Baylor,2015,1.9636,11
+Bethune-Cookman,2015,11.0,1
+Boise State,2015,-3.4091,11
+Boston College,2015,9.79,10
+Bowling Green,2015,-1.4077,13
+Bucknell,2015,-21.7,1
+Buffalo,2015,-3.4818,11
+Cal Poly,2015,10.2,1
+California,2015,10.0727,11
+Central Arkansas,2015,9.9,1
+Central Michigan,2015,-2.2636,11
+Charleston Southern,2015,11.0,2
+Charlotte,2015,-6.7455,11
+Chattanooga,2015,23.2,1
+Cincinnati,2015,-0.0727,11
+Clemson,2015,9.6667,12
+Colgate,2015,12.1,1
+Colorado,2015,5.7333,12
+Colorado State,2015,-3.9455,11
+Delaware,2015,20.0,1
+Delaware State,2015,-11.9,1
+Duke,2015,2.6,11
+East Carolina,2015,1.1909,11
+Eastern Illinois,2015,0.2,1
+Eastern Kentucky,2015,4.65,2
+Eastern Michigan,2015,-5.35,12
+Eastern Washington,2015,15.9,1
+Elon,2015,-4.5,1
+Florida,2015,8.5538,13
+Florida A&M,2015,3.6,1
+Florida Atlantic,2015,-5.9583,12
+Florida International,2015,-6.5818,11
+Florida State,2015,5.9091,11
+Fordham,2015,-21.7,1
+Fresno State,2015,1.4273,11
+Furman,2015,-2.05,2
+Gardner-Webb,2015,-10.4,1
+Georgia,2015,7.5818,11
+Georgia Southern,2015,-3.8727,11
+Georgia State,2015,-5.8364,11
+Georgia Tech,2015,11.8818,11
+Grambling,2015,12.1,1
+Hawai'i,2015,0.1083,12
+Houston,2015,-2.8583,12
+Howard,2015,6.3,2
+Idaho,2015,-1.7818,11
+Idaho State,2015,-2.2,2
+Illinois,2015,7.3364,11
+Illinois State,2015,9.3,1
+Incarnate Word,2015,-19.5,1
+Indiana,2015,5.0909,11
+Indiana State,2015,-7.4,1
+Iowa,2015,2.5,12
+Iowa State,2015,8.2273,11
+Jackson State,2015,-4.6,1
+Jacksonville State,2015,14.6,1
+James Madison,2015,-17.5,1
+Kansas,2015,8.4,11
+Kansas State,2015,5.5636,11
+Kent State,2015,-0.7455,11
+Kentucky,2015,6.3091,11
+LSU,2015,11.2182,11
+Lamar,2015,19.5,1
+Liberty,2015,3.1,2
+Louisiana,2015,-5.2091,11
+Louisiana Tech,2015,-6.8364,11
+Louisville,2015,7.8273,11
+Maine,2015,-4.65,2
+Marshall,2015,-9.1,11
+Maryland,2015,10.4364,11
+Massachusetts,2015,-4.0583,12
+Memphis,2015,0.5818,11
+Miami,2015,10.0091,11
+Miami (OH),2015,-1.5909,11
+Michigan,2015,3.9,12
+Michigan State,2015,6.5077,13
+Middle Tennessee,2015,-3.4636,11
+Minnesota,2015,7.275,12
+Mississippi State,2015,11.7636,11
+Mississippi Valley State,2015,-8.7,1
+Missouri,2015,8.0727,11
+Missouri State,2015,4.25,2
+Monmouth,2015,-3.1,1
+Morgan State,2015,4.7,1
+Murray State,2015,2.0,2
+NC State,2015,5.0818,11
+Navy,2015,-2.1455,11
+Nebraska,2015,3.6833,12
+Nevada,2015,-5.3273,11
+New Hampshire,2015,-4.5,1
+New Mexico,2015,-4.0545,11
+New Mexico State,2015,-3.5667,12
+Nicholls,2015,-9.35,2
+Norfolk State,2015,-7.1333,3
+North Carolina,2015,7.5,11
+North Carolina A&T,2015,20.0,1
+North Carolina Central,2015,-6.6,2
+North Dakota,2015,-16.7,1
+North Texas,2015,-1.9182,11
+Northern Arizona,2015,4.7,1
+Northern Illinois,2015,-2.0417,12
+Northern Iowa,2015,-0.3,1
+Northwestern,2015,7.3273,11
+Northwestern State,2015,4.0,2
+Notre Dame,2015,8.1333,12
+Ohio,2015,-3.7364,11
+Ohio State,2015,3.7667,12
+Oklahoma,2015,5.0583,12
+Oklahoma State,2015,3.8636,11
+Old Dominion,2015,-6.5273,11
+Ole Miss,2015,9.1545,11
+Oregon,2015,7.4182,11
+Oregon State,2015,10.0182,11
+Penn State,2015,3.2,12
+Pittsburgh,2015,8.7636,11
+Portland State,2015,-10.4,2
+Prairie View A&M,2015,-15.5,1
+Presbyterian,2015,-17.6,2
+Purdue,2015,7.7182,11
+Rhode Island,2015,-3.9,1
+Rice,2015,-6.5182,11
+Richmond,2015,-1.6,1
+Rutgers,2015,5.6636,11
+SE Louisiana,2015,-0.5,1
+SMU,2015,2.4,11
+Sacramento State,2015,9.7,1
+Sam Houston,2015,4.5,1
+Samford,2015,13.2,1
+San Diego,2015,8.0,1
+San Diego State,2015,-4.6083,12
+San José State,2015,-2.1091,11
+Savannah State,2015,-0.15,2
+South Alabama,2015,-0.3727,11
+South Carolina,2015,10.3545,11
+South Dakota,2015,2.6,1
+South Dakota State,2015,-21.3,1
+South Florida,2015,0.8455,11
+Southeast Missouri State,2015,3.4,1
+Southern,2015,12.55,2
+Southern Illinois,2015,0.4,1
+Southern Miss,2015,-6.6667,12
+Southern Utah,2015,-0.1,1
+Stanford,2015,7.0615,13
+Stephen F. Austin,2015,19.0,1
+Syracuse,2015,9.3545,11
+TCU,2015,4.0727,11
+Temple,2015,-2.1692,13
+Tennessee,2015,8.0818,11
+Tennessee Tech,2015,6.2,1
+Texas,2015,7.45,12
+Texas A&M,2015,10.3636,11
+Texas State,2015,-2.8273,11
+Texas Tech,2015,6.2182,11
+The Citadel,2015,5.35,2
+Toledo,2015,-2.6182,11
+Towson,2015,-0.5,1
+Troy,2015,-1.3364,11
+Tulane,2015,-2.2545,11
+Tulsa,2015,-2.2,12
+UAlbany,2015,-10.3,1
+UC Davis,2015,-11.7,2
+UCF,2015,0.1273,11
+UCLA,2015,5.1333,12
+UConn,2015,-0.5818,11
+UL Monroe,2015,-1.975,12
+UNLV,2015,0.0455,11
+USC,2015,10.3462,13
+UT Martin,2015,23.1,2
+UTEP,2015,-7.6091,11
+UTSA,2015,-6.0667,12
+Utah,2015,6.7417,12
+Utah State,2015,0.8455,11
+VMI,2015,-15.5,1
+Vanderbilt,2015,10.0091,11
+Villanova,2015,-6.3,1
+Virginia,2015,11.6364,11
+Virginia Tech,2015,8.3455,11
+Wagner,2015,-2.95,2
+Wake Forest,2015,8.6636,11
+Washington,2015,9.0273,11
+Washington State,2015,4.8273,11
+Weber State,2015,-10.1,1
+West Virginia,2015,6.0,11
+Western Carolina,2015,16.8,2
+Western Illinois,2015,2.7,1
+Western Kentucky,2015,-5.1692,13
+Western Michigan,2015,1.3091,11
+William & Mary,2015,1.4,1
+Wisconsin,2015,0.375,12
+Wofford,2015,5.9,2
+Wyoming,2015,-1.3364,11
+Youngstown State,2015,11.1,1
+Abilene Christian,2016,4.4,1
+Air Force,2016,-5.4455,11
+Akron,2016,-1.4727,11
+Alabama,2016,11.2083,12
+Alabama A&M,2016,6.7,2
+Alabama State,2016,-11.2,1
+Alcorn State,2016,7.9,1
+App State,2016,-5.6333,12
+Arizona,2016,8.1364,11
+Arizona State,2016,7.2091,11
+Arkansas,2016,9.5545,11
+Arkansas State,2016,-6.7091,11
+Army,2016,-3.06,10
+Auburn,2016,9.9091,11
+Austin Peay,2016,-0.75,2
+BYU,2016,3.6455,11
+Ball State,2016,-4.0909,11
+Baylor,2016,4.0727,11
+Bethune-Cookman,2016,-14.6,1
+Boise State,2016,-4.025,12
+Boston College,2016,5.3636,11
+Bowling Green,2016,-1.3364,11
+Buffalo,2016,-4.9818,11
+Cal Poly,2016,-13.0,1
+California,2016,8.6083,12
+Central Arkansas,2016,-1.2,1
+Central Michigan,2016,-1.4273,11
+Charleston Southern,2016,24.0,1
+Charlotte,2016,-4.4364,11
+Chattanooga,2016,31.7,1
+Cincinnati,2016,1.3636,11
+Clemson,2016,8.325,12
+Colgate,2016,-2.7,1
+Colorado,2016,9.3417,12
+Colorado State,2016,-1.1455,11
+Delaware,2016,-0.6,1
+Delaware State,2016,-1.0,1
+Duke,2016,8.8909,11
+East Carolina,2016,2.5727,11
+Eastern Illinois,2016,-6.1,1
+Eastern Kentucky,2016,-9.0,2
+Eastern Michigan,2016,-3.2091,11
+Eastern Washington,2016,6.2,1
+Elon,2016,-20.9,1
+Florida,2016,6.3167,12
+Florida A&M,2016,18.6,1
+Florida Atlantic,2016,-4.7727,11
+Florida International,2016,-5.1083,12
+Florida State,2016,11.6545,11
+Fordham,2016,6.8,1
+Fresno State,2016,-0.8,11
+Furman,2016,7.4,1
+Gardner-Webb,2016,-2.1,1
+Georgia,2016,5.9636,11
+Georgia Southern,2016,-2.5364,11
+Georgia State,2016,-4.1909,11
+Georgia Tech,2016,7.9545,11
+Grambling,2016,-4.5,1
+Hampton,2016,-0.7,1
+Hawai'i,2016,-2.3833,12
+Houston,2016,0.2364,11
+Houston Christian,2016,-0.3,2
+Howard,2016,-7.75,2
+Idaho,2016,-5.9364,11
+Idaho State,2016,0.85,2
+Illinois,2016,7.7727,11
+Illinois State,2016,2.9,1
+Incarnate Word,2016,-25.5,1
+Indiana,2016,2.775,12
+Indiana State,2016,12.6,1
+Iowa,2016,4.3,11
+Iowa State,2016,7.2182,11
+Jackson State,2016,-14.3,1
+Jacksonville State,2016,25.3,1
+James Madison,2016,15.9,1
+Kansas,2016,9.5364,11
+Kansas State,2016,7.0455,11
+Kent State,2016,1.45,10
+Kentucky,2016,7.1182,11
+LSU,2016,11.59,10
+Lafayette,2016,-9.9,1
+Lamar,2016,10.1,1
+Liberty,2016,2.2,2
+Louisiana,2016,-6.5182,11
+Louisiana Tech,2016,-4.275,12
+Louisville,2016,2.0417,12
+Maine,2016,0.35,2
+Marshall,2016,-2.2364,11
+Maryland,2016,4.8727,11
+Massachusetts,2016,-1.5455,11
+McNeese,2016,-8.7,1
+Memphis,2016,0.6273,11
+Mercer,2016,7.8,1
+Miami,2016,8.1455,11
+Miami (OH),2016,-4.0182,11
+Michigan,2016,4.3,12
+Michigan State,2016,8.2636,11
+Middle Tennessee,2016,-7.5182,11
+Minnesota,2016,1.9636,11
+Mississippi State,2016,7.3909,11
+Mississippi Valley State,2016,-8.2,1
+Missouri,2016,6.1455,11
+Missouri State,2016,8.2,1
+Monmouth,2016,-12.0,1
+Montana State,2016,-8.6,1
+Morgan State,2016,-11.3,2
+Murray State,2016,-6.7,1
+NC State,2016,10.1091,11
+Navy,2016,0.925,12
+Nebraska,2016,2.7417,12
+Nevada,2016,-6.7273,11
+New Hampshire,2016,11.4,1
+New Mexico,2016,-7.7,11
+New Mexico State,2016,-4.9,12
+Nicholls,2016,-0.05,2
+North Carolina,2016,8.41,10
+North Carolina A&T,2016,-2.3,2
+North Carolina Central,2016,4.35,2
+North Dakota,2016,-6.6,1
+North Dakota State,2016,10.3,1
+North Texas,2016,-4.0364,11
+Northern Arizona,2016,-3.0,1
+Northern Colorado,2016,0.8,1
+Northern Illinois,2016,-1.8727,11
+Northern Iowa,2016,0.7,1
+Northwestern,2016,6.7909,11
+Northwestern State,2016,11.3,1
+Notre Dame,2016,6.6333,12
+Ohio,2016,-5.3917,12
+Ohio State,2016,8.0083,12
+Oklahoma,2016,5.7083,12
+Oklahoma State,2016,6.7273,11
+Old Dominion,2016,-6.7727,11
+Ole Miss,2016,12.1364,11
+Oregon,2016,8.3091,11
+Oregon State,2016,9.4273,11
+Penn State,2016,6.4846,13
+Pittsburgh,2016,9.0545,11
+Portland State,2016,6.55,2
+Prairie View A&M,2016,-2.25,2
+Presbyterian,2016,-7.75,2
+Purdue,2016,4.7182,11
+Rhode Island,2016,-15.9,1
+Rice,2016,-3.6182,11
+Richmond,2016,-3.8,1
+Rutgers,2016,10.4545,11
+SE Louisiana,2016,16.4,1
+SMU,2016,3.4364,11
+Sacramento State,2016,-16.9,1
+Samford,2016,5.4,1
+San Diego State,2016,-7.8917,12
+San José State,2016,-1.1909,11
+Savannah State,2016,-1.6,2
+South Alabama,2016,-5.51,10
+South Carolina,2016,5.2727,11
+South Carolina State,2016,9.8667,3
+South Dakota,2016,-5.1,1
+South Dakota State,2016,11.0,1
+South Florida,2016,0.7364,11
+Southeast Missouri State,2016,7.7,1
+Southern,2016,-17.95,2
+Southern Illinois,2016,-14.1,1
+Southern Miss,2016,-5.9818,11
+Southern Utah,2016,9.45,2
+Stanford,2016,6.5583,12
+Stephen F. Austin,2016,3.7,1
+Stony Brook,2016,11.9,1
+Syracuse,2016,11.3636,11
+TCU,2016,6.3182,11
+Temple,2016,-3.275,12
+Tennessee,2016,7.4455,11
+Tennessee State,2016,-1.2,1
+Tennessee Tech,2016,16.3,1
+Texas,2016,6.2333,12
+Texas A&M,2016,8.2727,11
+Texas State,2016,-3.9,11
+Texas Tech,2016,7.2545,11
+The Citadel,2016,15.9,1
+Toledo,2016,-3.3273,11
+Towson,2016,9.8,1
+Troy,2016,-4.9636,11
+Tulane,2016,-0.4818,11
+Tulsa,2016,-2.1545,11
+UAlbany,2016,-18.8,1
+UC Davis,2016,-0.4,2
+UCF,2016,0.4727,11
+UCLA,2016,4.95,12
+UConn,2016,0.1,11
+UL Monroe,2016,-2.1727,11
+UNLV,2016,-3.8545,11
+USC,2016,9.45,12
+UT Martin,2016,-8.6,3
+UTEP,2016,-8.0727,11
+UTSA,2016,-5.1909,11
+Utah,2016,5.1364,11
+Utah State,2016,1.5091,11
+VMI,2016,-5.6,1
+Vanderbilt,2016,7.5,11
+Villanova,2016,13.1,1
+Virginia,2016,7.1364,11
+Virginia Tech,2016,8.0167,12
+Wagner,2016,-8.45,2
+Wake Forest,2016,4.9273,11
+Washington,2016,3.025,12
+Washington State,2016,5.2545,11
+Weber State,2016,-4.4,1
+West Virginia,2016,7.1909,11
+Western Carolina,2016,-6.5,2
+Western Illinois,2016,-2.4,1
+Western Kentucky,2016,-4.075,12
+Western Michigan,2016,-4.8,12
+William & Mary,2016,9.4,1
+Wisconsin,2016,7.6308,13
+Wofford,2016,12.4,1
+Wyoming,2016,0.2,12
+Youngstown State,2016,11.3,1
+Abilene Christian,2017,-4.25,2
+Air Force,2017,-1.6364,11
+Akron,2017,-1.175,12
+Alabama,2017,10.0636,11
+Alabama A&M,2017,-5.7,2
+Alabama State,2017,1.6,1
+Alcorn State,2017,-10.4,1
+App State,2017,-7.63,10
+Arizona,2017,2.0182,11
+Arizona State,2017,6.2333,12
+Arkansas,2017,14.47,10
+Arkansas State,2017,-9.8,9
+Arkansas-Pine Bluff,2017,-8.05,2
+Army,2017,-4.7182,11
+Auburn,2017,12.9917,12
+Austin Peay,2017,1.8333,3
+BYU,2017,0.0917,12
+Ball State,2017,-5.44,10
+Baylor,2017,8.3364,11
+Bethune-Cookman,2017,11.25,2
+Boise State,2017,-3.0,13
+Boston College,2017,8.5417,12
+Bowling Green,2017,-2.5364,11
+Buffalo,2017,-6.3636,11
+Cal Poly,2017,-20.0,1
+California,2017,7.9455,11
+Central Arkansas,2017,10.9,1
+Central Connecticut,2017,4.0,1
+Central Michigan,2017,-4.3182,11
+Charleston Southern,2017,13.1,2
+Charlotte,2017,-4.82,10
+Chattanooga,2017,21.1,1
+Cincinnati,2017,-0.4364,11
+Clemson,2017,10.575,12
+Coastal Carolina,2017,-7.93,10
+Colgate,2017,-11.2,1
+Colorado,2017,3.3636,11
+Colorado State,2017,-4.8455,11
+Delaware,2017,14.3,1
+Delaware State,2017,14.2,2
+Duke,2017,8.1364,11
+East Carolina,2017,1.9545,11
+Eastern Illinois,2017,-1.4,1
+Eastern Kentucky,2017,-1.1,2
+Eastern Michigan,2017,-5.7167,12
+Eastern Washington,2017,4.8,1
+Elon,2017,6.6,1
+Florida,2017,12.3,10
+Florida A&M,2017,2.1,1
+Florida Atlantic,2017,-5.6,12
+Florida International,2017,-7.2273,11
+Florida State,2017,11.9818,11
+Fordham,2017,-5.3,1
+Fresno State,2017,-1.2167,12
+Furman,2017,12.9,1
+Gardner-Webb,2017,-2.5,1
+Georgia,2017,11.0333,12
+Georgia Southern,2017,-1.91,10
+Georgia State,2017,-7.9222,9
+Georgia Tech,2017,11.37,10
+Grambling,2017,-5.7,1
+Hampton,2017,3.3,1
+Hawai'i,2017,-5.7455,11
+Holy Cross,2017,-19.2,1
+Houston,2017,-2.7818,11
+Houston Christian,2017,-23.5,1
+Howard,2017,-17.35,2
+Idaho,2017,-6.45,10
+Idaho State,2017,-9.85,2
+Illinois,2017,6.475,12
+Incarnate Word,2017,-2.7,1
+Indiana,2017,8.2273,11
+Indiana State,2017,1.2,1
+Iowa,2017,9.2083,12
+Iowa State,2017,6.4909,11
+Jackson State,2017,18.9,1
+Jacksonville State,2017,8.9,1
+James Madison,2017,-14.0,1
+Kansas,2017,8.7455,11
+Kansas State,2017,4.5727,11
+Kent State,2017,-0.8182,11
+Kentucky,2017,8.6909,11
+LSU,2017,9.7091,11
+Lamar,2017,-4.5,1
+Liberty,2017,-1.4,1
+Louisiana,2017,-6.4,11
+Louisiana Tech,2017,-4.94,10
+Louisville,2017,6.7818,11
+Maine,2017,-9.7,1
+Marshall,2017,-6.65,12
+Maryland,2017,14.3727,11
+Massachusetts,2017,-4.53,10
+Memphis,2017,-2.3,11
+Mercer,2017,29.1,2
+Miami,2017,11.0,11
+Miami (OH),2017,-7.2182,11
+Michigan,2017,8.05,12
+Michigan State,2017,8.875,12
+Middle Tennessee,2017,-8.1818,11
+Minnesota,2017,4.075,12
+Mississippi State,2017,9.9273,11
+Missouri,2017,4.5545,11
+Missouri State,2017,11.1,1
+Montana,2017,22.1,1
+Montana State,2017,8.6,1
+Morgan State,2017,-5.5,1
+Murray State,2017,19.2,1
+NC State,2017,11.0818,11
+Navy,2017,1.1667,12
+Nebraska,2017,8.9333,12
+Nevada,2017,-2.1818,11
+New Hampshire,2017,-15.8,1
+New Mexico,2017,-2.4727,11
+New Mexico State,2017,-9.1083,12
+Nicholls,2017,9.4,1
+North Carolina,2017,8.0545,11
+North Carolina A&T,2017,-26.1,1
+North Carolina Central,2017,6.1,1
+North Dakota,2017,12.0,1
+North Texas,2017,-6.1273,11
+Northern Arizona,2017,3.7,1
+Northern Colorado,2017,2.0,1
+Northern Illinois,2017,-5.3818,11
+Northern Iowa,2017,7.5,1
+Northwestern,2017,4.4083,12
+Northwestern State,2017,-5.5,1
+Notre Dame,2017,10.125,12
+Ohio,2017,-7.9273,11
+Ohio State,2017,7.4615,13
+Oklahoma,2017,5.9923,13
+Oklahoma State,2017,4.2417,12
+Old Dominion,2017,-5.9,11
+Ole Miss,2017,7.3909,11
+Oregon,2017,4.9545,11
+Oregon State,2017,7.5909,11
+Penn State,2017,5.2,12
+Pittsburgh,2017,8.2,11
+Portland State,2017,-10.0,2
+Presbyterian,2017,10.5,1
+Purdue,2017,8.4333,12
+Rhode Island,2017,-8.6,1
+Rice,2017,-4.2091,11
+Rutgers,2017,10.3364,11
+SE Louisiana,2017,-15.8,1
+SMU,2017,0.2545,11
+Sacramento State,2017,-12.4,1
+Samford,2017,26.7,1
+San Diego State,2017,-6.5636,11
+San José State,2017,-2.1083,12
+Savannah State,2017,3.8,1
+South Alabama,2017,-4.7273,11
+South Carolina,2017,8.8818,11
+South Dakota,2017,-10.0,1
+South Florida,2017,-6.11,10
+Southeast Missouri State,2017,-14.8,1
+Southern,2017,-2.95,2
+Southern Illinois,2017,7.8,1
+Southern Miss,2017,-10.31,10
+Southern Utah,2017,9.1,1
+Stanford,2017,6.2769,13
+Stephen F. Austin,2017,-2.9,1
+Stony Brook,2017,10.2,1
+Syracuse,2017,11.5818,11
+TCU,2017,7.7083,12
+Temple,2017,-1.2,11
+Tennessee,2017,9.9455,11
+Tennessee State,2017,-14.0,1
+Tennessee Tech,2017,-19.7,1
+Texas,2017,5.7917,12
+Texas A&M,2017,9.4182,11
+Texas State,2017,-4.82,10
+Texas Tech,2017,8.2364,11
+The Citadel,2017,26.4,1
+Toledo,2017,-7.4167,12
+Towson,2017,-4.5,1
+Troy,2017,-7.3,10
+Tulane,2017,0.0727,11
+Tulsa,2017,-0.4,12
+UAB,2017,-10.75,10
+UAlbany,2017,-16.8,1
+UC Davis,2017,4.5,1
+UCF,2017,-2.8909,11
+UCLA,2017,6.675,12
+UConn,2017,1.3727,11
+UL Monroe,2017,-1.8636,11
+UNLV,2017,-6.3545,11
+USC,2017,6.0923,13
+UT Martin,2017,11.6,1
+UTEP,2017,-3.1636,11
+UTSA,2017,-11.5778,9
+Utah,2017,5.2455,11
+Utah State,2017,-3.3818,11
+VMI,2017,-11.0,1
+Vanderbilt,2017,9.6182,11
+Villanova,2017,0.5,1
+Virginia,2017,7.3545,11
+Virginia Tech,2017,4.4818,11
+Wagner,2017,-2.4,1
+Wake Forest,2017,11.4727,11
+Washington,2017,2.8727,11
+Washington State,2017,5.6091,11
+Weber State,2017,-1.0,1
+West Virginia,2017,7.4,11
+Western Carolina,2017,-7.7,2
+Western Kentucky,2017,-10.6364,11
+Western Michigan,2017,-5.2818,11
+William & Mary,2017,0.8,1
+Wisconsin,2017,5.6077,13
+Wofford,2017,7.8,1
+Wyoming,2017,-5.5182,11
+Youngstown State,2017,6.0,1
+Abilene Christian,2018,2.0,1
+Air Force,2018,-0.8727,11
+Akron,2018,-3.6545,11
+Alabama,2018,12.6083,12
+Alabama A&M,2018,5.4,1
+Alabama State,2018,2.95,2
+Alcorn State,2018,-9.95,2
+App State,2018,-7.6,11
+Arizona,2018,4.1273,11
+Arizona State,2018,4.05,12
+Arkansas,2018,13.4273,11
+Arkansas State,2018,-6.0,11
+Arkansas-Pine Bluff,2018,-7.4,1
+Army,2018,-3.31,10
+Auburn,2018,13.9273,11
+Austin Peay,2018,32.9,1
+BYU,2018,3.3364,11
+Ball State,2018,-4.0273,11
+Baylor,2018,5.3727,11
+Bethune-Cookman,2018,2.3,2
+Boise State,2018,2.3846,13
+Boston College,2018,4.7636,11
+Bowling Green,2018,-5.0545,11
+Buffalo,2018,-7.6667,12
+California,2018,4.6727,11
+Campbell,2018,-17.2,1
+Central Arkansas,2018,-11.2,1
+Central Connecticut,2018,-18.9,1
+Central Michigan,2018,-5.4636,11
+Charleston Southern,2018,23.0,1
+Charlotte,2018,-4.1091,11
+Chattanooga,2018,14.9,1
+Cincinnati,2018,-3.5727,11
+Clemson,2018,4.775,12
+Coastal Carolina,2018,-4.0091,11
+Colgate,2018,-1.5,1
+Colorado,2018,4.4455,11
+Colorado State,2018,1.4364,11
+Delaware State,2018,-5.9,2
+Drake,2018,7.9,1
+Duke,2018,5.4455,11
+Duquesne,2018,-13.25,2
+East Carolina,2018,-0.1818,11
+East Tennessee State,2018,5.5,1
+Eastern Illinois,2018,4.5,1
+Eastern Kentucky,2018,-10.5,2
+Eastern Michigan,2018,-7.2818,11
+Eastern Washington,2018,11.3,1
+Elon,2018,-1.2,1
+Florida,2018,13.33,10
+Florida A&M,2018,2.6,1
+Florida Atlantic,2018,-2.1909,11
+Florida International,2018,-9.3273,11
+Florida State,2018,9.1909,11
+Fordham,2018,-18.5,1
+Fresno State,2018,-0.7,12
+Furman,2018,29.7,1
+Gardner-Webb,2018,11.9,1
+Georgia,2018,12.45,12
+Georgia Southern,2018,-6.6818,11
+Georgia State,2018,-2.7455,11
+Georgia Tech,2018,5.3818,11
+Grambling,2018,-6.9,1
+Hawai'i,2018,-2.6167,12
+Holy Cross,2018,2.4,1
+Houston,2018,-4.4,11
+Houston Christian,2018,-5.4,1
+Howard,2018,-8.2,2
+Idaho,2018,20.2,2
+Idaho State,2018,-7.9,2
+Illinois,2018,3.3636,11
+Illinois State,2018,-10.3,1
+Incarnate Word,2018,-3.7,2
+Indiana,2018,6.1833,12
+Indiana State,2018,-9.1,1
+Iowa,2018,5.1364,11
+Iowa State,2018,5.8455,11
+Jackson State,2018,-5.0,1
+James Madison,2018,9.4,1
+Kansas,2018,5.0818,11
+Kansas State,2018,7.2545,11
+Kennesaw State,2018,-20.4,1
+Kent State,2018,-3.3727,11
+Kentucky,2018,10.6,11
+LSU,2018,14.0273,11
+Lafayette,2018,-1.5,1
+Lamar,2018,8.7,1
+Lehigh,2018,-10.2,1
+Liberty,2018,-4.62,10
+Louisiana,2018,-1.3083,12
+Louisiana Tech,2018,-5.9545,11
+Louisville,2018,8.6091,11
+Maine,2018,-18.05,2
+Marshall,2018,-6.8364,11
+Maryland,2018,5.8167,12
+Massachusetts,2018,-4.3,11
+McNeese,2018,6.2,1
+Memphis,2018,-4.4667,12
+Mercer,2018,9.2,1
+Miami,2018,3.5545,11
+Miami (OH),2018,-6.6583,12
+Michigan,2018,6.1917,12
+Michigan State,2018,5.8667,12
+Middle Tennessee,2018,-2.4583,12
+Minnesota,2018,4.9917,12
+Mississippi State,2018,12.8909,11
+Missouri,2018,14.1273,11
+Missouri State,2018,13.8,1
+Monmouth,2018,-2.0,1
+Morgan State,2018,-19.3,1
+Murray State,2018,13.1,1
+NC State,2018,0.5273,11
+Navy,2018,1.9333,12
+Nebraska,2018,8.6455,11
+Nevada,2018,-1.9545,11
+New Hampshire,2018,-0.7,1
+New Mexico,2018,0.3727,11
+New Mexico State,2018,-6.6,11
+Nicholls,2018,-6.75,2
+Norfolk State,2018,-19.7,1
+North Carolina,2018,3.76,10
+North Carolina A&T,2018,-14.9,1
+North Carolina Central,2018,5.0,1
+North Dakota,2018,19.9,1
+North Texas,2018,-11.1636,11
+Northern Arizona,2018,-26.6,1
+Northern Illinois,2018,-2.2308,13
+Northern Iowa,2018,13.3,1
+Northwestern,2018,6.9846,13
+Northwestern State,2018,21.6,1
+Notre Dame,2018,3.6833,12
+Ohio,2018,-9.0364,11
+Ohio State,2018,4.0231,13
+Oklahoma,2018,4.7615,13
+Oklahoma State,2018,5.3545,11
+Old Dominion,2018,-9.1455,11
+Ole Miss,2018,12.1182,11
+Oregon,2018,1.6364,11
+Oregon State,2018,8.7818,11
+Penn State,2018,5.4167,12
+Pittsburgh,2018,10.2917,12
+Portland State,2018,3.4,2
+Prairie View A&M,2018,-18.75,2
+Purdue,2018,7.7417,12
+Rhode Island,2018,-26.4,1
+Rice,2018,-5.05,12
+Richmond,2018,7.1,1
+Rutgers,2018,5.2667,12
+SE Louisiana,2018,6.65,2
+SMU,2018,1.1909,11
+Sacramento State,2018,6.0,1
+Samford,2018,1.4,1
+San Diego State,2018,-0.4364,11
+San José State,2018,2.2091,11
+Savannah State,2018,6.2,2
+South Alabama,2018,-2.0,11
+South Carolina,2018,11.5909,11
+South Carolina State,2018,7.05,2
+South Dakota,2018,-0.5,1
+South Florida,2018,-4.7818,11
+Southeast Missouri State,2018,1.2,1
+Southern,2018,0.0,2
+Southern Illinois,2018,9.8,1
+Southern Miss,2018,-8.5,10
+Southern Utah,2018,-6.2,2
+Stanford,2018,7.6545,11
+Stephen F. Austin,2018,23.2,1
+Stony Brook,2018,-1.8,1
+Syracuse,2018,1.9273,11
+TCU,2018,8.1818,11
+Temple,2018,-3.2182,11
+Tennessee,2018,12.7545,11
+Tennessee State,2018,7.6,1
+Tennessee Tech,2018,14.2,1
+Texas,2018,7.1769,13
+Texas A&M,2018,15.2818,11
+Texas Southern,2018,-7.05,2
+Texas State,2018,-8.8364,11
+Texas Tech,2018,7.4182,11
+The Citadel,2018,36.3,1
+Toledo,2018,-6.2,11
+Towson,2018,3.6,1
+Troy,2018,-7.4636,11
+Tulane,2018,0.1273,11
+Tulsa,2018,-1.3909,11
+UAB,2018,-9.175,12
+UAlbany,2018,2.7,1
+UC Davis,2018,-2.05,2
+UCF,2018,-2.6818,11
+UCLA,2018,10.5167,12
+UConn,2018,0.4455,11
+UL Monroe,2018,-4.6182,11
+UNLV,2018,-1.5818,11
+USC,2018,4.7833,12
+UT Martin,2018,8.5,2
+UTEP,2018,-9.4818,11
+UTSA,2018,-6.6167,12
+Utah,2018,7.675,12
+Utah State,2018,-4.4182,11
+VMI,2018,-6.05,2
+Vanderbilt,2018,12.8091,11
+Villanova,2018,2.9,1
+Virginia,2018,0.7545,11
+Virginia Tech,2018,3.3364,11
+Wagner,2018,7.5,1
+Wake Forest,2018,3.6182,11
+Washington,2018,7.2333,12
+Washington State,2018,3.8455,11
+Weber State,2018,16.8,1
+West Virginia,2018,7.05,10
+Western Carolina,2018,-2.5,1
+Western Illinois,2018,-7.9,1
+Western Kentucky,2018,-8.1455,11
+Western Michigan,2018,-4.6545,11
+William & Mary,2018,3.9,1
+Wisconsin,2018,2.9,12
+Wofford,2018,1.9,1
+Wyoming,2018,0.6,11
+Youngstown State,2018,13.2,1
+Abilene Christian,2019,-1.3,2
+Air Force,2019,-2.5091,11
+Akron,2019,-9.325,12
+Alabama,2019,4.7182,11
+Alabama State,2019,0.2,2
+Alcorn State,2019,-4.8,1
+App State,2019,-4.2833,12
+Arizona,2019,5.7818,11
+Arizona State,2019,3.6727,11
+Arkansas,2019,10.4909,11
+Arkansas State,2019,-5.0909,11
+Arkansas-Pine Bluff,2019,6.7,1
+Army,2019,-4.0,11
+Auburn,2019,13.0364,11
+BYU,2019,0.6182,11
+Ball State,2019,-5.0273,11
+Baylor,2019,3.0,12
+Bethune-Cookman,2019,9.6,1
+Boise State,2019,-3.45,12
+Boston College,2019,2.5636,11
+Bowling Green,2019,-4.2364,11
+Bucknell,2019,3.2,1
+Buffalo,2019,-6.8,11
+Cal Poly,2019,-0.7,1
+California,2019,6.8,11
+Campbell,2019,-4.4,1
+Central Arkansas,2019,-0.1,2
+Central Connecticut,2019,-8.6,1
+Central Michigan,2019,-8.85,12
+Charleston Southern,2019,4.8,1
+Charlotte,2019,-6.4,11
+Chattanooga,2019,10.8,1
+Cincinnati,2019,1.8231,13
+Clemson,2019,0.5917,12
+Coastal Carolina,2019,-7.3909,11
+Colgate,2019,12.1,1
+Colorado,2019,6.7917,12
+Colorado State,2019,-4.5455,11
+Delaware,2019,4.1,1
+Duke,2019,5.8273,11
+East Carolina,2019,-2.17,10
+East Tennessee State,2019,0.45,2
+Eastern Illinois,2019,12.8,1
+Eastern Kentucky,2019,0.2,1
+Eastern Michigan,2019,-7.8636,11
+Eastern Washington,2019,18.3,1
+Elon,2019,2.0,1
+Florida,2019,11.44,10
+Florida A&M,2019,19.1,1
+Florida Atlantic,2019,-2.425,12
+Florida International,2019,-7.7909,11
+Florida State,2019,4.7818,11
+Fordham,2019,-4.5,1
+Fresno State,2019,-2.0364,11
+Furman,2019,-1.25,2
+Gardner-Webb,2019,-10.15,2
+Georgia,2019,9.8333,12
+Georgia Southern,2019,-0.9273,11
+Georgia State,2019,-5.1545,11
+Georgia Tech,2019,7.1364,11
+Grambling,2019,-5.25,2
+Hampton,2019,-2.6,1
+Hawai'i,2019,-1.5462,13
+Holy Cross,2019,3.45,2
+Houston,2019,6.2727,11
+Houston Christian,2019,-25.6,1
+Howard,2019,-6.3,1
+Idaho,2019,11.6,2
+Idaho State,2019,10.4,2
+Illinois,2019,0.275,12
+Illinois State,2019,-13.9,1
+Incarnate Word,2019,-22.85,2
+Indiana,2019,3.1091,11
+Indiana State,2019,-9.8,1
+Iowa,2019,4.9333,12
+Iowa State,2019,6.0,11
+Jackson State,2019,-20.3,1
+James Madison,2019,-7.0,1
+Kansas,2019,5.8091,11
+Kansas State,2019,3.8727,11
+Kennesaw State,2019,-10.2,1
+Kent State,2019,-4.0,11
+Kentucky,2019,3.1455,11
+LSU,2019,8.9833,12
+Lamar,2019,15.0,1
+Liberty,2019,-9.8,10
+Louisiana,2019,-3.7167,12
+Louisiana Tech,2019,-12.6,11
+Louisville,2019,5.5727,11
+Maine,2019,-3.55,2
+Marshall,2019,-4.0727,11
+Maryland,2019,9.7545,11
+Massachusetts,2019,-9.4182,11
+McNeese,2019,8.7,1
+Memphis,2019,-0.125,12
+Mercer,2019,10.3,1
+Miami,2019,2.6818,11
+Miami (OH),2019,-2.6917,12
+Michigan,2019,8.3917,12
+Michigan State,2019,7.2167,12
+Middle Tennessee,2019,-2.4545,11
+Minnesota,2019,2.6273,11
+Mississippi State,2019,11.3182,11
+Missouri,2019,4.0818,11
+Missouri State,2019,7.5,1
+Monmouth,2019,-4.9,1
+Montana,2019,19.0,1
+Montana State,2019,2.7,1
+Morgan State,2019,-14.8,2
+Murray State,2019,6.55,2
+NC State,2019,-0.3455,11
+Navy,2019,0.2364,11
+Nebraska,2019,4.5333,12
+Nevada,2019,-5.2909,11
+New Hampshire,2019,-7.0,1
+New Mexico,2019,-1.5818,11
+New Mexico State,2019,-1.1182,11
+Nicholls,2019,-5.1,2
+Norfolk State,2019,-18.6,2
+North Carolina,2019,4.9182,11
+North Carolina A&T,2019,-1.8,1
+North Texas,2019,-8.4909,11
+Northern Arizona,2019,-8.0,1
+Northern Colorado,2019,1.95,2
+Northern Illinois,2019,-5.4273,11
+Northern Iowa,2019,12.6,1
+Northwestern,2019,4.8,12
+Northwestern State,2019,33.1,1
+Notre Dame,2019,2.3583,12
+Ohio,2019,-8.2,11
+Ohio State,2019,6.2385,13
+Oklahoma,2019,4.9417,12
+Oklahoma State,2019,5.5182,11
+Old Dominion,2019,-4.5636,11
+Ole Miss,2019,7.7455,11
+Oregon,2019,4.7417,12
+Oregon State,2019,5.6182,11
+Penn State,2019,8.4273,11
+Pittsburgh,2019,5.3455,11
+Portland State,2019,-1.25,2
+Prairie View A&M,2019,-4.3,1
+Purdue,2019,5.7417,12
+Rhode Island,2019,5.85,2
+Rice,2019,-3.7417,12
+Richmond,2019,-5.7,1
+Robert Morris,2019,-2.0,1
+Rutgers,2019,7.325,12
+SE Louisiana,2019,2.9,1
+SMU,2019,-0.875,12
+Sacramento State,2019,1.15,2
+Sam Houston,2019,-17.0,1
+Samford,2019,21.0,1
+San Diego State,2019,-6.9727,11
+San José State,2019,-4.1455,11
+South Alabama,2019,-0.8273,11
+South Carolina,2019,15.0182,11
+South Carolina State,2019,-9.8,1
+South Dakota,2019,22.9,1
+South Dakota State,2019,19.4,1
+South Florida,2019,3.1727,11
+Southeast Missouri State,2019,7.8,1
+Southern,2019,18.0,1
+Southern Illinois,2019,-18.75,2
+Southern Miss,2019,-3.8182,11
+Southern Utah,2019,-17.4,1
+Stanford,2019,6.125,12
+Stephen F. Austin,2019,17.8,1
+Stony Brook,2019,-4.3,1
+Syracuse,2019,0.7818,11
+TCU,2019,6.3273,11
+Temple,2019,-0.9455,11
+Tennessee,2019,7.9455,11
+Tennessee State,2019,-11.3,1
+Tennessee Tech,2019,-9.2,1
+Texas,2019,6.325,12
+Texas A&M,2019,9.2818,11
+Texas Southern,2019,9.6,1
+Texas State,2019,-2.0364,11
+Texas Tech,2019,3.3,11
+The Citadel,2019,-12.0,1
+Toledo,2019,-6.3182,11
+Towson,2019,24.0,1
+Troy,2019,-6.6455,11
+Tulane,2019,3.2091,11
+Tulsa,2019,4.775,12
+UAB,2019,-11.7167,12
+UAlbany,2019,-4.4,1
+UC Davis,2019,-2.6,1
+UCF,2019,-3.3091,11
+UCLA,2019,5.325,12
+UConn,2019,-0.0455,11
+UL Monroe,2019,-1.2636,11
+UNLV,2019,-3.5545,11
+USC,2019,4.5667,12
+UT Martin,2019,16.55,2
+UTEP,2019,-8.9727,11
+UTSA,2019,-4.5455,11
+Utah,2019,2.9917,12
+Utah State,2019,1.8455,11
+VMI,2019,-2.0,2
+Vanderbilt,2019,7.9364,11
+Virginia,2019,3.25,12
+Virginia Tech,2019,0.61,10
+Wagner,2019,-12.5,2
+Wake Forest,2019,0.8455,11
+Washington,2019,3.8182,11
+Washington State,2019,1.8909,11
+Weber State,2019,-5.15,2
+West Virginia,2019,7.3727,11
+Western Carolina,2019,13.05,2
+Western Illinois,2019,-3.9,1
+Western Kentucky,2019,-6.3818,11
+Western Michigan,2019,-7.6727,11
+William & Mary,2019,-3.85,2
+Wisconsin,2019,8.2615,13
+Wofford,2019,28.1,1
+Wyoming,2019,-3.9636,11
+Abilene Christian,2020,-5.0,3
+Air Force,2020,-5.25,6
+Akron,2020,-7.9667,6
+Alabama,2020,7.3455,11
+App State,2020,-2.39,10
+Arizona,2020,6.8,5
+Arizona State,2020,1.775,4
+Arkansas,2020,10.53,10
+Arkansas State,2020,-1.38,10
+Army,2020,-3.95,8
+Auburn,2020,7.53,10
+Austin Peay,2020,12.3,2
+BYU,2020,-1.83,10
+Ball State,2020,-6.7,7
+Baylor,2020,5.1778,9
+Boise State,2020,-2.7286,7
+Boston College,2020,5.8,11
+Bowling Green,2020,-7.32,5
+Buffalo,2020,-15.9,6
+California,2020,4.475,4
+Campbell,2020,4.475,4
+Central Arkansas,2020,-0.1,2
+Central Michigan,2020,-7.25,6
+Charlotte,2020,-4.0,6
+Chattanooga,2020,-3.2,1
+Cincinnati,2020,2.2125,8
+Clemson,2020,6.63,10
+Coastal Carolina,2020,-1.31,10
+Colorado,2020,2.84,5
+Colorado State,2020,1.0,4
+Duke,2020,4.0909,11
+East Carolina,2020,1.6444,9
+Eastern Kentucky,2020,6.7667,3
+Eastern Michigan,2020,-6.2333,6
+Florida,2020,5.3545,11
+Florida Atlantic,2020,-7.45,8
+Florida International,2020,-2.175,4
+Florida State,2020,7.3875,8
+Fresno State,2020,-10.5167,6
+Georgia,2020,6.7333,9
+Georgia Southern,2020,-4.5818,11
+Georgia State,2020,-2.1889,9
+Georgia Tech,2020,5.52,10
+Hawai'i,2020,-3.5875,8
+Houston,2020,5.8,7
+Houston Christian,2020,-6.4,3
+Illinois,2020,9.1875,8
+Indiana,2020,9.5,7
+Iowa,2020,7.4875,8
+Iowa State,2020,5.5,11
+Jacksonville State,2020,-7.8,2
+Kansas,2020,6.7889,9
+Kansas State,2020,3.94,10
+Kent State,2020,-15.175,4
+Kentucky,2020,6.39,10
+LSU,2020,6.17,10
+Liberty,2020,-8.45,8
+Louisiana,2020,-1.86,10
+Louisiana Tech,2020,-0.9375,8
+Louisville,2020,3.3818,11
+Marshall,2020,-5.7625,8
+Maryland,2020,5.66,5
+Massachusetts,2020,3.975,4
+Memphis,2020,1.3,9
+Mercer,2020,2.7,1
+Miami,2020,6.84,10
+Miami (OH),2020,-9.6667,3
+Michigan,2020,7.2333,6
+Michigan State,2020,11.2857,7
+Middle Tennessee,2020,-2.6556,9
+Minnesota,2020,8.8,7
+Mississippi State,2020,7.3,10
+Missouri,2020,5.73,10
+Missouri State,2020,17.8,1
+NC State,2020,3.5273,11
+Navy,2020,2.33,10
+Nebraska,2020,7.7875,8
+Nevada,2020,-7.6375,8
+New Mexico,2020,-5.0571,7
+North Alabama,2020,5.9333,3
+North Carolina,2020,3.12,10
+North Texas,2020,-7.675,8
+Northern Illinois,2020,-3.7167,6
+Northwestern,2020,9.6125,8
+Notre Dame,2020,4.7545,11
+Ohio,2020,-17.2333,3
+Ohio State,2020,4.8167,6
+Oklahoma,2020,3.8778,9
+Oklahoma State,2020,3.93,10
+Ole Miss,2020,5.5444,9
+Oregon,2020,3.1333,6
+Oregon State,2020,8.7571,7
+Penn State,2020,6.2111,9
+Pittsburgh,2020,6.53,10
+Purdue,2020,3.6333,6
+Rice,2020,-2.36,5
+Rutgers,2020,7.7667,9
+SMU,2020,-1.9556,9
+San Diego State,2020,-3.65,8
+San José State,2020,-4.7857,7
+South Alabama,2020,-2.2,11
+South Carolina,2020,6.38,10
+South Florida,2020,5.85,8
+Southern Miss,2020,-4.2111,9
+Stanford,2020,5.0,6
+Stephen F. Austin,2020,-3.325,4
+Syracuse,2020,7.3273,11
+TCU,2020,3.93,10
+Temple,2020,0.1429,7
+Tennessee,2020,7.96,10
+Texas,2020,3.9889,9
+Texas A&M,2020,5.4,9
+Texas State,2020,0.9167,12
+Texas Tech,2020,5.7889,9
+The Citadel,2020,5.8,3
+Toledo,2020,-10.7833,6
+Troy,2020,-2.4,10
+Tulane,2020,-0.8545,11
+Tulsa,2020,3.5125,8
+UAB,2020,-1.2375,8
+UCF,2020,0.4444,9
+UCLA,2020,6.0,7
+UL Monroe,2020,-2.77,10
+UNLV,2020,-1.3,6
+USC,2020,6.8333,6
+UTEP,2020,-6.65,6
+UTSA,2020,-3.87,10
+Utah,2020,5.44,5
+Utah State,2020,-2.0333,6
+Vanderbilt,2020,5.0111,9
+Virginia,2020,8.2889,9
+Virginia Tech,2020,6.7545,11
+Wake Forest,2020,7.9143,7
+Washington,2020,2.325,4
+Washington State,2020,10.425,4
+West Virginia,2020,2.7,8
+Western Carolina,2020,12.25,2
+Western Kentucky,2020,1.08,10
+Western Michigan,2020,-11.0667,6
+Wisconsin,2020,7.75,6
+Wyoming,2020,-6.6167,6
+Abilene Christian,2021,8.9,1
+Air Force,2021,-1.9818,11
+Akron,2021,-1.9,11
+Alabama,2021,9.0167,12
+Alabama State,2021,11.0,1
+Alcorn State,2021,-7.2,1
+App State,2021,-1.2917,12
+Arizona,2021,5.6909,11
+Arizona State,2021,0.1091,11
+Arkansas,2021,8.4455,11
+Arkansas State,2021,-1.7,11
+Arkansas-Pine Bluff,2021,13.8,1
+Army,2021,-1.0909,11
+Auburn,2021,10.8364,11
+Austin Peay,2021,14.8,1
+BYU,2021,2.3091,11
+Ball State,2021,-1.8091,11
+Baylor,2021,6.0333,12
+Bethune-Cookman,2021,0.3,2
+Boise State,2021,3.0417,12
+Boston College,2021,1.0,11
+Bowling Green,2021,-2.9455,11
+Bryant,2021,-23.1,1
+Bucknell,2021,4.7,1
+Buffalo,2021,-4.8727,11
+Cal Poly,2021,10.8,1
+California,2021,0.3727,11
+Campbell,2021,8.4,1
+Central Arkansas,2021,-17.9,1
+Central Connecticut,2021,10.8,1
+Central Michigan,2021,-4.5,11
+Charleston Southern,2021,16.25,2
+Charlotte,2021,-5.3455,11
+Chattanooga,2021,13.4,1
+Cincinnati,2021,-0.1333,12
+Clemson,2021,5.8182,11
+Coastal Carolina,2021,-11.7818,11
+Colgate,2021,0.9,1
+Colorado,2021,7.3182,11
+Colorado State,2021,-0.2545,11
+Delaware,2021,-3.0,1
+Duke,2021,1.0091,11
+Duquesne,2021,-6.1,2
+East Carolina,2021,1.5,11
+East Tennessee State,2021,-19.4,1
+Eastern Illinois,2021,3.9,1
+Eastern Kentucky,2021,7.8,1
+Eastern Michigan,2021,-5.4091,11
+Eastern Washington,2021,-13.8,1
+Elon,2021,10.3,1
+Florida,2021,6.4455,11
+Florida A&M,2021,-12.1,1
+Florida Atlantic,2021,-1.5818,11
+Florida International,2021,-3.3545,11
+Florida State,2021,6.3818,11
+Fordham,2021,2.55,2
+Fresno State,2021,-1.8818,11
+Furman,2021,16.1,1
+Gardner-Webb,2021,-14.5,2
+Georgia,2021,8.45,12
+Georgia Southern,2021,0.3545,11
+Georgia State,2021,-2.95,12
+Georgia Tech,2021,8.4364,11
+Grambling,2021,-1.65,2
+Hampton,2021,-7.4,1
+Hawai'i,2021,-2.0667,12
+Holy Cross,2021,-25.6,1
+Houston,2021,-3.7417,12
+Houston Christian,2021,-18.6,1
+Howard,2021,6.2,1
+Idaho,2021,0.55,2
+Idaho State,2021,6.25,2
+Illinois,2021,6.075,12
+Illinois State,2021,0.6,1
+Incarnate Word,2021,-16.0,1
+Indiana,2021,13.8182,11
+Indiana State,2021,-11.1,1
+Iowa,2021,6.9154,13
+Iowa State,2021,5.5636,11
+Jackson State,2021,-20.3,1
+Jacksonville State,2021,8.35,2
+Kansas,2021,8.8455,11
+Kansas State,2021,5.1909,11
+Kennesaw State,2021,-6.7,1
+Kent State,2021,-2.5833,12
+Kentucky,2021,2.3636,11
+LSU,2021,9.9727,11
+Lafayette,2021,7.4,1
+Lamar,2021,6.5,1
+Liberty,2021,-3.3091,11
+Long Island University,2021,-6.1,3
+Louisiana,2021,-4.625,12
+Louisiana Tech,2021,-1.6182,11
+Louisville,2021,7.3091,11
+Maine,2021,-18.2,2
+Marshall,2021,-3.0636,11
+Maryland,2021,8.4455,11
+Massachusetts,2021,0.17,10
+McNeese,2021,4.1,1
+Memphis,2021,-0.1364,11
+Mercer,2021,26.0,1
+Miami,2021,7.6909,11
+Miami (OH),2021,-3.8818,11
+Michigan,2021,5.6692,13
+Michigan State,2021,8.7273,11
+Middle Tennessee,2021,-4.4636,11
+Minnesota,2021,4.3417,12
+Mississippi State,2021,8.2091,11
+Missouri,2021,7.8818,11
+Missouri State,2021,17.2,1
+Monmouth,2021,-4.0,1
+Montana,2021,-0.7,1
+Montana State,2021,0.6,1
+Morgan State,2021,-3.9,1
+Murray State,2021,4.4,2
+NC State,2021,4.4909,11
+Navy,2021,5.9583,12
+Nebraska,2021,10.9636,11
+Nevada,2021,0.8091,11
+New Hampshire,2021,17.6,1
+New Mexico,2021,1.1909,11
+New Mexico State,2021,-0.6545,11
+Nicholls,2021,4.85,2
+Norfolk State,2021,8.5,2
+North Carolina,2021,6.4364,11
+North Carolina A&T,2021,-13.5,1
+North Carolina Central,2021,8.0,1
+North Dakota,2021,0.1,1
+North Texas,2021,-2.7727,11
+Northern Arizona,2021,-12.6,1
+Northern Colorado,2021,-10.0,1
+Northern Illinois,2021,-2.4917,12
+Northern Iowa,2021,14.3,1
+Northwestern,2021,7.0273,11
+Northwestern State,2021,-6.5,1
+Notre Dame,2021,4.675,12
+Ohio,2021,-4.9,11
+Ohio State,2021,6.0167,12
+Oklahoma,2021,6.1364,11
+Oklahoma State,2021,7.625,12
+Old Dominion,2021,-2.7273,11
+Ole Miss,2021,8.8091,11
+Oregon,2021,5.45,12
+Oregon State,2021,3.0727,11
+Penn State,2021,8.6273,11
+Pittsburgh,2021,2.0417,12
+Portland State,2021,2.2,2
+Prairie View A&M,2021,21.1,1
+Purdue,2021,6.9,12
+Rhode Island,2021,-29.3,1
+Rice,2021,1.0818,11
+Richmond,2021,2.4,1
+Robert Morris,2021,-1.0,1
+Rutgers,2021,6.4636,11
+SE Louisiana,2021,-11.6,1
+SMU,2021,0.0455,11
+Sacramento State,2021,3.4,1
+Saint Francis,2021,-7.8,1
+Samford,2021,11.0,1
+San Diego State,2021,-2.2417,12
+San José State,2021,-1.7545,11
+South Alabama,2021,-4.8091,11
+South Carolina,2021,9.3091,11
+South Carolina State,2021,-2.75,2
+South Dakota,2021,-19.7,1
+South Dakota State,2021,-2.4,1
+South Florida,2021,5.9182,11
+Southeast Missouri State,2021,3.1,1
+Southern,2021,-6.5,1
+Southern Illinois,2021,14.2,1
+Southern Miss,2021,-3.9,11
+Southern Utah,2021,4.95,2
+Stanford,2021,6.375,12
+Stephen F. Austin,2021,9.8,1
+Stony Brook,2021,10.2,1
+Syracuse,2021,6.8182,11
+TCU,2021,8.2545,11
+Temple,2021,-0.1455,11
+Tennessee,2021,7.5273,11
+Tennessee State,2021,10.5,1
+Tennessee Tech,2021,17.5,1
+Texas,2021,5.75,12
+Texas A&M,2021,4.7455,11
+Texas Southern,2021,-3.65,2
+Texas State,2021,-5.2091,11
+Texas Tech,2021,5.2182,11
+The Citadel,2021,13.2,1
+Toledo,2021,-7.9909,11
+Towson,2021,8.3,1
+Troy,2021,-2.4273,11
+Tulane,2021,7.4273,11
+Tulsa,2021,2.4545,11
+UAB,2021,-1.2364,11
+UAlbany,2021,0.3,1
+UC Davis,2021,5.8,1
+UCF,2021,-1.8545,11
+UCLA,2021,1.5917,12
+UConn,2021,0.81,10
+UL Monroe,2021,1.1182,11
+UNLV,2021,3.6364,11
+USC,2021,3.9167,12
+UT Martin,2021,13.3,1
+UTEP,2021,-7.7818,11
+UTSA,2021,-3.0167,12
+Utah,2021,3.4167,12
+Utah State,2021,-1.825,12
+VMI,2021,-6.4,1
+Vanderbilt,2021,6.1818,11
+Villanova,2021,14.3,1
+Virginia,2021,5.9545,11
+Virginia Tech,2021,3.4727,11
+Wagner,2021,-14.3,2
+Wake Forest,2021,5.5333,12
+Washington,2021,2.1,11
+Washington State,2021,3.1273,11
+Weber State,2021,15.2,1
+West Virginia,2021,7.7,11
+Western Carolina,2021,16.8,1
+Western Illinois,2021,-11.2,1
+Western Kentucky,2021,-3.8083,12
+Western Michigan,2021,-1.8273,11
+William & Mary,2021,7.2,1
+Wisconsin,2021,7.3833,12
+Wofford,2021,6.4,1
+Wyoming,2021,-3.7636,11
+Yale,2021,-25.6,1
+Youngstown State,2021,11.2,1
+Abilene Christian,2022,8.1,1
+Air Force,2022,-12.3,11
+Akron,2022,-6.6091,11
+Alabama,2022,8.0545,11
+Alabama A&M,2022,3.8,2
+Alabama State,2022,15.0,1
+Alcorn State,2022,12.4,1
+App State,2022,0.09,10
+Arizona,2022,7.3364,11
+Arizona State,2022,6.0,11
+Arkansas,2022,11.2091,11
+Arkansas State,2022,-0.7909,11
+Arkansas-Pine Bluff,2022,11.3,1
+Army,2022,-4.31,10
+Auburn,2022,14.7636,11
+Austin Peay,2022,16.0,2
+BYU,2022,0.9,11
+Ball State,2022,-7.9182,11
+Baylor,2022,9.2455,11
+Bethune-Cookman,2022,-2.7,1
+Boise State,2022,-7.275,12
+Boston College,2022,3.5818,11
+Bowling Green,2022,-5.8727,11
+Bryant,2022,-25.5,1
+Bucknell,2022,-14.0,1
+Buffalo,2022,-10.4727,11
+Cal Poly,2022,3.3,1
+California,2022,5.4455,11
+Campbell,2022,1.1,1
+Central Arkansas,2022,16.2,1
+Central Connecticut,2022,-14.6,1
+Central Michigan,2022,-6.1818,11
+Charleston Southern,2022,6.8,1
+Charlotte,2022,-5.5818,11
+Chattanooga,2022,15.9,1
+Cincinnati,2022,-2.0455,11
+Clemson,2022,1.9417,12
+Coastal Carolina,2022,-3.0273,11
+Colgate,2022,-4.35,2
+Colorado,2022,11.325,12
+Colorado State,2022,-5.2909,11
+Delaware,2022,-7.2,1
+Duke,2022,-4.2455,11
+Duquesne,2022,-5.75,2
+East Carolina,2022,0.2182,11
+East Tennessee State,2022,15.4,1
+Eastern Illinois,2022,-18.8,1
+Eastern Kentucky,2022,-12.6,2
+Eastern Michigan,2022,-13.3455,11
+Eastern Washington,2022,14.65,2
+Elon,2022,-4.7,1
+Florida,2022,11.8455,11
+Florida A&M,2022,7.8,1
+Florida Atlantic,2022,-5.6,11
+Florida International,2022,-8.4545,11
+Florida State,2022,3.9364,11
+Fordham,2022,-4.6,1
+Fresno State,2022,-6.2833,12
+Furman,2022,17.6,1
+Gardner-Webb,2022,0.7,3
+Georgia,2022,7.95,12
+Georgia Southern,2022,-0.7545,11
+Georgia State,2022,-2.0167,12
+Georgia Tech,2022,8.4364,11
+Grambling,2022,-13.0,1
+Hawai'i,2022,-6.0333,12
+Holy Cross,2022,-9.2,1
+Houston,2022,-1.2333,12
+Houston Christian,2022,-11.5,1
+Howard,2022,-17.0,1
+Idaho,2022,1.2,2
+Idaho State,2022,-8.15,2
+Illinois,2022,3.3091,11
+Illinois State,2022,8.3,1
+Incarnate Word,2022,-22.4,1
+Indiana,2022,11.4545,11
+Indiana State,2022,7.7,1
+Iowa,2022,6.3818,11
+Iowa State,2022,11.7364,11
+Jacksonville State,2022,-6.1,1
+James Madison,2022,-3.98,10
+Kansas,2022,12.0818,11
+Kansas State,2022,12.475,12
+Kennesaw State,2022,13.1,1
+Kent State,2022,-2.4818,11
+Kentucky,2022,8.7364,11
+LSU,2022,12.0667,12
+Lafayette,2022,-12.9,1
+Lamar,2022,-5.35,2
+Liberty,2022,-8.3091,11
+Long Island University,2022,-8.4,2
+Louisiana,2022,-3.3909,11
+Louisiana Tech,2022,-3.0,11
+Louisville,2022,3.8167,12
+Maine,2022,-20.9,2
+Marshall,2022,-1.16,10
+Maryland,2022,4.35,12
+Massachusetts,2022,-5.2182,11
+McNeese,2022,-15.2,1
+Memphis,2022,0.7,11
+Mercer,2022,5.1,1
+Miami,2022,1.8727,11
+Miami (OH),2022,-9.7,11
+Michigan,2022,1.7923,13
+Michigan State,2022,7.975,12
+Middle Tennessee,2022,-7.9545,11
+Minnesota,2022,0.7909,11
+Mississippi State,2022,11.1545,11
+Missouri,2022,8.8364,11
+Missouri State,2022,12.0,1
+Montana State,2022,14.3,1
+Morgan State,2022,-6.4,1
+Murray State,2022,-3.2,2
+NC State,2022,2.6273,11
+Navy,2022,3.1091,11
+Nebraska,2022,6.5455,11
+Nevada,2022,-6.2545,11
+New Hampshire,2022,-17.3,1
+New Mexico,2022,-5.4182,11
+New Mexico State,2022,-10.96,10
+Nicholls,2022,-2.45,2
+Norfolk State,2022,4.75,2
+North Alabama,2022,6.8,1
+North Carolina,2022,1.825,12
+North Carolina A&T,2022,5.0,1
+North Dakota,2022,-1.2,1
+North Dakota State,2022,-3.2,1
+North Texas,2022,-5.0917,12
+Northern Arizona,2022,-4.1,1
+Northern Colorado,2022,-10.8,1
+Northern Illinois,2022,-8.6818,11
+Northern Iowa,2022,3.9,1
+Northwestern,2022,10.5818,11
+Northwestern State,2022,-3.5,1
+Notre Dame,2022,2.9417,12
+Ohio,2022,-9.2167,12
+Ohio State,2022,4.3167,12
+Oklahoma,2022,7.1583,12
+Oklahoma State,2022,8.8091,11
+Old Dominion,2022,-1.5833,12
+Ole Miss,2022,7.8727,11
+Oregon,2022,6.7091,11
+Oregon State,2022,5.1364,11
+Penn State,2022,4.675,12
+Pittsburgh,2022,0.1455,11
+Portland State,2022,5.7,2
+Purdue,2022,7.6833,12
+Rhode Island,2022,8.6,1
+Rice,2022,-1.7909,11
+Richmond,2022,-9.0,1
+Robert Morris,2022,-5.5,2
+Rutgers,2022,8.2273,11
+SE Louisiana,2022,-2.55,2
+SMU,2022,4.6182,11
+Sacramento State,2022,-22.2,1
+Saint Francis,2022,-23.4,1
+Sam Houston,2022,9.1,1
+Samford,2022,35.3,1
+San Diego State,2022,-5.9091,11
+San José State,2022,-11.86,10
+South Alabama,2022,-6.3455,11
+South Carolina,2022,9.6636,11
+South Carolina State,2022,11.5,2
+South Dakota,2022,21.4,1
+South Dakota State,2022,12.7,1
+South Florida,2022,4.1,11
+Southeast Missouri State,2022,5.3,1
+Southern,2022,16.2,1
+Southern Illinois,2022,-13.4,1
+Southern Miss,2022,-1.2545,11
+Southern Utah,2022,19.2,1
+Stanford,2022,10.3,11
+Stephen F. Austin,2022,-17.8,1
+Stony Brook,2022,-30.3,1
+Syracuse,2022,3.9,11
+TCU,2022,8.975,12
+Tarleton State,2022,24.3,1
+Temple,2022,-2.6273,11
+Tennessee,2022,8.3273,11
+Tennessee State,2022,-6.9,1
+Tennessee Tech,2022,2.9,1
+Texas,2022,10.4167,12
+Texas A&M,2022,7.9091,11
+Texas Southern,2022,2.85,2
+Texas State,2022,-3.5727,11
+Texas Tech,2022,11.7364,11
+The Citadel,2022,1.7,1
+Toledo,2022,-10.0583,12
+Towson,2022,2.4,1
+Troy,2022,-0.7667,12
+Tulane,2022,1.275,12
+Tulsa,2022,-0.8182,11
+UAB,2022,-4.3364,11
+UAlbany,2022,11.7,1
+UC Davis,2022,-3.0,1
+UCF,2022,0.2917,12
+UCLA,2022,2.5,11
+UConn,2022,-5.2091,11
+UL Monroe,2022,3.8273,11
+UNLV,2022,-7.5455,11
+USC,2022,2.9,13
+UT Martin,2022,15.45,2
+UTEP,2022,-8.7,12
+UTSA,2022,-4.3167,12
+Utah,2022,5.55,12
+Utah State,2022,-6.9909,11
+Utah Tech,2022,-1.4,1
+VMI,2022,8.2,1
+Valparaiso,2022,-15.4,1
+Vanderbilt,2022,10.5364,11
+Villanova,2022,-1.5,1
+Virginia,2022,2.3667,9
+Virginia Tech,2022,-1.33,10
+Wagner,2022,-3.3,2
+Wake Forest,2022,3.5727,11
+Washington,2022,0.7182,11
+Washington State,2022,5.0545,11
+Weber State,2022,-13.3,1
+West Virginia,2022,11.1818,11
+Western Carolina,2022,-11.8,1
+Western Illinois,2022,16.0,1
+Western Kentucky,2022,-7.0417,12
+Western Michigan,2022,-8.0364,11
+William & Mary,2022,-16.4,1
+Wisconsin,2022,6.8455,11
+Wofford,2022,-9.5,1
+Wyoming,2022,-6.3727,11
+Youngstown State,2022,13.0,1
+Abilene Christian,2023,4.45,2
+Air Force,2023,-7.0636,11
+Akron,2023,-9.5364,11
+Alabama,2023,10.8083,12
+Alabama A&M,2023,-12.7,1
+Alcorn State,2023,-14.4,1
+App State,2023,-4.6417,12
+Arizona,2023,1.6091,11
+Arizona State,2023,8.4909,11
+Arkansas,2023,5.4182,11
+Arkansas State,2023,-2.8636,11
+Arkansas-Pine Bluff,2023,-13.7,1
+Army,2023,-2.41,10
+Auburn,2023,7.2091,11
+Austin Peay,2023,16.2,1
+BYU,2023,6.0636,11
+Ball State,2023,-4.1727,11
+Baylor,2023,5.8273,11
+Bethune-Cookman,2023,6.55,2
+Boise State,2023,-1.7083,12
+Boston College,2023,-0.5909,11
+Bowling Green,2023,-4.4909,11
+Bryant,2023,1.4,1
+Bucknell,2023,11.8,1
+Buffalo,2023,-5.8545,11
+Cal Poly,2023,-3.4,1
+California,2023,5.9455,11
+Campbell,2023,7.4,1
+Central Arkansas,2023,6.7,1
+Central Connecticut,2023,-26.3,1
+Central Michigan,2023,-6.0818,11
+Charleston Southern,2023,10.5,1
+Charlotte,2023,-3.8,11
+Chattanooga,2023,23.1,1
+Cincinnati,2023,2.3727,11
+Clemson,2023,5.1091,11
+Coastal Carolina,2023,-1.7545,11
+Colgate,2023,-4.4,1
+Colorado,2023,5.125,12
+Colorado State,2023,-5.4091,11
+Delaware,2023,23.5,1
+Delaware State,2023,-0.6,2
+Duke,2023,2.7182,11
+Duquesne,2023,3.15,2
+East Carolina,2023,-2.1818,11
+East Tennessee State,2023,-1.6,1
+East Texas A&M,2023,-10.1,1
+Eastern Illinois,2023,-7.8,1
+Eastern Kentucky,2023,1.85,2
+Eastern Michigan,2023,-12.3182,11
+Eastern Washington,2023,2.5,1
+Elon,2023,-7.9,1
+Florida,2023,8.9,11
+Florida A&M,2023,-6.6,1
+Florida Atlantic,2023,-5.8909,11
+Florida International,2023,-6.2364,11
+Florida State,2023,2.4417,12
+Fordham,2023,-15.2,1
+Fresno State,2023,-9.4818,11
+Furman,2023,4.3,1
+Gardner-Webb,2023,-4.5,2
+Georgia,2023,5.35,12
+Georgia Southern,2023,-4.9909,11
+Georgia State,2023,-1.6,11
+Georgia Tech,2023,4.3909,11
+Grambling,2023,19.1,1
+Hawai'i,2023,-4.8,12
+Holy Cross,2023,-4.95,2
+Houston,2023,3.1083,12
+Houston Christian,2023,-2.0,1
+Howard,2023,-6.8,2
+Idaho,2023,-11.05,2
+Idaho State,2023,-10.6,2
+Illinois,2023,3.2167,12
+Incarnate Word,2023,-16.2,1
+Indiana,2023,6.7,11
+Indiana State,2023,-11.15,2
+Iowa,2023,2.4,13
+Iowa State,2023,5.8818,11
+Jackson State,2023,-1.6,1
+Jacksonville State,2023,-7.1455,11
+James Madison,2023,-4.6273,11
+Kansas,2023,3.9545,11
+Kansas State,2023,7.0636,11
+Kennesaw State,2023,-13.8,1
+Kent State,2023,-6.2455,11
+Kentucky,2023,5.4727,11
+LSU,2023,9.4,11
+Lafayette,2023,9.4,1
+Lamar,2023,-21.6,1
+Liberty,2023,-10.1077,13
+Long Island University,2023,-4.95,2
+Louisiana,2023,-6.8545,11
+Louisiana Tech,2023,-4.9455,11
+Louisville,2023,4.2583,12
+Maine,2023,-21.2,1
+Marshall,2023,-0.7727,11
+Maryland,2023,3.0545,11
+Massachusetts,2023,-0.9909,11
+McNeese,2023,6.8,1
+Memphis,2023,-4.7545,11
+Mercer,2023,18.4,1
+Merrimack,2023,-17.5,1
+Miami,2023,3.0636,11
+Miami (OH),2023,-9.2167,12
+Michigan,2023,2.2308,13
+Michigan State,2023,8.2636,11
+Middle Tennessee,2023,-2.5455,11
+Minnesota,2023,4.1333,12
+Mississippi State,2023,7.8091,11
+Missouri,2023,8.1,11
+Missouri State,2023,9.9,1
+Monmouth,2023,-9.4,1
+Morgan State,2023,-21.6,1
+Murray State,2023,-0.75,2
+NC State,2023,2.5,11
+Navy,2023,-4.3273,11
+Nebraska,2023,1.225,12
+Nevada,2023,-4.0909,11
+New Hampshire,2023,-19.1,1
+New Mexico,2023,-4.5636,11
+New Mexico State,2023,-8.0,13
+Nicholls,2023,5.35,2
+Norfolk State,2023,-21.0,1
+North Alabama,2023,19.4,1
+North Carolina,2023,2.1091,11
+North Carolina A&T,2023,-14.7,1
+North Carolina Central,2023,9.7,1
+North Dakota,2023,5.9,1
+North Texas,2023,-6.8636,11
+Northern Arizona,2023,14.1,1
+Northern Colorado,2023,4.9,1
+Northern Illinois,2023,-11.5727,11
+Northern Iowa,2023,7.5,1
+Northwestern,2023,3.3909,11
+Northwestern State,2023,-6.25,2
+Notre Dame,2023,0.9091,11
+Ohio,2023,-11.1636,11
+Ohio State,2023,6.8818,11
+Oklahoma,2023,3.8417,12
+Oklahoma State,2023,4.8833,12
+Old Dominion,2023,-1.3364,11
+Ole Miss,2023,6.3091,11
+Oregon,2023,2.475,12
+Oregon State,2023,4.4727,11
+Penn State,2023,4.4364,11
+Pittsburgh,2023,4.7818,11
+Portland State,2023,11.3,2
+Prairie View A&M,2023,10.1,1
+Purdue,2023,5.425,12
+Rhode Island,2023,-6.8,1
+Rice,2023,-4.1636,11
+Richmond,2023,-6.8,1
+Robert Morris,2023,5.9,1
+Rutgers,2023,6.8636,11
+SE Louisiana,2023,2.8,2
+SMU,2023,-6.9333,12
+Sacramento State,2023,-11.9,1
+Sacred Heart,2023,-15.6,1
+Saint Francis,2023,-15.9,1
+Sam Houston,2023,-5.6727,11
+Samford,2023,7.6,1
+San Diego State,2023,-2.4182,11
+San José State,2023,-1.1545,11
+South Alabama,2023,-3.6818,11
+South Carolina,2023,9.4273,11
+South Carolina State,2023,-10.55,2
+South Dakota,2023,19.3,1
+South Florida,2023,-6.9091,11
+Southeast Missouri State,2023,16.2,1
+Southern Illinois,2023,-7.5,1
+Southern Miss,2023,0.2,11
+Southern Utah,2023,-7.3,2
+Stanford,2023,8.3636,11
+Stephen F. Austin,2023,9.8,1
+Stony Brook,2023,-6.3,1
+Syracuse,2023,-0.4455,11
+TCU,2023,5.5727,11
+Tarleton State,2023,6.1,1
+Temple,2023,-4.0818,11
+Tennessee,2023,7.0091,11
+Tennessee State,2023,20.1,1
+Tennessee Tech,2023,-16.5,1
+Texas,2023,4.5538,13
+Texas A&M,2023,5.8364,11
+Texas Southern,2023,-3.25,2
+Texas State,2023,-5.3,11
+Texas Tech,2023,6.4818,11
+The Citadel,2023,-5.2,1
+Toledo,2023,-9.2083,12
+Towson,2023,11.0,1
+Troy,2023,-1.6167,12
+Tulane,2023,-3.2833,12
+Tulsa,2023,-4.0636,11
+UAB,2023,-1.7545,11
+UAlbany,2023,-12.7,2
+UC Davis,2023,12.6,1
+UCF,2023,1.6455,11
+UCLA,2023,0.8909,11
+UConn,2023,-3.1182,11
+UL Monroe,2023,1.9636,11
+UNLV,2023,-4.5083,12
+USC,2023,3.45,12
+UT Martin,2023,31.2,1
+UTEP,2023,-3.6909,11
+UTSA,2023,-6.3167,12
+Utah,2023,6.4182,11
+Utah State,2023,-4.0727,11
+Utah Tech,2023,-8.9,1
+VMI,2023,7.4,1
+Vanderbilt,2023,8.3091,11
+Villanova,2023,3.4,1
+Virginia,2023,7.3636,11
+Virginia Tech,2023,-2.0333,12
+Wagner,2023,-5.1,2
+Wake Forest,2023,3.4909,11
+Washington,2023,4.9231,13
+Washington State,2023,4.6636,11
+Weber State,2023,8.5,1
+West Virginia,2023,2.6455,11
+Western Carolina,2023,3.5,1
+Western Illinois,2023,-1.8,1
+Western Kentucky,2023,-3.6909,11
+Western Michigan,2023,-4.9818,11
+William & Mary,2023,-10.8,1
+Wisconsin,2023,0.1,12
+Wofford,2023,-7.3,1
+Wyoming,2023,-1.3636,11
+Youngstown State,2023,25.2,1
+Abilene Christian,2024,4.3,1
+Air Force,2024,-5.4182,11
+Akron,2024,-1.0455,11
+Alabama,2024,10.5,11
+Alabama A&M,2024,9.5,1
+Alcorn State,2024,-3.2,2
+App State,2024,-0.1636,11
+Arizona,2024,4.6909,11
+Arizona State,2024,3.2,13
+Arkansas,2024,9.1636,11
+Arkansas State,2024,-5.4091,11
+Arkansas-Pine Bluff,2024,11.0,1
+Army,2024,-4.85,12
+Auburn,2024,7.6091,11
+Austin Peay,2024,13.6,1
+BYU,2024,3.4182,11
+Ball State,2024,-2.7909,11
+Baylor,2024,3.7273,11
+Bethune-Cookman,2024,-6.25,2
+Boise State,2024,-2.7917,12
+Boston College,2024,5.0364,11
+Bowling Green,2024,-5.9818,11
+Bucknell,2024,3.5,1
+Buffalo,2024,-9.4818,11
+Cal Poly,2024,-8.2,1
+California,2024,2.1545,11
+Campbell,2024,0.2,1
+Central Arkansas,2024,-9.9,1
+Central Connecticut,2024,-18.85,2
+Central Michigan,2024,-5.9455,11
+Charleston Southern,2024,-3.2,1
+Charlotte,2024,1.1545,11
+Chattanooga,2024,2.05,2
+Cincinnati,2024,5.4455,11
+Clemson,2024,5.0667,12
+Coastal Carolina,2024,-4.6636,11
+Colgate,2024,-17.9,1
+Colorado,2024,3.3182,11
+Colorado State,2024,-6.5636,11
+Delaware State,2024,-10.9,1
+Duke,2024,1.8091,11
+Duquesne,2024,-0.65,2
+East Carolina,2024,-6.5818,11
+East Tennessee State,2024,-8.1,1
+East Texas A&M,2024,-15.4,1
+Eastern Illinois,2024,0.7,2
+Eastern Kentucky,2024,-3.15,2
+Eastern Michigan,2024,-9.0545,11
+Eastern Washington,2024,-15.2,1
+Elon,2024,5.6,1
+Florida,2024,13.9818,11
+Florida A&M,2024,7.5,2
+Florida Atlantic,2024,-6.1636,11
+Florida International,2024,-10.8091,11
+Florida State,2024,10.6727,11
+Fordham,2024,-1.8,1
+Fresno State,2024,-5.7182,11
+Furman,2024,27.9,1
+Gardner-Webb,2024,-3.9,2
+Georgia,2024,11.7583,12
+Georgia Southern,2024,-0.8455,11
+Georgia State,2024,-0.7545,11
+Georgia Tech,2024,8.3909,11
+Grambling,2024,4.8,1
+Hawai'i,2024,-4.71,10
+Holy Cross,2024,5.5,1
+Houston,2024,6.3333,12
+Houston Christian,2024,9.85,2
+Howard,2024,6.4,1
+Idaho,2024,6.2,2
+Idaho State,2024,-6.7,1
+Illinois,2024,3.9636,11
+Illinois State,2024,15.8,1
+Indiana,2024,-1.0182,11
+Indiana State,2024,-16.2,1
+Iowa,2024,3.5364,11
+Iowa State,2024,4.275,12
+Jackson State,2024,-16.7,1
+Jacksonville State,2024,-10.4231,13
+James Madison,2024,-9.9909,11
+Kansas,2024,8.1091,11
+Kansas State,2024,3.8273,11
+Kennesaw State,2024,-7.2,11
+Kent State,2024,-1.0818,11
+Kentucky,2024,12.1545,11
+LSU,2024,12.6727,11
+Lafayette,2024,-4.0,1
+Lamar,2024,5.4,1
+Lehigh,2024,9.2,1
+Liberty,2024,-13.1273,11
+Lindenwood,2024,4.9,1
+Long Island University,2024,10.8,1
+Louisiana,2024,-7.3,12
+Louisiana Tech,2024,-10.8273,11
+Louisville,2024,6.8636,11
+Maine,2024,9.5,1
+Marshall,2024,-3.3,12
+Maryland,2024,8.9818,11
+Massachusetts,2024,1.39,10
+McNeese,2024,17.0,1
+Memphis,2024,-6.1455,11
+Mercer,2024,25.0,1
+Merrimack,2024,-5.1,2
+Miami,2024,2.1273,11
+Miami (OH),2024,-7.0308,13
+Michigan,2024,9.1583,12
+Michigan State,2024,8.0091,11
+Middle Tennessee,2024,-4.5818,11
+Minnesota,2024,6.0455,11
+Mississippi State,2024,12.6455,11
+Missouri,2024,5.9091,11
+Missouri State,2024,-19.8,1
+Monmouth,2024,-12.1,1
+Montana State,2024,-14.8,1
+Morgan State,2024,2.3,1
+Murray State,2024,9.75,2
+NC State,2024,2.5727,11
+Navy,2024,-2.2636,11
+Nebraska,2024,5.9909,11
+Nevada,2024,-0.4417,12
+New Hampshire,2024,2.8,1
+New Mexico,2024,-7.5,11
+New Mexico State,2024,-7.4818,11
+Nicholls,2024,2.15,2
+Norfolk State,2024,-1.0,1
+North Alabama,2024,9.6,1
+North Carolina,2024,0.5545,11
+North Carolina A&T,2024,-5.7,1
+North Carolina Central,2024,5.0,1
+North Dakota,2024,10.3,1
+North Dakota State,2024,8.1,1
+North Texas,2024,-3.1273,11
+Northern Arizona,2024,-2.8,1
+Northern Colorado,2024,-5.7,1
+Northern Illinois,2024,-5.8909,11
+Northern Iowa,2024,-2.7,2
+Northwestern,2024,7.2909,11
+Northwestern State,2024,-8.9,2
+Notre Dame,2024,1.85,12
+Ohio,2024,-7.4917,12
+Ohio State,2024,4.05,12
+Oklahoma,2024,12.0455,11
+Oklahoma State,2024,6.4182,11
+Old Dominion,2024,-0.3667,12
+Ole Miss,2024,5.5455,11
+Oregon,2024,4.9583,12
+Oregon State,2024,-1.7273,11
+Penn State,2024,3.1615,13
+Pittsburgh,2024,2.1818,11
+Portland State,2024,5.7,2
+Prairie View A&M,2024,-4.6,1
+Purdue,2024,11.3091,11
+Rhode Island,2024,10.4,1
+Rice,2024,-1.1182,11
+Richmond,2024,-5.1,1
+Robert Morris,2024,-10.4,1
+Rutgers,2024,2.3455,11
+SE Louisiana,2024,-9.95,2
+SMU,2024,3.0833,12
+Sacramento State,2024,-4.65,2
+Saint Francis,2024,-23.15,2
+Sam Houston,2024,-8.9667,12
+Samford,2024,13.8,1
+San Diego State,2024,-5.3818,11
+San José State,2024,-6.3,11
+South Alabama,2024,-4.0636,11
+South Carolina,2024,9.9182,11
+South Carolina State,2024,-1.7,1
+South Dakota,2024,3.0,1
+South Dakota State,2024,-2.6,1
+South Florida,2024,-2.8636,11
+Southeast Missouri State,2024,-19.0,1
+Southern Illinois,2024,15.3,1
+Southern Miss,2024,-0.6727,11
+Southern Utah,2024,-7.5,2
+Stanford,2024,8.3,11
+Stephen F. Austin,2024,-4.5,1
+Stony Brook,2024,3.1,1
+Syracuse,2024,4.7636,11
+TCU,2024,2.1545,11
+Tarleton State,2024,8.4,1
+Temple,2024,-2.0417,12
+Tennessee,2024,3.4636,11
+Tennessee Tech,2024,-0.05,2
+Texas,2024,7.4308,13
+Texas A&M,2024,9.4727,11
+Texas Southern,2024,-11.4,1
+Texas State,2024,-6.4,11
+Texas Tech,2024,3.6727,11
+The Citadel,2024,13.3,1
+Toledo,2024,-7.3545,11
+Towson,2024,-0.1,1
+Troy,2024,-3.4182,11
+Tulane,2024,-1.2,12
+Tulsa,2024,-5.8909,11
+UAB,2024,-2.3455,11
+UAlbany,2024,2.1,1
+UC Davis,2024,4.0,1
+UCF,2024,6.1545,11
+UCLA,2024,10.4167,12
+UConn,2024,-8.9091,11
+UL Monroe,2024,0.3455,11
+UNLV,2024,-3.7917,12
+USC,2024,7.3167,12
+UT Martin,2024,-5.5,2
+UTEP,2024,-7.2091,11
+UTSA,2024,-4.3,11
+Utah,2024,3.7364,11
+Utah State,2024,-3.6727,11
+Utah Tech,2024,9.3,1
+VMI,2024,1.9,1
+Vanderbilt,2024,9.5636,11
+Villanova,2024,-3.9,1
+Virginia,2024,6.6273,11
+Virginia Tech,2024,3.6833,12
+Wagner,2024,-17.3,2
+Wake Forest,2024,6.7545,11
+Washington,2024,8.5364,11
+Washington State,2024,-5.7818,11
+Weber State,2024,3.1,1
+West Virginia,2024,6.2545,11
+Western Carolina,2024,3.9,1
+Western Illinois,2024,8.3,2
+Western Kentucky,2024,-7.3167,12
+Western Michigan,2024,-6.5273,11
+William & Mary,2024,-6.9,1
+Wisconsin,2024,8.2727,11
+Wofford,2024,16.9,1
+Wyoming,2024,-2.9,11
+Youngstown State,2024,4.9,1
+Abilene Christian,2025,-0.85,2
+Air Force,2025,-2.0182,11
+Akron,2025,-11.4636,11
+Alabama,2025,10.4333,12
+Alabama A&M,2025,5.1,1
+Alabama State,2025,-15.8,1
+Alcorn State,2025,4.1,1
+App State,2025,-8.2455,11
+Arizona,2025,2.9455,11
+Arizona State,2025,7.2818,11
+Arkansas,2025,12.6818,11
+Arkansas State,2025,-5.9273,11
+Arkansas-Pine Bluff,2025,27.6,1
+Army,2025,-1.4364,11
+Auburn,2025,7.7455,11
+Austin Peay,2025,4.05,2
+BYU,2025,7.6667,12
+Ball State,2025,-5.1636,11
+Baylor,2025,6.7273,11
+Bethune-Cookman,2025,5.1,2
+Boise State,2025,0.6083,12
+Boston College,2025,4.6364,11
+Bowling Green,2025,-8.2636,11
+Bryant,2025,-26.05,2
+Bucknell,2025,-3.2,1
+Buffalo,2025,-10.1364,11
+Cal Poly,2025,22.2,1
+California,2025,-0.1091,11
+Campbell,2025,6.4,2
+Central Arkansas,2025,14.4,1
+Central Connecticut,2025,5.1,1
+Central Michigan,2025,-8.5,11
+Charleston Southern,2025,2.6,2
+Charlotte,2025,2.7636,11
+Chattanooga,2025,7.6,1
+Cincinnati,2025,4.6455,11
+Clemson,2025,2.9182,11
+Coastal Carolina,2025,-3.7182,11
+Colgate,2025,-13.1,1
+Colorado,2025,5.575,12
+Colorado State,2025,2.7182,11
+Delaware,2025,-7.7,11
+Delaware State,2025,-10.9,1
+Duke,2025,4.4083,12
+Duquesne,2025,-2.75,2
+East Carolina,2025,-2.4091,11
+East Tennessee State,2025,15.0,1
+East Texas A&M,2025,10.3,2
+Eastern Illinois,2025,14.8,1
+Eastern Kentucky,2025,3.95,2
+Eastern Michigan,2025,-7.5818,11
+Eastern Washington,2025,3.1,1
+Elon,2025,6.6,1
+Florida,2025,14.1545,11
+Florida A&M,2025,-8.7,1
+Florida Atlantic,2025,-0.5182,11
+Florida International,2025,-6.4,11
+Florida State,2025,3.3909,11
+Fordham,2025,-8.5,1
+Fresno State,2025,-6.1273,11
+Furman,2025,9.5,1
+Gardner-Webb,2025,2.65,2
+Georgia,2025,6.9917,12
+Georgia Southern,2025,-3.7455,11
+Georgia State,2025,1.1091,11
+Georgia Tech,2025,1.2727,11
+Grambling,2025,30.1,1
+Hawai'i,2025,-5.6636,11
+Holy Cross,2025,-16.7,1
+Houston,2025,-0.8091,11
+Houston Christian,2025,6.2,1
+Howard,2025,-5.1,1
+Idaho,2025,-5.25,2
+Idaho State,2025,2.6,2
+Illinois,2025,9.0818,11
+Illinois State,2025,18.3,1
+Incarnate Word,2025,3.7,1
+Indiana,2025,7.1,12
+Indiana State,2025,32.4,1
+Iowa,2025,6.1364,11
+Iowa State,2025,3.9273,11
+Jackson State,2025,-7.1,1
+Jacksonville State,2025,-9.8833,12
+James Madison,2025,-5.3667,12
+Kansas,2025,6.9364,11
+Kansas State,2025,5.6091,11
+Kennesaw State,2025,-5.3833,12
+Kent State,2025,-5.4545,11
+Kentucky,2025,11.3,11
+LSU,2025,11.1273,11
+Lafayette,2025,-14.25,2
+Lamar,2025,13.8,1
+Liberty,2025,-6.6273,11
+Lindenwood,2025,-7.4,2
+Long Island University,2025,-5.6,2
+Louisiana,2025,-5.4545,11
+Louisiana Tech,2025,-8.0182,11
+Louisville,2025,3.8909,11
+Maine,2025,-9.2,2
+Marshall,2025,-4.7818,11
+Maryland,2025,3.7636,11
+Massachusetts,2025,-5.0182,11
+McNeese,2025,-6.6,2
+Memphis,2025,-3.7636,11
+Mercer,2025,11.6,1
+Merrimack,2025,-12.35,2
+Miami,2025,4.6091,11
+Miami (OH),2025,-6.3083,12
+Michigan,2025,6.2083,12
+Michigan State,2025,8.1091,11
+Middle Tennessee,2025,-9.8364,11
+Minnesota,2025,5.8273,11
+Mississippi State,2025,9.3727,11
+Missouri,2025,5.2909,11
+Missouri State,2025,-4.3455,11
+Monmouth,2025,-26.7,1
+Montana State,2025,25.9,1
+Morgan State,2025,-3.35,2
+Murray State,2025,-15.6,2
+NC State,2025,7.7,11
+Navy,2025,0.0545,11
+Nebraska,2025,4.8636,11
+Nevada,2025,-0.7455,11
+New Hampshire,2025,-23.0,1
+New Mexico,2025,-4.3,11
+New Mexico State,2025,-7.2909,11
+Nicholls,2025,-1.25,2
+Norfolk State,2025,1.0,1
+North Alabama,2025,1.6,1
+North Carolina,2025,-0.9091,11
+North Carolina A&T,2025,-1.2,1
+North Carolina Central,2025,5.9,1
+North Dakota,2025,7.0,1
+North Texas,2025,-3.675,12
+Northern Arizona,2025,3.9,1
+Northern Colorado,2025,-15.6,1
+Northern Illinois,2025,-7.7273,11
+Northern Iowa,2025,-11.3,1
+Northwestern,2025,5.8,11
+Northwestern State,2025,3.0,2
+Notre Dame,2025,3.8667,12
+Ohio,2025,-8.3273,11
+Ohio State,2025,7.475,12
+Oklahoma,2025,9.1091,11
+Oklahoma State,2025,8.0545,11
+Old Dominion,2025,-5.9727,11
+Ole Miss,2025,5.3364,11
+Oregon,2025,7.1273,11
+Oregon State,2025,2.1455,11
+Penn State,2025,7.7364,11
+Pittsburgh,2025,2.7091,11
+Portland State,2025,8.8,2
+Prairie View A&M,2025,-14.8,1
+Purdue,2025,12.0727,11
+Rhode Island,2025,-1.4,1
+Rice,2025,-0.5364,11
+Richmond,2025,-6.6,1
+Robert Morris,2025,-6.8,1
+Rutgers,2025,10.3364,11
+SE Louisiana,2025,4.5,2
+SMU,2025,0.9727,11
+Sacramento State,2025,-13.4,1
+Saint Francis,2025,-14.55,2
+Sam Houston,2025,-5.875,12
+Samford,2025,11.05,2
+San Diego State,2025,-5.7455,11
+San José State,2025,-2.2091,11
+South Alabama,2025,-5.2727,11
+South Carolina,2025,9.9,11
+South Carolina State,2025,8.75,2
+South Dakota,2025,9.9,1
+South Florida,2025,-0.6727,11
+Southeast Missouri State,2025,-8.8,1
+Southern,2025,1.8,1
+Southern Illinois,2025,-6.1,1
+Southern Miss,2025,-7.3091,11
+Stanford,2025,5.85,12
+Stephen F. Austin,2025,7.4,1
+Stony Brook,2025,6.7,1
+Syracuse,2025,8.8455,11
+TCU,2025,3.7909,11
+Tarleton State,2025,0.8,1
+Temple,2025,-0.6273,11
+Tennessee,2025,4.3273,11
+Tennessee Tech,2025,1.8,1
+Texas,2025,5.7,12
+Texas A&M,2025,8.7364,11
+Texas Southern,2025,-3.2,1
+Texas State,2025,-5.8545,11
+Texas Tech,2025,1.5083,12
+The Citadel,2025,24.0,1
+Toledo,2025,-8.3545,11
+Towson,2025,0.6,1
+Troy,2025,-4.5583,12
+Tulane,2025,0.5462,13
+Tulsa,2025,-4.2909,11
+UAB,2025,1.1545,11
+UAlbany,2025,19.7,1
+UC Davis,2025,18.4,1
+UCF,2025,2.9727,11
+UCLA,2025,12.7083,12
+UConn,2025,-9.9455,11
+UL Monroe,2025,-4.3,11
+UNLV,2025,-6.475,12
+USC,2025,5.75,12
+UT Martin,2025,-14.4333,3
+UTEP,2025,-8.7091,11
+UTSA,2025,0.1182,11
+Utah,2025,2.6636,11
+Utah State,2025,0.4,11
+VMI,2025,6.2,1
+Vanderbilt,2025,4.7545,11
+Villanova,2025,18.1,1
+Virginia,2025,0.025,12
+Virginia Tech,2025,9.1,11
+Wagner,2025,-2.35,2
+Wake Forest,2025,0.3182,11
+Washington,2025,4.7182,11
+Washington State,2025,3.9636,11
+Weber State,2025,12.15,2
+West Virginia,2025,7.6636,11
+Western Carolina,2025,5.7,1
+Western Illinois,2025,9.35,2
+Western Kentucky,2025,-8.7727,11
+Western Michigan,2025,-6.775,12
+William & Mary,2025,11.1,1
+Wisconsin,2025,12.4417,12
+Wofford,2025,-10.1,1
+Wyoming,2025,-2.9091,11
+Youngstown State,2025,-3.4,1

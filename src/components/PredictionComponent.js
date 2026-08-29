@@ -57,9 +57,17 @@ const TIP = {
     + 'production, athleticism, recruiting pedigree and competition level.',
   projection:
     'Projected draft slot from two model heads blended: a pick-number '
-    + 'regressor and the draft-round classifier, both trained on the '
-    + '2000–2023 classes. The pick shown is the player’s rank within his '
-    + 'own draft class on the board — where he’d go in that class’s draft.',
+    + 'regressor and the draft-round classifier. The pick shown is the '
+    + 'player’s rank within his own draft class on the board — where he’d '
+    + 'go in that class’s draft. The range below it comes from quantile '
+    + 'models calibrated so the true pick lands inside it ~80% of the time '
+    + '— draft outcomes are noisy, and the honest range is wide.',
+  careerAv:
+    'Projected career Approximate Value — a separate model head trained on '
+    + 'how careers actually accumulated value (Pro Bowls, seasons started, '
+    + 'production). 30+ is a long-time starter, 60+ is a perennial Pro '
+    + 'Bowler. It ranks the ceiling among likely hits; the success '
+    + 'probability stays the odds he hits at all.',
   grade:
     'Letter grade from percentile cutoffs of success probability across the '
     + 'full FBS board — A+ is the top 2%, A- the top 10%, C+ sits near the '
@@ -91,6 +99,30 @@ const gradeTier = (grade) => {
   const c = (grade || '').charAt(0).toUpperCase();
   return c === 'A' ? 'a' : c === 'B' ? 'b' : c === 'C' ? 'c' : c === 'D' ? 'd' : '';
 };
+
+// Nominal pick → round; range rendered at round granularity because the
+// honest 80% interval is tens of picks wide (models/metadata.json pick_interval).
+const roundOfPick = (p) =>
+  (p <= 32 ? 1 : p <= 64 ? 2 : p <= 100 ? 3 : p <= 135 ? 4
+    : p <= 176 ? 5 : p <= 217 ? 6 : p <= 257 ? 7 : 8);
+const roundLabel = (r) => (r >= 8 ? 'UDFA' : `Rd ${r}`);
+function fmtPickRange(range) {
+  if (!range || range.lo == null || range.hi == null) return null;
+  const a = roundOfPick(range.lo);
+  const b = roundOfPick(range.hi);
+  const pct = Math.round((range.confidence || 0.8) * 100);
+  return a === b
+    ? `${roundLabel(a)} (${pct}%)`
+    : `${roundLabel(a)}–${roundLabel(b)} (${pct}%)`;
+}
+
+// Career Approximate Value → plain-English tier for the sub-line.
+const avTierLabel = (av) => (
+  av >= 60 ? 'Perennial Pro Bowl territory'
+    : av >= 30 ? 'Long-time starter territory'
+      : av >= 12 ? 'Contributor territory'
+        : 'Depth / special teams territory'
+);
 
 // One-tap starters for the empty state — recognizable names beat a blank box.
 const SUGGESTED_PLAYERS = ['Jeremiah Smith', 'Arch Manning', 'Julian Sayin'];
@@ -486,9 +518,24 @@ export default function PredictionComponent() {
                       </div>
                       <div className="report-metric-value">{prediction?.draft_grade || '—'}</div>
                       {prediction?.projected_pick != null && prediction.projected_pick <= 262 && (
-                        <div className="report-metric-sub">Pick ~{prediction.projected_pick}</div>
+                        <div className="report-metric-sub">
+                          Pick ~{prediction.projected_pick}
+                          {prediction?.pick_range && (
+                            <span className="report-range"> · {fmtPickRange(prediction.pick_range)}</span>
+                          )}
+                        </div>
                       )}
                     </div>
+                    {prediction?.projected_career_av != null && (
+                      <div className="report-metric">
+                        <div className="report-metric-label">
+                          Career value
+                          <InfoTip text={TIP.careerAv} place="bottom" />
+                        </div>
+                        <div className="report-metric-value">~{Math.round(prediction.projected_career_av)} AV</div>
+                        <div className="report-metric-sub">{avTierLabel(prediction.projected_career_av)}</div>
+                      </div>
+                    )}
                     <div className="report-metric">
                       <div className="report-metric-label">
                         Grade

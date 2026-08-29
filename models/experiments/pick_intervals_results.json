@@ -1,0 +1,124 @@
+{
+  "experiment": "pick_intervals_quantile_conformal",
+  "generated_at": "2026-08-29T17:36:47.262305+00:00",
+  "seed": 42,
+  "target_coverage": 0.8,
+  "features": [
+    "production_score",
+    "games_played",
+    "combine_speed_score",
+    "conference_tier",
+    "position_qb",
+    "position_rb",
+    "position_wr",
+    "position_te",
+    "position_db",
+    "position_lb",
+    "position_dl",
+    "position_ol",
+    "position_other",
+    "height_in_z",
+    "weight_lb_z",
+    "vertical_z",
+    "bench_z",
+    "broad_in_z",
+    "cone_z",
+    "shuttle_z",
+    "rec_stars",
+    "rec_rating",
+    "rec_ranking",
+    "years_in_college",
+    "early_declare",
+    "prod_fs_z",
+    "prod_car_z",
+    "car_seasons",
+    "sp_rating",
+    "consensus_logrank",
+    "allstar_invite"
+  ],
+  "n_train_rows_pick": 6599,
+  "models": {
+    "xgboost": {
+      "objective": "reg:quantileerror",
+      "quantile_alphas": [
+        0.1,
+        0.9
+      ],
+      "n_estimators": 400,
+      "max_depth": 4,
+      "learning_rate": 0.05
+    },
+    "catboost": {
+      "loss_function": [
+        "Quantile:alpha=0.1",
+        "Quantile:alpha=0.9"
+      ],
+      "iterations": 400,
+      "depth": 5,
+      "learning_rate": 0.05
+    },
+    "combination": "per-quantile mean of the two families in log-pick space"
+  },
+  "conformal": {
+    "method": "split conformal, per-side additive offsets in log-pick space",
+    "cal_fold": [
+      2018
+    ],
+    "cal_n": 379,
+    "raw_cal_coverage_q10_q90": 0.723,
+    "lo_offset_log_pick": 0.086287,
+    "hi_offset_log_pick": 0.001972,
+    "cal_coverage_after_offsets": 0.8047
+  },
+  "holdout_2019_2020": {
+    "n": 733,
+    "raw_coverage_pre_conformal": 0.7094,
+    "overall": {
+      "n": 733,
+      "coverage": 0.7844,
+      "median_width_picks": 149.9,
+      "mean_width_picks": 148.4
+    },
+    "blend_top64": {
+      "n": 113,
+      "coverage": 0.8761,
+      "median_width_picks": 99.8,
+      "mean_width_picks": 102.1
+    },
+    "by_blend_bucket": {
+      "blend<=32": {
+        "n": 62,
+        "coverage": 0.9194,
+        "median_width_picks": 80.5,
+        "mean_width_picks": 83.8
+      },
+      "33-64": {
+        "n": 51,
+        "coverage": 0.8235,
+        "median_width_picks": 121.4,
+        "mean_width_picks": 124.4
+      },
+      "65-150": {
+        "n": 145,
+        "coverage": 0.8,
+        "median_width_picks": 171.3,
+        "mean_width_picks": 169.0
+      },
+      ">150": {
+        "n": 475,
+        "coverage": 0.7579,
+        "median_width_picks": 152.4,
+        "mean_width_picks": 153.2
+      }
+    },
+    "crossed_intervals": 0,
+    "blend_outside_interval_rate": 0.0014,
+    "blend_outside_interval_rate_top64": 0.0
+  },
+  "baselines_v4_point_blend": {
+    "mae_picks": 45.3,
+    "spearman_all": 0.7962,
+    "spearman_top64": 0.6898,
+    "r1_recall_within_45": 0.8438
+  }
+}

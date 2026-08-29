@@ -65,6 +65,12 @@ CATBOOST_SUCCESS_PATH      = "catboost_success_model.cbm"        # CatBoost ense
 DRAFT_GRADE_MODEL_PATH     = "draft_grade_model.json"            # raw XGBoost ensemble member
 DRAFT_PICK_MODEL_PATH      = "draft_pick_model.json"             # pick regressor (log-pick)
 CATBOOST_DRAFT_PICK_PATH   = "catboost_draft_pick_model.cbm"     # pick regressor member
+CAREER_AV_MODEL_PATH       = "career_av_model.json"              # career-value head (log1p AV)
+CATBOOST_CAREER_AV_PATH    = "catboost_career_av_model.cbm"
+# pick-interval quantile heads — CatBoost-only (XGB's quantile loss collapses
+# on the UDFA point mass; see fit_pick_quantile_members in train_models.py)
+CATBOOST_PICK_Q10_PATH     = "catboost_draft_pick_q10_model.cbm"
+CATBOOST_PICK_Q90_PATH     = "catboost_draft_pick_q90_model.cbm"
 DRAFT_GRADE_CALIBRATED_PATH = "draft_grade_calibrated_model.pkl" # ENSEMBLE calibrator dict
 CATBOOST_DRAFT_GRADE_PATH  = "catboost_draft_grade_model.cbm"    # CatBoost ensemble member
 TRAINING_DATA_PATH         = "training_data/combine_outcomes.csv"
@@ -1764,6 +1770,114 @@ def predict_draft_pick(player_stats: Dict[str, object]) -> Optional[float]:
         return float(min(max(math.exp(log_blend), 1.0), _UDFA_PICK))
     except Exception as exc:
         print(f"Draft pick inference failed: {exc}")
+        return None
+
+
+career_av_model = None           # XGB regressor on log1p(career AV)
+catboost_career_av_model = None
+pick_q10_models = None           # CatBoost quantile head, alpha 0.1
+pick_q90_models = None           # CatBoost quantile head, alpha 0.9
+_PICK_INTERVAL = None            # {"lo_offset_log", "hi_offset_log", "coverage_target"}
+_SERVE_AV = False
+
+
+def _load_v5_serve_meta() -> None:
+    """serve_av gate + production conformal offsets from models/metadata.json."""
+    global _PICK_INTERVAL, _SERVE_AV
+    try:
+        with open("models/metadata.json") as fh:
+            meta = json.load(fh)
+        _SERVE_AV = bool(meta.get("serve_av"))
+        pi = meta.get("pick_interval") or {}
+        if "lo_offset_log" in pi and "hi_offset_log" in pi:
+            _PICK_INTERVAL = {
+                "lo_offset_log": float(pi["lo_offset_log"]),
+                "hi_offset_log": float(pi["hi_offset_log"]),
+                "coverage_target": float(pi.get("coverage_target", 0.8)),
+            }
+    except Exception:
+        _SERVE_AV, _PICK_INTERVAL = False, None
+
+
+def load_career_av_models() -> None:
+    """Load the career-value head. Optional and display-only — absence (or a
+    failed serve_av gate) just hides the projected-career-value line."""
+    global career_av_model, catboost_career_av_model
+    if not CATBOOST_AVAILABLE or not _SERVE_AV:
+        return
+    if not (os.path.exists(CAREER_AV_MODEL_PATH) and os.path.exists(CATBOOST_CAREER_AV_PATH)):
+        print("Career-AV artifacts absent — projected career value hidden.")
+        return
+    try:
+        m = xgb.XGBRegressor()
+        m.load_model(CAREER_AV_MODEL_PATH)
+        cb = CatBoostRegressor()
+        cb.load_model(CATBOOST_CAREER_AV_PATH)
+    except Exception as exc:
+        print(f"Career-AV load failed ({exc}) — projected career value hidden.")
+        return
+    career_av_model = m
+    catboost_career_av_model = cb
+    print("Career-AV head loaded (XGBoost + CatBoost, log1p AV).")
+
+
+def load_pick_quantile_models() -> None:
+    """Load the pick-interval quantile heads. Optional — absence hides ranges."""
+    global pick_q10_models, pick_q90_models
+    if not CATBOOST_AVAILABLE or _PICK_INTERVAL is None:
+        return
+    if not (os.path.exists(CATBOOST_PICK_Q10_PATH)
+            and os.path.exists(CATBOOST_PICK_Q90_PATH)):
+        print("Pick quantile artifacts absent — projection ranges hidden.")
+        return
+    try:
+        loaded = []
+        for cp in (CATBOOST_PICK_Q10_PATH, CATBOOST_PICK_Q90_PATH):
+            cb = CatBoostRegressor()
+            cb.load_model(cp)
+            loaded.append(cb)
+    except Exception as exc:
+        print(f"Pick quantile load failed ({exc}) — projection ranges hidden.")
+        return
+    pick_q10_models, pick_q90_models = loaded
+    print("Pick quantile heads loaded (q10/q90 CatBoost + conformal offsets).")
+
+
+def predict_career_av(player_stats: Dict[str, object]) -> Optional[float]:
+    """Projected NFL career Approximate Value (display-only head; gated by
+    metadata serve_av: complementary ordering among likely hits, NOT a
+    replacement for the success probability)."""
+    if career_av_model is None or catboost_career_av_model is None:
+        return None
+    try:
+        X = build_success_features(player_stats)
+        logv = float(np.mean([
+            career_av_model.predict(X)[0],
+            catboost_career_av_model.predict(X.values)[0],
+        ]))
+        return float(max(math.expm1(logv), 0.0))
+    except Exception as exc:
+        print(f"Career-AV inference failed: {exc}")
+        return None
+
+
+def predict_pick_range(player_stats: Dict[str, object]) -> Optional[tuple]:
+    """Conformalized 80% pick interval (raw model-pick space): quantile-head
+    member means widened by the offsets fit out-of-fold on the most recent
+    drafted classes (models/metadata.json pick_interval)."""
+    if pick_q10_models is None or pick_q90_models is None or _PICK_INTERVAL is None:
+        return None
+    try:
+        X = build_success_features(player_stats)
+        q10 = float(pick_q10_models.predict(X.values)[0])
+        q90 = float(pick_q90_models.predict(X.values)[0])
+        lo = math.exp(q10 - _PICK_INTERVAL["lo_offset_log"])
+        hi = math.exp(q90 + _PICK_INTERVAL["hi_offset_log"])
+        lo = float(min(max(lo, 1.0), _UDFA_PICK))
+        hi = float(min(max(hi, lo), _UDFA_PICK))
+        return lo, hi
+    except Exception as exc:
+        print(f"Pick interval inference failed: {exc}")
         return None
 
 
@@ -3670,12 +3784,24 @@ def predict():
     # Fine-grained projection: pick blend → nominal pick (rank within the
     # player's draft class on the board) → 11-bucket ladder; class ladder
     # when models absent
+    _draft_cls = player_data.get("draft_class") or _guess_draft_class(player_data)
     raw_model_pick = predict_draft_pick(player_data)
-    projected_pick = nominal_draft_pick(
-        raw_model_pick, player_data.get("draft_class") or _guess_draft_class(player_data))
+    projected_pick = nominal_draft_pick(raw_model_pick, _draft_cls)
     draft_grade_label_str = (projection_label(draft_grade_class, success_probability,
                                               projected_pick)
                              or draft_grade_label_str)
+    # v5 display heads: projected career AV + conformalized 80% pick range
+    # (range bounds pass through the same nominal-rank map the point pick uses)
+    projected_career_av = predict_career_av(player_data)
+    _range_raw = predict_pick_range(player_data)
+    pick_range = None
+    if _range_raw is not None:
+        _lo_nom = nominal_draft_pick(_range_raw[0], _draft_cls)
+        _hi_nom = nominal_draft_pick(_range_raw[1], _draft_cls)
+        if _lo_nom is not None and _hi_nom is not None:
+            pick_range = {"lo": int(min(_lo_nom, _hi_nom)),
+                          "hi": int(max(_lo_nom, _hi_nom)),
+                          "confidence": (_PICK_INTERVAL or {}).get("coverage_target", 0.8)}
 
     position = str(player_data.get("position", "Unknown"))
     draft_round = int(player_data.get("draft_round") or 8)
@@ -3791,6 +3917,9 @@ def predict():
                                     and projected_pick <= 350 else None),
             "model_pick":          (round(raw_model_pick, 1)
                                     if raw_model_pick is not None else None),
+            "pick_range":          pick_range,
+            "projected_career_av": (round(projected_career_av, 1)
+                                    if projected_career_av is not None else None),
             "draft_grade_prob":    draft_grade_prob,
             "historical_comps":    historical_comps,
             "physical":            physical,
@@ -3824,6 +3953,9 @@ load_position_model_artifacts()
 load_success_models()
 load_draft_grade_models()
 load_draft_pick_models()
+_load_v5_serve_meta()
+load_career_av_models()
+load_pick_quantile_models()
 load_prospect_cache()
 load_enrichment()
 load_board_movers()
