@@ -53,15 +53,16 @@ const TIP = {
   successProb:
     'The ML ensemble’s calibrated estimate that this player becomes an NFL '
     + '“success” — defined in training as making a Pro Bowl, starting 3+ '
-    + 'seasons, or reaching 30+ career Approximate Value. Built from 29 features: '
-    + 'production, athleticism, recruiting pedigree and competition level.',
+    + 'seasons, or reaching 30+ career Approximate Value. Built from 31 features: '
+    + 'production, athleticism, recruiting pedigree, scout consensus and competition level.',
   projection:
     'Projected draft slot from two model heads blended: a pick-number '
     + 'regressor and the draft-round classifier. The pick shown is the '
     + 'player’s rank within his own draft class on the board — where he’d '
     + 'go in that class’s draft. The range below it comes from quantile '
-    + 'models calibrated so the true pick lands inside it ~80% of the time '
-    + '— draft outcomes are noisy, and the honest range is wide.',
+    + 'models calibrated toward 80% coverage; the percentage shown is what '
+    + 'they actually achieved on held-out drafts — draft outcomes are noisy, '
+    + 'and the honest range is wide.',
   careerAv:
     'Projected career Approximate Value — a separate model head trained on '
     + 'how careers actually accumulated value (Pro Bowls, seasons started, '
@@ -110,10 +111,12 @@ function fmtPickRange(range) {
   if (!range || range.lo == null || range.hi == null) return null;
   const a = roundOfPick(range.lo);
   const b = roundOfPick(range.hi);
+  // confidence = coverage MEASURED on held-out drafts (backend sends the
+  // realized number, not the 80% nominal target) — never overclaim
   const pct = Math.round((range.confidence || 0.8) * 100);
   return a === b
-    ? `${roundLabel(a)} (${pct}%)`
-    : `${roundLabel(a)}–${roundLabel(b)} (${pct}%)`;
+    ? `${roundLabel(a)} (${pct}% measured)`
+    : `${roundLabel(a)}–${roundLabel(b)} (${pct}% measured)`;
 }
 
 // Career Approximate Value → plain-English tier for the sub-line.

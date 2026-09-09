@@ -957,6 +957,28 @@ def _espn_resolve_athlete_info(espn_id: str) -> Dict[str, str]:
     return result
 
 
+# Draft-class (2015+) median per-game rates by position group, from
+# training_data/combine_outcomes.csv final-season totals / 12. Used at HALF
+# strength as the shrinkage prior for players with no prior-season stats.
+# Prior strength per group, calibrated (2026-09-09) so the prior-only line
+# lands near the 15th-20th percentile of the group's FBS production table:
+# the QB table saturates by raw ~10 (most FBS QBs never play), so its prior
+# must be tiny; defenders' draft-median rates only reach the 11th-38th pct.
+_POS_PRIOR_WEIGHT = {"QB": 0.03, "RB": 0.2, "WRTE": 0.55, "OL": 0.5,
+                     "DL": 0.7, "LB": 1.0, "DB": 1.0}
+_POS_PRIOR_RATES = {
+    "QB":   {"passingYards": 261.9, "passingTouchdowns": 2.0, "passingAttempts": 32.2,
+             "rushingYards": 12.4, "rushingTouchdowns": 0.33, "rushingAttempts": 6.25},
+    "RB":   {"rushingYards": 75.7, "rushingTouchdowns": 0.75, "rushingAttempts": 13.4,
+             "receptions": 1.5, "receivingYards": 11.9, "receivingTouchdowns": 0.08},
+    "WRTE": {"receptions": 3.9, "receivingYards": 54.3, "receivingTouchdowns": 0.42},
+    "OL":   {},
+    "DL":   {"totalTackles": 3.0, "tackles": 3.0, "sacks": 0.33, "passesDefended": 0.08},
+    "LB":   {"totalTackles": 5.8, "tackles": 5.8, "sacks": 0.17, "passesDefended": 0.17},
+    "DB":   {"totalTackles": 3.4, "tackles": 3.4, "passesDefended": 0.33, "interceptions": 0.17},
+}
+
+
 def fetch_real_espn_stats(espn_id: str, position: str, player_name: str) -> Optional[Dict]:
     """Fetch real season stats from ESPN's athlete overview endpoint.
 
@@ -966,16 +988,33 @@ def fetch_real_espn_stats(espn_id: str, position: str, player_name: str) -> Opti
     if not espn_id:
         return None
 
-    cache_key = f"espn_stats:{espn_id}"
+    # Position FIRST (ESPN athlete info, cached): the season logic below is
+    # position-aware (tackle rates → implied games → prior acceptance →
+    # position prior → receiving mapping), so the cache key must carry the
+    # position group or one wrong-position call poisons every later call.
+    _ath = _espn_resolve_athlete_info(espn_id)
+    _pos_u = str(_ath.get("position") or "").upper()
+    _pos_resolved = _pos_u not in {"", "UNKNOWN", "UNK", "OTHER", "ATH"}
+    if not _pos_resolved:
+        _pos_u = (position or "").upper()
+    _pgrp = ("QB" if _pos_u == "QB" else "RB" if _pos_u in {"RB", "FB"}
+             else "WRTE" if _pos_u in {"WR", "TE"}
+             else "OL" if _pos_u in {"OT", "OG", "C", "OL", "G", "T", "LS"}
+             else "DL" if _pos_u in {"DE", "DT", "DL", "NT", "EDGE"}
+             else "LB" if _pos_u in {"LB", "ILB", "OLB", "MLB"}
+             else "DB" if _pos_u in {"CB", "S", "DB", "FS", "SS", "SAF"} else "OTH")
+    cache_key = f"espn_stats:{espn_id}:{_pgrp}"
     cached = cache_get(cache_key)
     if cached is not None:
         return cached if cached else None
+    # a transient athlete-info failure must not be frozen for an hour
+    _ttl = STATS_CACHE_TTL if _pos_resolved else 300
 
     try:
         url = ESPN_CFB_ATHLETE_OVERVIEW_URL.format(espn_id=espn_id)
         resp = requests.get(url, timeout=6)
         if not resp.ok:
-            cache_set(cache_key, {}, ttl=STATS_CACHE_TTL)
+            cache_set(cache_key, {}, ttl=_ttl)
             return None
 
         data = resp.json()
@@ -984,63 +1023,140 @@ def fetch_real_espn_stats(espn_id: str, position: str, player_name: str) -> Opti
         splits = stats_section.get("splits", [])
 
         if not names or not splits:
-            cache_set(cache_key, {}, ttl=STATS_CACHE_TTL)
+            cache_set(cache_key, {}, ttl=_ttl)
             return None
 
-        # Use the most recent season split that has real data
-        best_split = None
+        # ── Season selection with prior-season shrinkage ─────────────────
+        # During the season the newest split is a 1-2 game sample, and the
+        # production composite is a per-game RATE: on kickoff weekend a
+        # 5-tackle game read as an elite season (+28 pts, 9,502 board spots
+        # for a Troy LB) while a 1-catch game dropped a 37-catch TE below the
+        # games floor and erased his prior season. So, ONLY while the newest
+        # split is the in-progress season:
+        #   rate = (g*cur_rate + k*prior_rate) / (g + k),  k = 6*(1 - g/10)+
+        # prior = previous season (or the one before; >=3 implied games).
+        # No usable current line → prior season carried forward. No prior
+        # season → shrink toward a POSITION prior calibrated so a zero-
+        # information line sits near the 15th-20th production percentile.
+        # Completed seasons (off-season, or a low-usage finished year) are
+        # served as-is — the blend never rewrites a finished season.
+        def _num(sv_, k):
+            """ESPN formats thousands with commas ("1,243"); non-finite → 0."""
+            v = sv_.get(k, 0)
+            try:
+                f = float(str(v).replace(",", "").strip() or 0)
+            except (TypeError, ValueError):
+                return 0.0
+            return f if math.isfinite(f) else 0.0
+
+        # Implied games from counting stats. Divisors are near draft-class
+        # medians per game so low-usage players are not undercounted (the old
+        # flat /6 tackles read a DE's 14-tackle season as 2 games).
+        _tackle_rate = {"DL": 3.0, "LB": 5.8, "DB": 3.4}.get(_pgrp, 6.0)
+
+        def _implied_games(sv_):
+            imp = [
+                _num(sv_, "passingAttempts") / 25.0,
+                _num(sv_, "receptions") / 4.0,
+                _num(sv_, "rushingAttempts") / 13.0,
+                (_num(sv_, "totalTackles") or _num(sv_, "tackles")) / _tackle_rate,
+            ]
+            b = max(imp)
+            return (max(1, min(17, round(b))) if b >= 0.5 else float("nan")), b
+
+        parsed = []  # (year, sv, games, has_data, split) newest first
         for split in splits:
-            vals = split.get("stats", [])
-            if any(v and v not in ("--", "0", "0.0") for v in vals):
-                best_split = split
-                break
-
-        if not best_split:
-            cache_set(cache_key, {}, ttl=STATS_CACHE_TTL)
+            vals = split.get("stats") or []
+            has_data = any(v and v not in ("--", "0", "0.0") for v in vals)
+            sv_ = dict(zip(names, vals))
+            try:
+                yr = int(str(split.get("displayName", "")).strip()[:4])
+            except ValueError:
+                yr = None
+            g_, _ = _implied_games(sv_)
+            parsed.append((yr, sv_, g_, has_data, split))
+        if not any(p[3] for p in parsed):
+            cache_set(cache_key, {}, ttl=_ttl)
             return None
 
-        sv  = dict(zip(names, best_split.get("stats", [])))
-        pos = (position or "").upper()
+        COUNT_KEYS = ("passingYards", "passingTouchdowns", "passingAttempts",
+                      "rushingYards", "rushingTouchdowns", "rushingAttempts",
+                      "receptions", "receivingYards", "receivingTouchdowns",
+                      "totalTackles", "tackles", "sacks", "interceptions",
+                      "passesDefended", "passDeflections")
 
-        passing_yards = _parse_int(sv.get("passingYards", 0))
-        passing_tds   = _parse_int(sv.get("passingTouchdowns", 0))
-        rushing_yards = _parse_int(sv.get("rushingYards", 0))
-        rushing_tds   = _parse_int(sv.get("rushingTouchdowns", 0))
+        _lt = time.localtime()
+        _season_year = _lt.tm_year if _lt.tm_mon >= 8 else _lt.tm_year - 1
+        _in_season = _lt.tm_mon >= 8 or _lt.tm_mon == 1
+
+        cur = next((p for p in parsed if p[3]), None)          # newest with data
+        cur_live = (cur is not None and cur[0] is not None
+                    and cur[0] == _season_year and _in_season)
+        prior = None
+        if cur_live:
+            prior = next((p for p in parsed
+                          if p[0] is not None and p[0] in (cur[0] - 1, cur[0] - 2)
+                          and p[3] and math.isfinite(p[2]) and p[2] >= 3), None)
+
+        blended = False
+        season_label = str(cur[4].get("displayName", "")) if cur else ""
+        stat_src = cur[1] if cur else {}
+        if cur_live and not math.isfinite(cur[2]) and prior is not None:
+            # token current line (e.g. 1 catch) — carry the prior season forward
+            sv, games, stat_src = dict(prior[1]), prior[2], prior[1]
+            season_label = (f"{prior[4].get('displayName', '')} (carried — "
+                            f"{cur[4].get('displayName', '')} sample too small)")
+        elif cur_live and math.isfinite(cur[2]) and cur[2] < 10:
+            g = float(cur[2])
+            k = 6.0 * max(0.0, 1.0 - g / 10.0)
+            sv = dict(cur[1])
+            if prior is not None:
+                gp = float(prior[2])
+                for key in COUNT_KEYS:
+                    rate = (g * (_num(cur[1], key) / g) + k * (_num(prior[1], key) / gp)) / (g + k)
+                    sv[key] = rate * g  # blended pace at the CURRENT sample size
+                season_label = (f"{cur[4].get('displayName', '')} pace, blended with "
+                                f"{prior[4].get('displayName', '')} ({int(g)} gm)")
+            else:
+                pr = _POS_PRIOR_RATES.get(_pgrp, {})
+                w = _POS_PRIOR_WEIGHT.get(_pgrp, 0.5)
+                for key in COUNT_KEYS:
+                    rate = (g * (_num(cur[1], key) / g) + k * (w * pr.get(key, 0.0))) / (g + k)
+                    sv[key] = rate * g
+                season_label = (f"{cur[4].get('displayName', '')} pace, shrunk to "
+                                f"position prior ({int(g)} gm)")
+            games, blended = int(g), True
+        elif cur is not None:
+            sv, games = dict(cur[1]), cur[2]
+        else:
+            cache_set(cache_key, {}, ttl=_ttl)
+            return None
+
+        pos = _pos_u
+        # blended lines keep decimals (rounding a 1-game pace to integers
+        # would perturb the rate by up to 50%); observed lines stay integers
+        _fin = (lambda v: round(float(v), 2)) if blended else (lambda v: int(round(v)))
+
+        passing_yards = _fin(_num(sv, "passingYards"))
+        passing_tds   = _fin(_num(sv, "passingTouchdowns"))
+        rushing_yards = _fin(_num(sv, "rushingYards"))
+        rushing_tds   = _fin(_num(sv, "rushingTouchdowns"))
 
         # WR/TE: map receiving stats into the rushing slots (model compatibility)
         if pos in {"WR", "TE"}:
-            rec_yards = _parse_int(sv.get("receivingYards", 0))
-            rec_tds   = _parse_int(sv.get("receivingTouchdowns", 0))
+            rec_yards = _fin(_num(sv, "receivingYards"))
+            rec_tds   = _fin(_num(sv, "receivingTouchdowns"))
             if rec_yards > rushing_yards:
                 rushing_yards = rec_yards
                 rushing_tds   = rec_tds
 
         # Defensive stats
-        tackles        = _parse_int(sv.get("totalTackles", 0)) or _parse_int(sv.get("tackles", 0))
-        sacks          = float(sv.get("sacks", 0) or 0)
-        interceptions  = _parse_int(sv.get("interceptions", 0))
-        pass_deflections = _parse_int(sv.get("passesDefended", 0)) or _parse_int(sv.get("passDeflections", 0))
+        tackles        = _fin(_num(sv, "totalTackles") or _num(sv, "tackles"))
+        sacks          = round(float(_num(sv, "sacks")), 2)
+        interceptions  = _fin(_num(sv, "interceptions"))
+        pass_deflections = _fin(_num(sv, "passesDefended") or _num(sv, "passDeflections"))
 
-        # Estimate games from counting stats — take the LARGEST implied count
-        # across stat families. Keying on a single stat undercounted badly:
-        # a star WR with 3 rush attempts scored round(3/28)=1 "game" while
-        # his 87 receptions (a full season) were never consulted.
-        receptions = _parse_int(sv.get("receptions", 0))
-        implied = [
-            _parse_int(sv.get("passingAttempts", 0)) / 28.0,
-            receptions / 5.5,
-            _parse_int(sv.get("rushingAttempts", 0)) / 18.0,
-            tackles / 6.0,
-        ]
-        best = max(implied)
-        # No meaningful counting stats -> games is UNKNOWN, not a free full
-        # season. The old default-13 put 1-tackle bench players (games=13,
-        # "durable") above verified stars — the model must see NaN.
-        games = max(1, min(17, round(best))) if best >= 0.5 else float("nan")
-
-        # Resolve real team + position from ESPN athlete info
-        ath_info  = _espn_resolve_athlete_info(espn_id)
-        real_team = ath_info.get("team", "")
+        real_team = _ath.get("team", "")
 
         result = {
             "games_played":       games,
@@ -1053,11 +1169,15 @@ def fetch_real_espn_stats(espn_id: str, position: str, player_name: str) -> Opti
             "interceptions":      interceptions,
             "pass_deflections":   pass_deflections,
             "_team":              real_team,
-            "_season":            best_split.get("displayName", ""),
-            "_completion_pct":    sv.get("completionPct", ""),
-            "_qb_rating":         sv.get("QBRating", ""),
+            "_season":            season_label,
+            "_stats_basis":       ("blended" if blended else
+                                   "carried" if "carried" in season_label else "observed"),
+            # rate stats belong to the split the totals came from; blank on
+            # blended lines (a 1-game completion % next to a blended line lies)
+            "_completion_pct":    "" if blended else stat_src.get("completionPct", ""),
+            "_qb_rating":         "" if blended else stat_src.get("QBRating", ""),
         }
-        cache_set(cache_key, result, ttl=STATS_CACHE_TTL)
+        cache_set(cache_key, result, ttl=_ttl)
         return result
 
     except Exception as exc:
@@ -1794,6 +1914,7 @@ def _load_v5_serve_meta() -> None:
                 "lo_offset_log": float(pi["lo_offset_log"]),
                 "hi_offset_log": float(pi["hi_offset_log"]),
                 "coverage_target": float(pi.get("coverage_target", 0.8)),
+                "coverage_measured": (pi.get("eval") or {}).get("coverage"),
             }
     except Exception:
         _SERVE_AV, _PICK_INTERVAL = False, None
@@ -2665,6 +2786,88 @@ def _commit_team_id(short) -> str | None:
                  if full.startswith(s)]
         resolved[s] = min(cands, key=lambda c: len(c[0]))[1] if cands else None
     return resolved[s]
+
+
+# ── Model provenance / accuracy stamp (one source of truth for the UI) ─────
+_MODEL_INFO_CACHE: dict = {"key": None, "data": None}
+
+
+@app.get("/api/model-info")
+def api_model_info():
+    """Provenance + measured accuracy, read from models/metadata.json and
+    models/experiments/rolling_cv_v4.json. The hero, the predict report and
+    /backtest render THESE numbers — hand-typed claims drifted three times
+    (v3/16 features/9,033 prospects while production ran v5/31/15k)."""
+    _maybe_reload_prospect_cache()
+    try:
+        m_mtime = os.path.getmtime("models/metadata.json")
+    except OSError:
+        m_mtime = 0.0
+    key = (m_mtime, len(_PROSPECT_CACHE or []))
+    if _MODEL_INFO_CACHE["key"] == key and _MODEL_INFO_CACHE["data"]:
+        return jsonify(_MODEL_INFO_CACHE["data"])
+    info = {"ok": False}
+    try:
+        with open("models/metadata.json") as fh:
+            meta = json.load(fh)
+        ev = meta.get("evaluation", {})
+        succ = ev.get("success", {}).get("ensemble_calibrated", {})
+        grade = ev.get("draft_grade", {}).get("ensemble_raw_mean", {})
+        pick = (meta.get("pick_eval") or {}).get("blend_50_50_SERVED", {})
+        pi = meta.get("pick_interval") or {}
+        cv = {}
+        try:
+            with open("models/experiments/rolling_cv_v4.json") as fh:
+                cvj = json.load(fh)
+            s = cvj.get("summary", {})
+            cv = {k: {"mean": v.get("mean"), "std": v.get("std")}
+                  for k, v in s.items()
+                  if k in ("success_auc", "success_brier", "grade_acc",
+                           "pick_mae_drafted", "pick_spearman_all")}
+            cv["folds"] = cvj.get("folds") and [f.get("test_year") for f in cvj["folds"]]
+        except Exception:
+            pass
+        heads = ["success", "draft_grade"]
+        if meta.get("serve_pick"):
+            heads.append("draft_pick")
+        if meta.get("serve_av"):
+            heads.append("career_av")
+        if pi:
+            heads.append("pick_interval")
+        board_meta = _PROSPECT_CACHE_META or {}
+        info = {
+            "ok": True,
+            "model_version": "v5",
+            "git_sha": str(meta.get("git_sha") or "")[:8],
+            "trained_at": meta.get("generated_at"),
+            "features_n": len(meta.get("features") or SUCCESS_FEATURES),
+            "heads": heads,
+            "serve": meta.get("serve"),
+            "board_rows": len(_PROSPECT_CACHE or []),
+            "board_generated_at": board_meta.get("generated_at"),
+            "holdout": {
+                "years": ev.get("holdout_years"),
+                "success_auc": succ.get("auc"),
+                "success_brier": succ.get("brier"),
+                "grade_accuracy": grade.get("accuracy"),
+                "pick_mae_drafted": pick.get("mae_picks_drafted"),
+                "pick_spearman": pick.get("spearman_all"),
+                "r1_recall_within_45": pick.get("r1_recall_within_45"),
+            },
+            "rolling_cv": cv,
+            "pick_interval": {
+                "coverage_target": pi.get("coverage_target"),
+                "coverage_measured": (pi.get("eval") or {}).get("coverage"),
+                "coverage_measured_top64": (pi.get("eval") or {}).get("coverage_top64"),
+                "median_width_picks_top64": (pi.get("eval") or {}).get("median_width_picks_top64"),
+            },
+            "forward_note": ev.get("note"),
+            "training_data": meta.get("training_data"),
+        }
+        _MODEL_INFO_CACHE.update(key=key, data=info)
+    except Exception as exc:
+        info = {"ok": False, "error": str(exc)}
+    return jsonify(info)
 
 
 @app.get("/api/hs-prospects")
@@ -3801,7 +4004,11 @@ def predict():
         if _lo_nom is not None and _hi_nom is not None:
             pick_range = {"lo": int(min(_lo_nom, _hi_nom)),
                           "hi": int(max(_lo_nom, _hi_nom)),
-                          "confidence": (_PICK_INTERVAL or {}).get("coverage_target", 0.8)}
+                          # nominal target is 0.80; report what the held-out
+                          # drafts actually MEASURED so the UI never overclaims
+                          "confidence": (_PICK_INTERVAL or {}).get("coverage_measured")
+                                        or (_PICK_INTERVAL or {}).get("coverage_target", 0.8),
+                          "confidence_target": (_PICK_INTERVAL or {}).get("coverage_target", 0.8)}
 
     position = str(player_data.get("position", "Unknown"))
     draft_round = int(player_data.get("draft_round") or 8)

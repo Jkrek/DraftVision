@@ -17,12 +17,23 @@ const FALLBACK_PLAYER = {
   ],
 };
 
-const STATS = [
-  { value: '9,033', label: 'FBS prospects' },
-  { value: '3', label: 'Model ensemble' },
-  { value: '16', label: 'Engineered features' },
+/* Stat band — filled from /api/model-info so the numbers can never drift
+   from what production actually runs (they did: v3/16/9,033 vs v5/31/15k). */
+const STATS_FALLBACK = [
+  { value: '—', label: 'FBS prospects' },
+  { value: '—', label: 'Model heads' },
+  { value: '—', label: 'Engineered features' },
   { value: 'Live', label: 'ESPN + CFBD data' },
 ];
+function statsFrom(info) {
+  if (!info || !info.ok) return STATS_FALLBACK;
+  return [
+    { value: (info.board_rows || 0).toLocaleString(), label: 'FBS prospects' },
+    { value: String((info.heads || []).length || '—'), label: 'Model heads' },
+    { value: String(info.features_n || '—'), label: 'Engineered features' },
+    { value: 'Live', label: 'ESPN + CFBD data' },
+  ];
+}
 
 /* Map an /api/prospects row (name, position, team, success_probability,
    production_score, conference_tier, combine_speed_score, draft_grade)
@@ -78,6 +89,15 @@ function safePlay(video) {
 
 function HeroSection() {
   const [player, setPlayer] = useState(FALLBACK_PLAYER);
+  const [info, setInfo] = useState(null); // /api/model-info provenance stamp
+  useEffect(() => {
+    let alive = true;
+    anonFetch('/api/model-info')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (alive && j && j.ok) setInfo(j); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
   const [showVideo, setShowVideo] = useState(false); // mount <video> at all
   const [videoReady, setVideoReady] = useState(false); // 'canplay' fired → fade in
   const heroRef = useRef(null);
@@ -217,12 +237,15 @@ function HeroSection() {
           </h1>
           <div className="hero-divider" aria-hidden="true" />
           <p className="hero-lede">
-            A three-model ensemble scores every FBS prospect on production,
-            athleticism, conference tier and accolades — then tells you what the
-            number is made of.
+            A multi-head ensemble scores every FBS prospect on production,
+            athleticism, recruiting pedigree, scout consensus and competition
+            level — then tells you what the number is made of, and how often
+            it has been right.
           </p>
           <p className="hero-meta">
-            9,033 college prospects · 10,000+ high-school recruits · live ESPN and CFBD data
+            {info && info.ok
+              ? `${(info.board_rows || 0).toLocaleString()} college prospects · ${(info.heads || []).length} model heads · held-out AUC ${Number(info.holdout?.success_auc || 0).toFixed(2)} across ${(info.rolling_cv?.folds || []).length || 6} drafts · refreshed ${info.board_generated_at ? new Date(info.board_generated_at).toLocaleDateString() : 'weekly'}`
+              : 'College prospects · high-school recruits · live ESPN and CFBD data'}
           </p>
           <div className="hero-ctas">
             <Link to="/predict" className="dv-cta">Run a prediction</Link>
@@ -234,7 +257,7 @@ function HeroSection() {
           <div className="hero-card">
             <div className="hero-card-head">
               <span className="hero-card-kicker">Live model output</span>
-              <span className="hero-card-version">ensemble v3</span>
+              <span className="hero-card-version">{info && info.ok ? `${info.model_version} · ${info.git_sha}` : 'ensemble'}</span>
             </div>
             <div className="hero-card-name">{player.name}</div>
             <div className="hero-card-meta">
@@ -260,7 +283,7 @@ function HeroSection() {
         </div>
 
         <div className="hero-stats">
-          {STATS.map((s) => (
+          {statsFrom(info).map((s) => (
             <div className="hero-stat" key={s.label}>
               <div className="hero-stat-value">{s.value}</div>
               <div className="hero-stat-label">{s.label}</div>
