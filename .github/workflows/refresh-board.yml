@@ -106,6 +106,13 @@ jobs:
       - name: Generate weekly YouTube recap
         run: python scripts/generate_weekly_recap.py
 
+      # The Kalshi paper ledger lives on the app machine and is wiped by each
+      # deploy; pull it into the repo so the model-vs-market track record
+      # survives. Best-effort (public GET only; never touches order endpoints).
+      - name: Sync Kalshi paper ledger
+        continue-on-error: true
+        run: python dv_edge.py --sync-ledger https://draft.jkrek.com
+
       - name: Stop prediction server
         if: always()
         run: |
@@ -123,6 +130,7 @@ jobs:
                   training_data/board_history \
                   training_data/board_movers.json \
                   training_data/enrichment.json \
+                  training_data/edge_ledger.json \
                   content/recaps
           if git diff --cached --quiet; then
             echo "Board unchanged — nothing to commit."

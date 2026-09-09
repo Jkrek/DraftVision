@@ -1,7 +1,7 @@
 {
   "feature_set": "v4",
-  "generated_at": "2026-08-29T18:04:51.366656+00:00",
-  "git_sha": "d5fd8c95297e957235073203042e36848d53afd5",
+  "generated_at": "2026-09-09T17:46:24.174946+00:00",
+  "git_sha": "7d9116121d2d4207e62a87372ece7a0a1284e00e",
   "seed": 42,
   "design": {
     "test_fold_years": [
@@ -38,7 +38,7 @@
       "success_auc": 0.7995,
       "success_brier": 0.1376,
       "grade_acc": 0.6401,
-      "pick_mae_drafted": 44.8,
+      "pick_mae_drafted": 37.9,
       "pick_spearman_all": 0.7919,
       "pick_spearman_top64": 0.8484,
       "pick_r1_recall_45": 0.9375
@@ -62,7 +62,7 @@
       "success_auc": 0.8354,
       "success_brier": 0.1383,
       "grade_acc": 0.6765,
-      "pick_mae_drafted": 43.8,
+      "pick_mae_drafted": 37.7,
       "pick_spearman_all": 0.821,
       "pick_spearman_top64": 0.8272,
       "pick_r1_recall_45": 0.9375
@@ -86,7 +86,7 @@
       "success_auc": 0.8152,
       "success_brier": 0.1386,
       "grade_acc": 0.6639,
-      "pick_mae_drafted": 41.6,
+      "pick_mae_drafted": 33.1,
       "pick_spearman_all": 0.8357,
       "pick_spearman_top64": 0.7292,
       "pick_r1_recall_45": 0.9375
@@ -110,7 +110,7 @@
       "success_auc": 0.8699,
       "success_brier": 0.1155,
       "grade_acc": 0.6464,
-      "pick_mae_drafted": 44.9,
+      "pick_mae_drafted": 34.2,
       "pick_spearman_all": 0.7979,
       "pick_spearman_top64": 0.8179,
       "pick_r1_recall_45": 0.9062
@@ -134,7 +134,7 @@
       "success_auc": 0.8004,
       "success_brier": 0.1388,
       "grade_acc": 0.6415,
-      "pick_mae_drafted": 45.8,
+      "pick_mae_drafted": 35.7,
       "pick_spearman_all": 0.7908,
       "pick_spearman_top64": 0.6529,
       "pick_r1_recall_45": 0.8438
@@ -158,7 +158,7 @@
       "success_auc": 0.8308,
       "success_brier": 0.1157,
       "grade_acc": 0.6464,
-      "pick_mae_drafted": 44.8,
+      "pick_mae_drafted": 36.8,
       "pick_spearman_all": 0.8003,
       "pick_spearman_top64": 0.7319,
       "pick_r1_recall_45": 0.8125
@@ -202,15 +202,15 @@
       ]
     },
     "pick_mae_drafted": {
-      "mean": 44.2833,
-      "std": 1.4593,
+      "mean": 35.9,
+      "std": 1.9401,
       "per_fold": [
-        44.8,
-        43.8,
-        41.6,
-        44.9,
-        45.8,
-        44.8
+        37.9,
+        37.7,
+        33.1,
+        34.2,
+        35.7,
+        36.8
       ]
     },
     "pick_spearman_all": {

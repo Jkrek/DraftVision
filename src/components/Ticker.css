@@ -107,6 +107,14 @@
 .ticker-delta.up   { color: var(--trend-up); }
 .ticker-delta.down { color: var(--trend-down); }
 
+/* games basis behind a mover delta ("3 games") — quiet, never competes */
+.ticker-basis {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .ticker-dot {
     animation: ticker-pulse 2.4s infinite;

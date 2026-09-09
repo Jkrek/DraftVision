@@ -27,7 +27,17 @@ function toMover(m) {
     pos: m.position || '',
     team: m.team || '',
     delta,
+    // Evidence basis from the builder's mover gate ('3 games'); derived from
+    // games_played when an older movers file predates the basis field.
+    basis: m.basis || basisOf(m),
   };
+}
+
+function basisOf(m) {
+  if (m.data_source && m.data_source !== 'espn_live') return 'prior-season carried';
+  const g = Number(m.games_played);
+  if (!Number.isFinite(g)) return '';
+  return `${g} game${g === 1 ? '' : 's'}`;
 }
 
 function Ticker() {
@@ -127,11 +137,14 @@ function Ticker() {
           {t.pos && <span className="ticker-pos">{t.pos}</span>}
           {t.team && <span className="ticker-team">{t.team}</span>}
           {mode === 'movers' ? (
-            <span className={`ticker-delta ${t.delta > 0 ? 'up' : 'down'}`}>
-              {t.delta > 0
-                ? `▲ +${t.delta.toFixed(1)}`
-                : `▼ ${Math.abs(t.delta).toFixed(1)}`}
-            </span>
+            <>
+              <span className={`ticker-delta ${t.delta > 0 ? 'up' : 'down'}`}>
+                {t.delta > 0
+                  ? `▲ +${t.delta.toFixed(1)}`
+                  : `▼ ${Math.abs(t.delta).toFixed(1)}`}
+              </span>
+              {t.basis && <span className="ticker-basis">{t.basis}</span>}
+            </>
           ) : (
             t.prob != null && <span className="ticker-prob">{t.prob}%</span>
           )}

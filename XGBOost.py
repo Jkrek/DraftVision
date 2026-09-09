@@ -4125,6 +4125,12 @@ def predict():
             "model_pick":          (round(raw_model_pick, 1)
                                     if raw_model_pick is not None else None),
             "pick_range":          pick_range,
+            # raw model-pick interval (pre nominal ranking) — the board
+            # builder persists this so scripts/postprocess_board.py can re-rank
+            # lo/hi against the REBUILT board instead of the previous one
+            "pick_range_raw":      ({"lo": round(float(_range_raw[0]), 2),
+                                     "hi": round(float(_range_raw[1]), 2)}
+                                    if _range_raw is not None else None),
             "projected_career_av": (round(projected_career_av, 1)
                                     if projected_career_av is not None else None),
             "draft_grade_prob":    draft_grade_prob,

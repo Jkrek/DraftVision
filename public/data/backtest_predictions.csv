@@ -1,0 +1,734 @@
+name,college,position,draft_year,pred_success_prob,pred_grade_bucket,pred_pick,pick_lo,pick_hi,consensus_rank,actual_pick,actual_round,actual_success,career_av
+Devin White,LSU,LB,2019,0.9693,Top 50 Pick,12.41,3.56,12.0,4,5,1,1,51.0
+Quinnen Williams,Alabama,DT,2019,0.9629,Top 50 Pick,8.95,1.55,10.46,2,3,1,1,57.0
+Tristan Wirfs,Iowa,OT,2020,0.9551,Top 50 Pick,20.27,6.8,30.88,15,13,1,1,64.0
+Jonah Williams,Alabama,OG,2019,0.9534,Top 50 Pick,24.78,10.33,38.8,17,11,1,1,37.0
+Devin Bush Jr.,Michigan,LB,2019,0.9435,Top 50 Pick,17.11,6.03,18.26,8,10,1,1,37.0
+Andrew Thomas,Georgia,OT,2020,0.9319,Top 50 Pick,20.65,8.3,34.69,16,4,1,1,33.0
+Jedrick Wills Jr.,Alabama,OT,2020,0.9308,Top 50 Pick,15.2,4.16,23.7,8,10,1,1,24.0
+Rashan Gary,Michigan,LB,2019,0.9231,Top 50 Pick,15.95,5.96,28.42,13,12,1,1,36.0
+CeeDee Lamb,Oklahoma,WR,2020,0.9184,Top 50 Pick,16.38,6.64,29.25,10,17,1,1,65.0
+Dwayne Haskins,Ohio State,QB,2019,0.9094,Top 50 Pick,13.97,3.84,27.65,15,15,1,0,4.0
+Jerry Jeudy,Alabama,WR,2020,0.9089,Top 50 Pick,15.29,5.65,13.8,6,15,1,1,31.0
+Jeff Okudah,Ohio State,CB,2020,0.9082,Top 50 Pick,12.8,2.76,19.52,5,3,1,0,11.0
+Jawaan Taylor,Florida,OT,2019,0.905,Top 50 Pick,19.31,7.32,38.03,10,35,2,1,42.0
+C.J. Henderson,Florida,CB,2020,0.9037,Top 50 Pick,17.94,5.2,73.72,13,9,1,0,13.0
+Erik McCoy,Texas A&M,C,2019,0.9033,Top 50 Pick,35.66,22.71,62.78,35,48,2,1,35.0
+Christian Wilkins,Clemson,DT,2019,0.9017,Top 50 Pick,15.59,5.48,23.67,7,13,1,1,35.0
+Chase Young,Ohio State,DE,2020,0.9009,Top 50 Pick,10.16,3.29,11.36,1,2,1,1,29.0
+D'Andre Swift,Georgia,RB,2020,0.9003,Top 50 Pick,23.88,12.35,29.6,18,35,2,1,44.0
+Xavier McKinney,Alabama,S,2020,0.8966,Top 50 Pick,21.23,10.95,29.78,17,36,2,1,39.0
+Montez Sweat,Mississippi State,DE,2019,0.8916,Top 50 Pick,20.33,9.71,26.79,22,26,1,1,48.0
+Nick Bosa,Ohio State,DE,2019,0.887,Top 50 Pick,8.99,2.13,10.63,1,2,1,1,58.0
+Isaiah Wilson,Georgia,OT,2020,0.8845,Top 50 Pick,31.42,16.33,53.77,31,29,1,0,0.0
+Mekhi Becton,Louisville,OT,2020,0.8842,Top 50 Pick,17.31,6.01,32.37,12,11,1,1,21.0
+Andre Dillard,Washington State,OT,2019,0.8769,Top 50 Pick,20.76,8.98,29.01,19,22,1,0,12.0
+Cesar Ruiz,Michigan,C,2020,0.8752,Top 50 Pick,33.97,22.49,59.82,37,24,1,1,29.0
+Johnathan Abram,Mississippi State,S,2019,0.8748,Top 50 Pick,21.55,8.35,26.47,20,27,1,0,13.0
+Tua Tagovailoa,Alabama,QB,2020,0.8738,Top 50 Pick,13.9,3.19,20.25,7,5,1,1,52.0
+Isaiah Simmons,Clemson,LB,2020,0.8708,Top 50 Pick,8.12,3.0,13.12,4,8,1,0,20.0
+Cody Ford,Oklahoma,OT,2019,0.8656,Top 50 Pick,29.02,15.29,49.81,25,38,2,0,22.0
+Jeffery Simmons,Mississippi State,DT,2019,0.8641,Top 50 Pick,30.66,15.85,30.56,16,19,1,1,62.0
+Javon Kinlaw,South Carolina,DT,2020,0.8594,Top 50 Pick,19.47,6.84,39.8,9,14,1,1,27.0
+Derrick Brown,Auburn,DT,2020,0.8578,Top 50 Pick,13.4,3.19,19.87,3,7,1,1,35.0
+Henry Ruggs III,Alabama,WR,2020,0.8568,Top 50 Pick,18.09,7.15,24.5,11,12,1,0,8.0
+Garrett Bradbury,NC State,C,2019,0.8549,Top 50 Pick,25.32,10.35,35.88,18,18,1,1,41.0
+Antoine Winfield Jr.,Minnesota,S,2020,0.843,Top 50 Pick,27.26,17.59,39.95,29,45,2,1,44.0
+Chris Lindstrom,Boston College,OG,2019,0.8416,Top 50 Pick,37.81,23.32,61.89,41,14,1,1,49.0
+Zack Baun,Wisconsin,LB,2020,0.8399,Top 50 Pick,37.03,23.96,59.02,36,74,3,1,39.0
+Brian Burns,Florida State,DE,2019,0.8349,Top 50 Pick,15.82,5.89,19.88,14,16,1,1,53.0
+Ezra Cleveland,Boise State,OT,2020,0.8327,Top 50 Pick,23.79,11.68,34.56,22,58,2,1,33.0
+Kenneth Murray,Oklahoma,LB,2020,0.8239,Top 50 Pick,22.75,14.67,26.03,26,23,1,1,32.0
+Justin Jefferson,LSU,WR,2020,0.8204,Top 50 Pick,15.99,7.09,26.39,14,22,1,1,65.0
+Byron Murphy,Washington,CB,2019,0.8027,Top 50 Pick,30.03,20.22,39.29,27,33,2,1,40.0
+Austin Jackson,USC,OT,2020,0.7961,Top 50 Pick,35.49,21.84,66.52,48,18,1,1,24.0
+Ed Oliver,Houston,DT,2019,0.7858,Top 50 Pick,15.69,4.81,8.4,3,9,1,1,43.0
+Noah Fant,Iowa,TE,2019,0.7843,Top 50 Pick,20.41,8.2,25.28,12,20,1,1,26.0
+Elgton Jenkins,Mississippi State,C,2019,0.7833,Top 50 Pick,53.39,28.78,90.49,51,44,2,1,48.0
+Darnell Savage Jr.,Maryland,S,2019,0.7828,Top 50 Pick,27.69,16.66,36.84,28,21,1,1,24.0
+Josh Jones,Houston,OT,2020,0.7697,Top 50 Pick,43.17,25.27,75.09,38,72,3,0,17.0
+Joe Burrow,LSU,QB,2020,0.7581,Top 50 Pick,9.94,1.28,5.4,2,1,1,1,63.0
+Logan Wilson,Wyoming,LB,2020,0.7485,Top 50 Pick,40.91,34.2,44.57,47,65,3,1,32.0
+Juan Thornhill,Virginia,S,2019,0.7427,Top 50 Pick,47.91,38.78,46.75,60,63,2,1,24.0
+Tee Higgins,Clemson,WR,2020,0.7372,Top 50 Pick,29.61,17.52,39.73,30,33,2,1,43.0
+T.J. Hockenson,Iowa,TE,2019,0.737,Top 50 Pick,15.27,6.12,12.02,6,8,1,1,33.0
+Jonathan Taylor,Wisconsin,RB,2020,0.7294,Top 50 Pick,29.07,19.96,45.39,34,41,2,1,58.0
+Irv Smith Jr.,Alabama,TE,2019,0.7267,Top 50 Pick,38.87,28.9,56.78,34,50,2,0,9.0
+A.J. Brown,Ole Miss,WR,2019,0.7262,Top 50 Pick,38.81,30.07,77.4,45,51,2,1,73.0
+Grant Delpit,LSU,S,2020,0.7172,Top 50 Pick,31.28,24.25,38.77,35,44,2,1,26.0
+Justin Herbert,Oregon,QB,2020,0.7162,Top 50 Pick,20.22,7.0,32.31,24,6,1,1,74.0
+Dalton Risner,Kansas State,OT,2019,0.7133,Top 50 Pick,43.79,26.59,89.16,46,41,2,1,30.0
+J.K. Dobbins,Ohio State,RB,2020,0.7133,Top 50 Pick,29.9,19.58,31.77,27,55,2,0,22.0
+Cody Barton,Utah,LB,2019,0.7119,Day 2 Pick,96.01,57.18,147.15,97,88,3,1,28.0
+AJ Terrell,Clemson,CB,2020,0.7106,Top 50 Pick,43.16,21.2,100.84,51,16,1,1,31.0
+Clelin Ferrell,Clemson,DE,2019,0.7086,Top 50 Pick,27.9,16.04,32.14,21,4,1,1,24.0
+Lloyd Cushenberry III,LSU,C,2020,0.7066,Day 2 Pick,69.72,35.4,121.49,66,83,3,1,26.0
+A.J. Epenesa,Iowa,DE,2020,0.7064,Top 50 Pick,33.34,34.94,38.19,32,54,2,0,18.0
+Jerry Tillery,Notre Dame,DT,2019,0.7054,Top 50 Pick,29.12,18.94,49.78,32,28,1,0,26.0
+Tytus Howard,Alabama State,OT,2019,0.7045,Top 50 Pick,52.55,21.65,123.72,47,23,1,1,36.0
+Jaylon Ferguson,Louisiana Tech,DE,2019,0.7036,Day 2 Pick,69.06,42.6,60.54,63,85,3,0,8.0
+Matt Hennessy,Temple,C,2020,0.7025,Day 2 Pick,82.94,57.9,163.95,93,78,3,0,11.0
+Jordan Elliott,Texas,DT,2020,0.7003,Top 50 Pick,47.16,25.87,80.91,41,88,3,1,27.0
+Jaylon Johnson,Utah,CB,2020,0.6996,Top 50 Pick,44.69,30.54,73.43,44,50,2,1,30.0
+Taylor Rapp,Washington,S,2019,0.6987,Top 50 Pick,40.21,29.42,69.33,43,61,2,1,25.0
+K'Lavon Chaisson,LSU,DE,2020,0.6958,Top 50 Pick,30.67,15.49,34.68,19,20,1,0,17.0
+Amani Hooker,Iowa,S,2019,0.69,Day 2 Pick,75.24,45.05,147.97,91,116,4,1,24.0
+Trevon Diggs,Alabama,CB,2020,0.6804,Top 50 Pick,47.21,29.67,90.73,39,51,2,1,33.0
+James Lynch,Baylor,DT,2020,0.6792,Day 2 Pick,96.44,62.49,173.13,102,130,4,0,6.0
+Drew Lock,Missouri,QB,2019,0.6788,Top 50 Pick,22.38,8.57,43.28,24,42,2,0,14.0
+Deandre Baker,Georgia,CB,2019,0.6728,Top 50 Pick,44.19,24.73,76.32,36,30,1,0,6.0
+Joejuan Williams,Vanderbilt,CB,2019,0.6723,Top 50 Pick,51.14,33.8,76.59,50,45,2,0,3.0
+N'Keal Harry,Arizona State,WR,2019,0.672,Top 50 Pick,32.25,28.85,46.11,33,32,1,0,7.0
+Terrell Burgess,Utah,S,2020,0.668,Day 2 Pick,68.76,45.77,118.4,75,104,3,0,4.0
+Hakeem Butler,Iowa State,WR,2019,0.6515,Top 50 Pick,59.85,44.64,87.83,66,103,4,0,0.0
+Kyler Murray,Oklahoma,QB,2019,0.6482,Top 50 Pick,17.25,6.01,29.14,9,1,1,1,71.0
+JJ Arcega-Whiteside,Stanford,WR,2019,0.6477,Top 50 Pick,52.43,32.78,92.86,48,57,2,0,2.0
+Max Scharping,Northern Illinois,OT,2019,0.6442,Top 50 Pick,67.7,45.55,123.56,70,55,2,1,18.0
+Greedy Williams,LSU,CB,2019,0.6368,Top 50 Pick,29.75,14.73,53.04,29,46,2,0,8.0
+Julian Love,Notre Dame,CB,2019,0.6346,Top 50 Pick,50.11,33.01,76.73,54,108,4,1,27.0
+Kyle Dugger,Lenoir-Rhyne,S,2020,0.6335,Top 50 Pick,50.17,26.91,111.67,65,37,2,1,28.0
+Miles Sanders,Penn State,RB,2019,0.6314,Top 50 Pick,40.47,29.1,64.0,42,53,2,1,34.0
+Saahdiq Charles,LSU,OT,2020,0.6212,Day 2 Pick,70.38,34.56,164.98,84,108,4,0,8.0
+Nasir Adderley,Delaware,S,2019,0.6208,Top 50 Pick,58.2,29.04,116.02,37,60,2,1,13.0
+Patrick Queen,LSU,LB,2020,0.6067,Top 50 Pick,27.09,11.16,31.51,21,28,1,1,54.0
+Jordyn Brooks,Texas Tech,LB,2020,0.5961,Day 2 Pick,89.73,53.37,99.64,92,27,1,1,43.0
+Justin Hollins,Oregon,LB,2019,0.5944,Day 2 Pick,107.45,69.07,239.05,111,156,5,0,8.0
+Dexter Lawrence,Clemson,DT,2019,0.5929,Top 50 Pick,28.62,18.26,32.92,26,17,1,1,55.0
+Marquise Brown,Oklahoma,WR,2019,0.5917,Top 50 Pick,28.03,11.3,43.5,11,25,1,1,39.0
+Michael Pittman Jr.,USC,WR,2020,0.5894,Top 50 Pick,41.54,23.51,80.36,42,34,2,1,44.0
+Yetur Gross-Matos,Penn State,DE,2020,0.5889,Top 50 Pick,33.07,26.77,53.95,33,38,2,0,18.0
+Trysten Hill,UCF,DT,2019,0.5876,Day 2 Pick,90.27,47.93,136.88,87,58,2,0,5.0
+Cam Akers,Florida State,RB,2020,0.5824,Top 50 Pick,46.65,38.35,82.34,55,52,2,0,13.0
+Robert Hunt,Louisiana,OG,2020,0.5811,Top 50 Pick,60.56,40.17,108.19,59,39,2,1,30.0
+Dru Samia,Oklahoma,OG,2019,0.5794,Day 2 Pick,89.47,50.37,145.13,77,114,4,0,2.0
+Marlon Davidson,Auburn,DE,2020,0.5755,Top 50 Pick,58.17,38.91,74.48,52,47,2,0,5.0
+Andy Isabella,Massachusetts,WR,2019,0.5726,Day 2 Pick,111.2,79.84,175.14,110,62,2,0,4.0
+Jeff Gladney,TCU,CB,2020,0.5691,Top 50 Pick,58.26,34.31,85.05,43,31,1,0,5.0
+Zach Allen,Boston College,DE,2019,0.5628,Day 2 Pick,73.84,52.07,61.42,69,65,3,1,52.0
+Anthony Nelson,Iowa,DE,2019,0.5613,Day 2 Pick,97.43,78.33,177.35,101,107,4,0,17.0
+Noah Igbinoghene,Auburn,CB,2020,0.5581,Day 2 Pick,62.62,34.31,78.36,60,30,1,0,7.0
+Zack Moss,Utah,RB,2020,0.5576,Day 2 Pick,66.8,36.09,108.42,57,86,3,0,18.0
+Justin Layne,Michigan State,CB,2019,0.5572,Top 50 Pick,52.24,30.26,79.87,53,83,3,0,3.0
+Jace Sternberger,Texas A&M,TE,2019,0.5434,Day 2 Pick,77.46,53.97,121.62,71,75,3,0,1.0
+Ross Blacklock,TCU,DT,2020,0.5428,Top 50 Pick,31.39,16.86,41.67,25,40,2,0,4.0
+Jeremy Chinn,Southern Illinois,S,2020,0.5378,Top 50 Pick,42.44,24.72,70.34,50,64,2,1,41.0
+Jachai Polite,Florida,LB,2019,0.5363,Day 2 Pick,98.68,71.8,226.34,109,68,3,0,1.0
+David Long,Michigan,CB,2019,0.5319,Top 50 Pick,57.04,35.09,85.42,58,79,3,0,7.0
+Michael Jordan,Ohio State,OG,2019,0.5307,Day 2 Pick,85.68,49.3,145.76,84,136,4,1,18.0
+Ben Banogu,TCU,LB,2019,0.5295,Day 2 Pick,81.76,52.83,116.48,80,49,2,0,4.0
+Will Harris,Boston College,S,2019,0.529,Day 2 Pick,85.21,54.61,157.98,96,81,3,1,18.0
+Denzel Mims,Baylor,WR,2020,0.5276,Top 50 Pick,43.57,23.87,75.24,46,59,2,0,5.0
+David Montgomery,Iowa State,RB,2019,0.5264,Day 2 Pick,101.81,60.81,136.72,79,73,3,1,49.0
+L.J. Collier,TCU,DE,2019,0.5246,Top 50 Pick,52.33,27.38,72.69,38,29,1,0,16.0
+Kelvin Harmon,NC State,WR,2019,0.5211,Day 2 Pick,116.6,69.53,172.41,100,206,6,0,3.0
+Clyde Edwards-Helaire,LSU,RB,2020,0.5176,Top 50 Pick,30.1,24.16,33.28,28,32,1,0,18.0
+Connor McGovern,Penn State,OG,2019,0.5144,Day 2 Pick,71.41,46.79,109.5,68,90,3,1,37.0
+Bryce Hall,Virginia,CB,2020,0.5093,Day 2 Pick,111.4,68.7,160.78,87,158,5,0,10.0
+Nate Davis,Charlotte,OG,2019,0.508,Day 2 Pick,95.38,53.35,149.98,81,82,3,1,27.0
+Josh Jacobs,Alabama,RB,2019,0.5078,Top 50 Pick,30.6,14.22,36.81,23,24,1,1,57.0
+Amani Oruwariye,Penn State,CB,2019,0.5072,Day 2 Pick,94.27,53.9,160.7,90,146,5,0,12.0
+Deebo Samuel,South Carolina,WR,2019,0.4952,Top 50 Pick,47.87,29.01,86.51,39,36,2,1,52.0
+Adam Trautman,Dayton,TE,2020,0.4948,Day 2 Pick,75.92,42.86,143.69,63,105,3,1,11.0
+Mecole Hardman,Georgia,WR,2019,0.4933,Day 2 Pick,80.63,42.05,106.42,67,56,2,1,23.0
+Foster Moreau,LSU,TE,2019,0.4931,Day 2 Pick,147.24,85.3,275.28,148,137,4,1,13.0
+Damien Lewis,LSU,OG,2020,0.489,Day 2 Pick,78.99,41.6,151.57,79,69,3,1,35.0
+Khari Willis,Michigan State,S,2019,0.4853,Day 2 Pick,145.14,97.72,285.56,154,109,4,0,12.0
+Drew Sample,Washington,TE,2019,0.4814,Day 2 Pick,93.01,50.7,142.89,72,52,2,1,7.0
+Laviska Shenault Jr.,Colorado,WR,2020,0.4751,Day 2 Pick,70.72,42.09,94.48,61,42,2,0,13.0
+Bradlee Anae,Utah,DE,2020,0.4656,Day 2 Pick,121.44,86.62,144.05,106,179,5,0,1.0
+Jake Fromm,Georgia,QB,2020,0.4646,Top 50 Pick,61.0,36.31,96.48,54,167,5,0,1.0
+Kris Boyd,Texas,CB,2019,0.4564,Day 2 Pick,84.85,56.14,140.49,86,217,7,0,6.0
+Amik Robertson,Louisiana Tech,CB,2020,0.4526,Day 2 Pick,79.08,42.68,78.29,68,139,4,0,14.0
+Lonnie Johnson Jr.,Kentucky,CB,2019,0.4495,Top 50 Pick,56.1,29.54,85.87,55,54,2,0,11.0
+Chase Winovich,Michigan,DE,2019,0.4493,Top 50 Pick,41.14,25.42,55.42,44,77,3,0,11.0
+Neville Gallimore,Oklahoma,DT,2020,0.4459,Day 2 Pick,59.08,27.9,80.88,49,82,3,0,14.0
+Brycen Hopkins,Purdue,TE,2020,0.4386,Late Round Pick,167.41,102.34,294.08,160,136,4,0,2.0
+Chase Claypool,Notre Dame,WR,2020,0.4371,Top 50 Pick,53.01,33.78,84.53,62,49,2,0,19.0
+Daniel Jones,Duke,QB,2019,0.4359,Day 2 Pick,67.4,31.89,105.53,59,6,1,1,52.0
+Geno Stone,Iowa,S,2020,0.4333,Day 2 Pick,142.46,88.78,264.54,116,219,7,1,22.0
+Michael Deiter,Wisconsin,OG,2019,0.4314,Day 2 Pick,98.58,52.69,164.32,85,78,3,0,16.0
+Terrell Lewis,Alabama,LB,2020,0.4302,Day 2 Pick,66.58,40.98,111.82,67,84,3,0,5.0
+Lucas Niang,TCU,OT,2020,0.4284,Day 2 Pick,106.96,57.97,169.06,82,96,3,0,8.0
+Jabari Zuniga,Florida,DE,2020,0.4269,Day 2 Pick,79.02,49.97,117.93,76,79,3,0,1.0
+Riley Ridley,Georgia,WR,2019,0.4243,Day 2 Pick,83.37,41.49,126.16,65,126,4,0,1.0
+Kahale Warring,San Diego State,TE,2019,0.4196,Day 2 Pick,109.22,65.6,182.72,92,86,3,0,0.0
+Ben Burr-Kirven,Washington,LB,2019,0.4193,Day 2 Pick,134.16,78.57,273.14,147,142,5,0,2.0
+Tyler Biadasz,Wisconsin,C,2020,0.4187,Day 2 Pick,106.21,56.86,181.2,89,146,4,1,36.0
+Damon Arnette,Ohio State,CB,2020,0.4168,Day 2 Pick,76.67,38.2,109.65,58,19,1,0,2.0
+Germaine Pratt,NC State,LB,2019,0.415,Day 2 Pick,93.27,57.47,149.01,95,72,3,1,45.0
+Kaleb McGary,Washington,OT,2019,0.4107,Day 2 Pick,65.31,35.96,122.63,73,31,1,1,39.0
+D.K. Metcalf,Ole Miss,WR,2019,0.4072,Top 50 Pick,53.81,30.59,61.44,40,64,2,1,57.0
+Charlie Heck,North Carolina,OT,2020,0.4066,Day 2 Pick,133.28,77.74,260.42,125,126,4,0,15.0
+Jordan Love,Utah State,QB,2020,0.4056,Top 50 Pick,24.07,7.11,40.76,20,26,1,1,42.0
+Keith Ismael,San Diego State,C,2020,0.4046,Day 2 Pick,132.23,88.21,257.83,112,156,5,0,3.0
+Darrell Henderson,Memphis,RB,2019,0.4022,Day 2 Pick,133.28,100.61,227.45,125,70,3,0,15.0
+Parris Campbell,Ohio State,WR,2019,0.3996,Top 50 Pick,42.62,25.18,68.45,49,59,2,0,9.0
+Corey Ballentine,Washburn,CB,2019,0.3976,Day 2 Pick,109.9,69.34,191.06,105,180,6,0,5.0
+Jonah Jackson,Ohio State,OG,2020,0.396,Day 2 Pick,127.67,76.18,256.55,109,75,3,1,32.0
+Dre'Mont Jones,Ohio State,DT,2019,0.3903,Day 2 Pick,75.15,42.8,109.29,64,71,3,1,33.0
+David Long,West Virginia,LB,2019,0.3902,Top 50 Pick,54.67,37.84,86.81,58,188,6,0,23.0
+Devin Asiasi,UCLA,TE,2020,0.3881,Day 2 Pick,88.25,58.22,141.1,69,91,3,0,0.0
+Kindle Vildor,Georgia Southern,CB,2020,0.3866,Day 2 Pick,146.29,112.14,247.87,140,163,5,0,10.0
+D.J. Wonnum,South Carolina,DE,2020,0.3858,Day 2 Pick,123.66,85.39,228.78,114,117,4,1,26.0
+Maxx Crosby,Eastern Michigan,DE,2019,0.3842,Day 2 Pick,103.02,81.24,133.47,106,106,4,1,61.0
+Harrison Bryant,Florida Atlantic,TE,2020,0.3816,Day 2 Pick,100.23,62.34,146.4,77,115,4,1,7.0
+Troy Dye,Oregon,LB,2020,0.3816,Day 2 Pick,106.65,58.76,116.22,78,132,4,0,14.0
+Khalen Saunders,Western Illinois,DT,2019,0.3803,Day 2 Pick,103.39,49.06,173.07,83,84,3,0,17.0
+Antonio Gandy-Golden,Liberty,WR,2020,0.3767,Day 2 Pick,99.01,60.22,158.33,83,142,4,0,0.0
+Essang Bassey,Wake Forest,CB,2020,0.376,Day 2 Pick,164.56,119.05,215.2,162,,,0,0.0
+Trey Adams,Washington,OL,2020,0.3749,Day 2 Pick,93.8,54.8,149.88,73,,,0,0.0
+Cameron Dantzler,Mississippi State,CB,2020,0.3732,Day 2 Pick,136.12,81.08,184.48,96,89,3,0,10.0
+AJ Dillon,Boston College,RB,2020,0.3729,Day 2 Pick,81.56,47.89,124.66,90,62,2,0,24.0
+Sheldrick Redwine,Miami (FL),S,2019,0.3728,Day 2 Pick,118.54,80.53,236.96,132,119,4,0,4.0
+Hunter Bryant,Washington,TE,2020,0.3725,Day 2 Pick,98.6,57.5,136.84,86,,,0,0.0
+D'Andre Walker,Georgia,LB,2019,0.3667,Day 2 Pick,90.13,54.02,153.1,82,168,5,0,0.0
+Dennis Daley,South Carolina,OT,2019,0.3641,Late Round Pick,180.67,96.09,299.86,167,212,6,0,14.0
+Josh Hines-Allen,Kentucky,LB,2019,0.3588,Late Round Pick,205.91,123.88,299.91,,7,1,1,45.0
+Ashtyn Davis,California,S,2020,0.3583,Day 2 Pick,91.82,60.68,138.5,71,68,3,0,14.0
+Marquise Blair,Utah,S,2019,0.3562,Day 2 Pick,103.14,64.08,201.66,103,47,2,0,2.0
+Jason Strowbridge,North Carolina,DE,2020,0.3561,Day 2 Pick,132.93,78.94,211.84,104,154,5,0,1.0
+Brandon Aiyuk,Arizona State,WR,2020,0.3555,Top 50 Pick,36.46,17.75,55.54,23,25,1,1,39.0
+Bryan Edwards,South Carolina,WR,2020,0.354,Day 2 Pick,124.06,89.97,208.48,100,81,3,0,6.0
+Rock Ya-Sin,Temple,CB,2019,0.3538,Top 50 Pick,48.58,27.3,63.41,31,34,2,0,17.0
+Trayvon Mullen,Clemson,CB,2019,0.3509,Day 2 Pick,72.55,46.92,117.72,75,40,2,0,11.0
+Sione Takitaki,BYU,LB,2019,0.3487,Day 2 Pick,121.49,84.66,223.81,107,80,3,0,19.0
+Miles Boykin,Notre Dame,WR,2019,0.3485,Day 2 Pick,65.97,40.38,92.53,61,93,3,0,6.0
+Cole Kmet,Notre Dame,TE,2020,0.3472,Top 50 Pick,54.03,32.29,76.12,45,43,2,1,25.0
+Matt Peart,Connecticut,OT,2020,0.3471,Day 2 Pick,120.78,71.79,256.52,130,99,3,0,7.0
+Ryan Bates,Penn State,OL,2019,0.3463,Day 2 Pick,146.86,78.73,295.94,144,,,0,0.0
+Justice Hill,Oklahoma State,RB,2019,0.3445,Day 2 Pick,104.59,74.9,143.75,98,113,4,0,17.0
+Travis Fulgham,Old Dominion,WR,2019,0.3438,Day 2 Pick,94.23,65.58,168.95,89,184,6,0,4.0
+Jalen Reagor,TCU,WR,2020,0.3393,Day 2 Pick,71.71,41.0,87.9,53,21,1,0,10.0
+Terry McLaurin,Ohio State,WR,2019,0.3375,Day 2 Pick,65.1,32.1,101.8,57,76,3,1,51.0
+Nick Harris,Washington,C,2020,0.3366,Day 2 Pick,156.7,82.11,299.27,146,160,5,0,5.0
+Trayveon Williams,Texas A&M,RB,2019,0.3299,Day 2 Pick,87.95,69.89,120.24,76,182,6,0,4.0
+Oli Udoh,Elon,OT,2019,0.3279,Day 2 Pick,170.61,78.66,300.0,,193,6,0,10.0
+Oshane Ximines,Old Dominion,DE,2019,0.3277,Day 2 Pick,77.49,55.99,69.47,74,95,3,0,8.0
+Curtis Weaver,Boise State,DE,2020,0.3257,Day 2 Pick,101.41,61.71,99.53,88,164,5,0,0.0
+Emanuel Hall,Missouri,WR,2019,0.3254,Day 2 Pick,121.53,106.42,201.58,117,,,0,0.0
+KJ Hamler,Penn State,WR,2020,0.3231,Day 2 Pick,96.0,66.61,131.63,74,46,2,0,5.0
+La'Mical Perine,Florida,RB,2020,0.3215,Day 2 Pick,80.77,51.68,157.0,72,120,4,0,3.0
+Wyatt Ray,Boston College,EDGE,2019,0.318,Late Round Pick,181.41,100.55,292.64,179,,,0,0.0
+Albert Okwuegbunam,Missouri,TE,2020,0.318,Day 2 Pick,100.55,60.58,163.01,97,118,4,0,5.0
+Solomon Kindley,Georgia,OG,2020,0.3161,Day 2 Pick,166.67,102.04,300.0,161,111,4,0,6.0
+K'Von Wallace,Clemson,S,2020,0.3143,Late Round Pick,162.17,112.82,287.06,252,127,4,0,9.0
+Joe Reed,Virginia,WR,2020,0.312,Day 2 Pick,147.28,100.17,252.69,118,151,5,0,0.0
+Jamel Dean,Auburn,CB,2019,0.3083,Day 2 Pick,112.79,66.84,231.03,126,94,3,1,27.0
+Tanner Muse,Clemson,S,2020,0.2965,Day 2 Pick,105.43,75.45,272.47,134,100,3,0,2.0
+Lukas Denis,Boston College,S,2019,0.2961,Undrafted Prospect,208.4,128.27,300.0,192,,,0,0.0
+Alohi Gilman,Notre Dame,S,2020,0.2939,Day 2 Pick,146.52,93.78,286.88,142,186,6,1,18.0
+Donovan Peoples-Jones,Michigan,WR,2020,0.2933,Day 2 Pick,145.17,94.3,240.82,126,187,6,0,18.0
+Darrell Taylor,Tennessee,DE,2020,0.2928,Day 2 Pick,84.96,54.65,131.12,70,48,2,0,10.0
+Braden Mann,Texas A&M,P,2020,0.2926,Late Round Pick,185.86,109.57,300.0,170,191,6,1,13.0
+John Simpson,Clemson,OG,2020,0.288,Day 2 Pick,169.67,90.43,300.0,188,109,4,1,28.0
+Kristian Fulton,LSU,CB,2020,0.287,Day 2 Pick,92.68,57.9,146.07,80,61,2,1,18.0
+Greg Little,Ole Miss,OT,2019,0.2861,Day 2 Pick,89.61,53.09,139.37,78,37,2,0,8.0
+John Cominsky,Charleston (WV),DE,2019,0.286,Day 2 Pick,153.17,80.1,300.0,187,135,4,0,10.0
+Raekwon Davis,Alabama,DT,2020,0.2853,Day 2 Pick,120.83,73.37,208.55,105,56,2,1,23.0
+Terence Steele,Texas Tech,OL,2020,0.2759,Day 2 Pick,145.49,81.86,291.19,150,,,0,0.0
+Kenny Willekes,Michigan State,DE,2020,0.2737,Day 2 Pick,132.53,87.54,197.87,115,225,7,0,1.0
+Greg Gaines,Washington,DT,2019,0.2716,Day 2 Pick,153.52,93.84,280.97,143,134,4,0,19.0
+Jahlani Tavai,Hawaii,LB,2019,0.269,Day 2 Pick,107.96,64.92,74.75,93,43,2,1,34.0
+Alton Robinson,Syracuse,DE,2020,0.2687,Day 2 Pick,135.81,83.8,269.04,141,148,5,0,4.0
+Alexander Mattison,Boise State,RB,2019,0.2678,Day 2 Pick,131.14,89.67,225.02,116,102,3,0,21.0
+Jalen Hurts,Oklahoma,QB,2020,0.2675,Day 2 Pick,78.25,36.78,147.06,94,53,2,1,79.0
+Julian Okwara,Notre Dame,DE,2020,0.2654,Day 2 Pick,87.13,51.14,121.34,64,67,3,0,5.0
+Alex Taylor,South Carolina State,OL,2020,0.2649,Late Round Pick,169.86,99.86,271.69,172,,,0,0.0
+Colton McKivitz,West Virginia,OT,2020,0.2616,Day 2 Pick,139.42,85.06,273.89,110,153,5,1,24.0
+Kalija Lipscomb,Vanderbilt,WR,2020,0.2613,Day 2 Pick,154.75,102.25,245.24,124,,,0,0.0
+Leki Fotu,Utah,DT,2020,0.2606,Day 2 Pick,156.58,92.64,300.0,151,114,4,0,11.0
+Colby Parkinson,Stanford,TE,2020,0.2565,Late Round Pick,156.37,109.07,261.7,117,133,4,0,11.0
+Hakeem Adeniji,Kansas,OT,2020,0.2559,Late Round Pick,176.57,106.84,284.82,207,180,6,0,10.0
+Malik Harrison,Ohio State,LB,2020,0.252,Day 2 Pick,131.82,94.3,266.73,139,98,3,0,19.0
+Kyle Hinton,Washburn,OG,2020,0.2503,Late Round Pick,181.18,118.48,249.37,,253,7,0,3.0
+Prince Tega Wanogho,Auburn,OT,2020,0.2498,Day 2 Pick,107.47,63.54,193.5,91,210,6,0,1.0
+Mike Edwards,Kentucky,S,2019,0.2494,Day 2 Pick,101.03,61.8,103.45,88,99,3,0,16.0
+Tremayne Anchrum,Clemson,OG,2020,0.2488,Late Round Pick,189.27,97.99,300.0,196,250,7,0,2.0
+Josh Metellus,Michigan,S,2020,0.2488,Late Round Pick,191.25,110.46,300.0,233,205,6,0,20.0
+Bobby Okereke,Stanford,LB,2019,0.2485,Day 2 Pick,100.44,53.57,164.88,94,89,3,1,39.0
+Bobby Evans,Oklahoma,OT,2019,0.2483,Day 2 Pick,134.63,74.01,285.96,114,97,3,0,7.0
+Logan Stenberg,Kentucky,OG,2020,0.2476,Day 2 Pick,161.08,88.12,299.14,143,121,4,0,3.0
+Charles Omenihu,Texas,DE,2019,0.2465,Day 2 Pick,141.24,88.6,260.52,131,161,5,0,12.0
+Phil Haynes,Wake Forest,OG,2019,0.2449,Late Round Pick,176.42,98.19,295.16,186,124,4,0,6.0
+Kamren Curl,Arkansas,S,2020,0.2445,Undrafted Prospect,208.73,127.46,300.0,,216,7,1,29.0
+Jack Driscoll,Auburn,OG,2020,0.2439,Day 2 Pick,123.2,73.36,255.6,133,145,4,0,12.0
+James Robinson,Illinois State,RB,2020,0.2429,Undrafted Prospect,190.73,124.33,294.48,184,,,0,0.0
+Jarrett Stidham,Auburn,QB,2019,0.2392,Day 2 Pick,74.88,36.76,110.86,56,133,4,0,6.0
+Stephen Denmark,Valdosta State,CB,2019,0.2376,Late Round Pick,171.3,114.23,249.56,,238,7,0,0.0
+Ryan Finley,NC State,QB,2019,0.2372,Top 50 Pick,35.72,13.15,57.85,30,104,4,0,2.0
+Chuma Edoga,USC,OT,2019,0.2364,Day 2 Pick,156.45,92.81,275.45,123,92,3,0,12.0
+Robert Windsor,Penn State,DT,2020,0.231,Late Round Pick,181.98,96.25,300.0,176,193,6,0,0.0
+Drue Tranquill,Notre Dame,LB,2019,0.2255,Day 2 Pick,121.74,76.52,255.44,121,130,4,1,32.0
+Deion Calhoun,Mississippi State,OL,2019,0.2245,Late Round Pick,208.76,114.77,300.0,228,,,0,0.0
+Evan Weaver,California,LB,2020,0.2239,Late Round Pick,215.16,164.44,194.43,247,202,6,0,0.0
+Khaleke Hudson,Michigan,LB,2020,0.2239,Day 2 Pick,160.27,94.32,286.57,152,162,5,0,7.0
+Justin Skule,Vanderbilt,OT,2019,0.2232,Late Round Pick,192.92,136.6,252.3,,183,6,0,16.0
+Shareef Miller,Penn State,DE,2019,0.2222,Day 2 Pick,149.14,84.83,261.3,127,138,4,0,0.0
+Jon Runyan Jr.,Michigan,OT,2020,0.2204,Late Round Pick,172.1,88.13,300.0,201,192,6,1,36.0
+Isaiah Johnson,Houston,CB,2019,0.2177,Day 2 Pick,131.54,98.24,261.64,153,129,4,0,1.0
+L'Jarius Sneed,Louisiana Tech,S,2020,0.2176,Late Round Pick,176.65,105.55,269.65,245,138,4,1,22.0
+Troy Pride Jr.,Notre Dame,CB,2020,0.2167,Day 2 Pick,118.38,72.09,211.55,103,113,4,0,3.0
+Isaiah Prince,Ohio State,OT,2019,0.2135,Day 2 Pick,168.62,90.14,287.27,164,202,6,0,4.0
+Ryquell Armstead,Temple,RB,2019,0.2124,Day 2 Pick,160.12,121.25,287.69,158,140,5,0,2.0
+Gary Jennings Jr,West Virginia,WR,2019,0.2103,Day 2 Pick,168.02,120.39,264.53,173,120,4,0,0.0
+Hjalte Froholdt,Arkansas,OG,2019,0.2091,Late Round Pick,207.11,114.38,300.0,209,118,4,1,24.0
+Antoine Brooks Jr.,Maryland,S,2020,0.2075,Late Round Pick,201.04,140.59,300.0,208,198,6,0,1.0
+Michael Dogbe,Temple,DE,2019,0.2072,Late Round Pick,191.98,149.95,252.38,370,249,7,0,4.0
+Kendall Sheffield,Ohio State,CB,2019,0.2058,Day 2 Pick,127.05,79.82,188.96,99,111,4,0,6.0
+Netane Muti,Fresno State,OG,2020,0.2054,Late Round Pick,160.02,94.95,253.65,128,181,6,0,3.0
+Ben Bartch,Saint John's (MN),OG,2020,0.2027,Day 2 Pick,163.1,95.27,296.33,120,116,4,0,9.0
+Mitch Hyatt,Clemson,OT,2019,0.2016,Late Round Pick,175.07,119.94,300.0,140,,,0,0.0
+Cortez Broughton,Cincinnati,DT,2019,0.1994,Late Round Pick,192.33,152.56,250.39,,242,7,0,1.0
+Lavert Hill,Michigan,CB,2020,0.1973,Day 2 Pick,148.99,105.1,236.14,108,,,0,0.0
+Zedrick Woods,Ole Miss,S,2019,0.1949,Late Round Pick,165.45,94.07,263.36,248,,,0,0.0
+Kenny Robinson Jr.,West Virginia,S,2020,0.1938,Late Round Pick,178.24,126.41,237.25,223,152,5,0,1.0
+Nick Coe,Auburn,LB,2020,0.1907,Day 2 Pick,147.58,76.71,257.04,127,,,0,0.0
+Sam Sloman,Miami (OH),K,2020,0.1899,Late Round Pick,194.84,142.54,251.36,,248,7,0,0.0
+Josiah Scott,Michigan State,CB,2020,0.1886,Day 2 Pick,162.9,93.7,289.52,147,137,4,0,3.0
+Ben Powers,Oklahoma,OG,2019,0.1875,Day 2 Pick,163.25,92.23,283.39,122,123,4,1,27.0
+Iosua Opeta,Weber State,OL,2019,0.1875,Undrafted Prospect,194.64,83.99,297.44,344,,,0,0.0
+Dustin Woodard,Memphis,C,2020,0.1847,Late Round Pick,194.46,144.01,250.84,,230,7,0,0.0
+Nate Herbig,Stanford,OL,2019,0.1842,Undrafted Prospect,190.15,101.48,300.0,150,,,0,0.0
+Jonathan Greenard,Florida,DE,2020,0.1812,Day 2 Pick,131.85,94.63,251.91,122,90,3,1,32.0
+Sutton Smith,Northern Illinois,DE,2019,0.1802,Late Round Pick,193.98,134.72,223.31,321,175,6,0,0.0
+DaVon Hamilton,Ohio State,DT,2020,0.1757,Day 2 Pick,146.67,83.02,269.53,138,73,3,1,25.0
+Kyle Murphy,Rhode Island,OL,2020,0.1739,Undrafted Prospect,243.55,117.82,300.0,,,,0,0.0
+Akeem Davis-Gaither,Appalachian State,LB,2020,0.1737,Day 2 Pick,114.68,57.36,172.93,85,107,4,0,14.0
+Quincy Williams,Murray State,S,2019,0.1737,Late Round Pick,173.11,115.75,249.58,,98,3,1,41.0
+Daniel Thomas,Auburn,S,2020,0.1726,Undrafted Prospect,194.96,113.93,300.0,,157,5,0,5.0
+David Edwards,Wisconsin,OT,2019,0.1708,Day 2 Pick,172.81,98.51,300.0,157,169,5,1,36.0
+Drew Forbes,SE Missouri State,OT,2019,0.1701,Late Round Pick,188.68,133.79,249.44,,189,6,0,1.0
+Josh Oliver,San Jose State,TE,2019,0.1686,Day 2 Pick,107.1,67.27,195.97,102,69,3,1,7.0
+Trevon Wesco,West Virginia,TE,2019,0.1682,Late Round Pick,203.55,112.7,300.0,174,121,4,0,0.0
+Mack Wilson,Alabama,LB,2019,0.1678,Day 2 Pick,151.02,102.3,267.31,129,155,5,1,25.0
+Harrison Hand,Temple,CB,2020,0.1669,Late Round Pick,189.62,110.97,284.89,175,169,5,0,2.0
+Dalton Keene,Virginia Tech,TE,2020,0.166,Late Round Pick,200.5,119.21,292.29,197,101,3,0,0.0
+Nate Stanley,Iowa,QB,2020,0.1656,Late Round Pick,189.94,97.86,300.0,159,244,7,0,0.0
+Tyree Jackson,Buffalo,QB,2019,0.1653,Day 2 Pick,113.11,86.05,202.37,136,,,0,0.0
+Dawson Knox,Ole Miss,TE,2019,0.1645,Day 2 Pick,178.75,109.85,290.95,118,96,3,1,25.0
+Willie Gay Jr.,Mississippi State,LB,2020,0.1619,Day 2 Pick,155.93,88.29,249.86,163,63,2,1,27.0
+Devin Duvernay,Texas,WR,2020,0.1612,Day 2 Pick,92.66,53.14,148.64,81,92,3,1,12.0
+Quinton Bell,Prairie View A&M,DE,2019,0.1611,Late Round Pick,184.19,113.4,249.6,,230,7,0,4.0
+Terrill Hanks,New Mexico State,LB,2019,0.161,Late Round Pick,168.2,116.11,160.3,139,,,0,0.0
+Davion Taylor,Colorado,LB,2020,0.1584,Day 2 Pick,146.0,82.87,286.31,165,103,3,0,3.0
+Justin Rohrwasser,Marshall,K,2020,0.158,Late Round Pick,195.01,140.46,251.3,,159,5,0,0.0
+Joe Jackson,Miami (FL),DE,2019,0.1578,Late Round Pick,157.77,101.76,172.36,119,165,5,0,1.0
+Steven Wirtel,Iowa State,LS,2020,0.1576,Late Round Pick,216.97,125.55,300.0,,,,0,0.0
+Trey Pipkins,Sioux Falls,OT,2019,0.1571,Undrafted Prospect,194.15,101.84,300.0,,91,3,1,33.0
+Jonathan Garvin,Miami (FL),DE,2020,0.157,Late Round Pick,185.04,108.93,297.19,177,242,7,0,3.0
+Beau Benzschawel,Wisconsin,OL,2019,0.1565,Late Round Pick,179.61,97.32,300.0,163,,,0,0.0
+Ke'Shawn Vaughn,Illinois,RB,2020,0.1558,Day 2 Pick,118.47,77.3,201.21,99,76,3,0,2.0
+Paul Adams,Missouri,OT,2019,0.1555,Late Round Pick,179.6,88.52,300.0,177,,,0,0.0
+Darius Slayton,Auburn,WR,2019,0.1547,Day 2 Pick,140.09,81.59,223.24,112,171,5,1,32.0
+C.J. Gardner-Johnson,Florida,S,2019,0.1522,Day 2 Pick,172.39,76.6,300.0,,105,4,1,27.0
+Fred Johnson,Florida,OL,2019,0.1521,Undrafted Prospect,225.31,152.95,300.0,302,,,0,0.0
+Deionte Thompson,Alabama,S,2019,0.1505,Day 2 Pick,154.2,102.12,274.21,115,139,5,0,4.0
+Nnamdi Madubuike,Texas A&M,DT,2020,0.1504,Undrafted Prospect,181.91,86.62,300.0,,71,3,1,38.0
+Jimmy Moreland,James Madison,CB,2019,0.15,Late Round Pick,169.25,113.56,245.66,290,227,7,0,5.0
+Isaiah Rodgers,Massachusetts,CB,2020,0.1484,Late Round Pick,184.97,161.08,188.92,,211,6,0,18.0
+Jacob Eason,Washington,QB,2020,0.1475,Day 2 Pick,72.91,37.82,113.49,56,122,4,0,0.0
+Darrynton Evans,Appalachian State,RB,2020,0.1449,Day 2 Pick,136.66,75.48,292.0,137,93,3,0,3.0
+Yodny Cajuste,West Virginia,OT,2019,0.1447,Late Round Pick,162.61,103.31,293.78,135,101,3,0,4.0
+Jaquan Johnson,Miami (FL),CB,2019,0.1422,Late Round Pick,188.06,111.63,276.39,128,181,6,0,5.0
+Qaadir Sheppard,Ole Miss,DL,2020,0.1418,Day 2 Pick,169.69,91.99,300.0,168,,,0,0.0
+Brandon Jones,Texas,S,2020,0.1415,Day 2 Pick,153.12,97.23,240.64,111,70,3,1,21.0
+Stephen Sullivan,LSU,TE,2020,0.141,Undrafted Prospect,225.2,119.99,300.0,192,251,7,0,1.0
+Thaddeus Moss,LSU,TE,2020,0.1409,Late Round Pick,200.42,108.03,300.0,169,,,0,0.0
+Ashton Dulin,Malone University (Ohio),WR,2019,0.1406,Undrafted Prospect,197.12,92.47,300.0,,,,0,0.0
+Austin Seibert,Oklahoma,K,2019,0.1396,Undrafted Prospect,245.69,141.55,294.65,,170,5,0,6.0
+Saquan Hampton,Rutgers,S,2019,0.1393,Late Round Pick,190.77,121.76,290.71,241,177,6,0,0.0
+Stantley Thomas-Oliver,Florida International,CB,2020,0.1389,Undrafted Prospect,244.46,137.11,300.0,,221,7,0,2.0
+Kaden Elliss,Idaho,LB,2019,0.1388,Late Round Pick,186.21,125.34,253.32,,244,7,1,29.0
+Austin Mack,Ohio State,WR,2020,0.1383,Day 2 Pick,154.77,105.12,274.43,132,,,0,0.0
+T.J. Brunson,South Carolina,LB,2020,0.1368,Late Round Pick,194.73,155.58,251.79,,238,7,0,0.0
+Ben Bredeson,Michigan,OG,2020,0.1351,Late Round Pick,183.43,116.82,300.0,158,143,4,1,21.0
+LaDarius Hamilton,North Texas,DL,2020,0.1328,Late Round Pick,222.68,137.3,298.62,250,,,0,0.0
+Ethan Greenidge,Villanova,OL,2019,0.1314,Undrafted Prospect,235.04,138.73,300.0,,,,0,0.0
+Markus Bailey,Purdue,LB,2020,0.1303,Day 2 Pick,166.58,108.83,167.9,131,215,7,0,7.0
+Renell Wren,Arizona State,DT,2019,0.1284,Day 2 Pick,170.34,94.48,293.6,155,125,4,0,2.0
+Shaun Bradley,Temple,LB,2020,0.1282,Late Round Pick,185.55,104.26,297.26,189,196,6,0,3.0
+Malik Carney,North Carolina,EDGE,2019,0.1275,Late Round Pick,191.5,108.53,300.0,210,,,0,0.0
+Sean Murphy-Bunting,Central Michigan,CB,2019,0.1269,Undrafted Prospect,184.65,105.11,300.0,,39,2,1,24.0
+Malcolm Roach,Texas,DL,2020,0.1263,Undrafted Prospect,220.7,124.66,300.0,220,,,0,0.0
+Kamal Martin,Minnesota,LB,2020,0.1251,Day 2 Pick,183.8,110.82,297.56,157,175,5,0,4.0
+Joseph Charlton,South Carolina,P,2020,0.1249,Undrafted Prospect,239.08,154.44,300.0,202,,,0,0.0
+Yasir Durant,Missouri,OL,2020,0.1244,Undrafted Prospect,266.26,170.99,300.0,,,,0,0.0
+John Molchon,Boise State,OL,2020,0.1237,Undrafted Prospect,219.77,113.95,300.0,,,,0,0.0
+Rodney Clemons,SMU,S,2020,0.1233,Undrafted Prospect,230.37,174.67,188.75,,,,0,0.0
+Jake Bailey,Stanford,P,2019,0.1225,Undrafted Prospect,252.51,145.91,300.0,329,163,5,1,11.0
+Anfernee Jennings,Alabama,LB,2020,0.1225,Day 2 Pick,95.87,64.4,199.82,101,87,3,0,22.0
+P.J. Johnson,Arizona,DE,2019,0.1224,Late Round Pick,188.66,124.41,251.77,,229,7,0,0.0
+Joe Bachie,Michigan State,LB,2020,0.1222,Undrafted Prospect,220.83,160.23,300.0,263,,,0,0.0
+Evan Worthington,Colorado,S,2019,0.122,Undrafted Prospect,208.58,110.69,300.0,178,,,0,0.0
+Jalen Jelks,Oregon,DE,2019,0.1215,Day 2 Pick,151.36,95.82,261.26,113,241,7,0,0.0
+Devin Singletary,Florida Atlantic,RB,2019,0.1214,Day 2 Pick,180.86,126.55,244.08,141,74,3,1,39.0
+Jonathan Crawford,Indiana,S,2019,0.121,Undrafted Prospect,222.58,158.38,300.0,206,,,0,0.0
+Alex Barnes,Kansas State,RB,2019,0.1208,Late Round Pick,217.88,143.94,265.52,280,,,0,0.0
+Darnay Holmes,UCLA,CB,2020,0.1204,Day 2 Pick,155.62,102.29,252.8,123,110,4,0,8.0
+Wes Martin,Indiana,OG,2019,0.12,Late Round Pick,193.46,136.72,252.21,,131,4,0,5.0
+Julian Blackmon,Utah,S,2020,0.1191,Undrafted Prospect,214.84,130.3,297.5,193,85,3,1,20.0
+Tommy Sweeney,Boston College,TE,2019,0.1182,Undrafted Prospect,204.76,114.34,293.76,151,228,7,0,1.0
+T.J. Edwards,Wisconsin,LB,2019,0.1179,Late Round Pick,194.96,132.65,251.04,180,,,0,0.0
+Mykal Walker,Fresno State,LB,2020,0.1176,Undrafted Prospect,217.25,137.29,300.0,230,119,4,0,16.0
+Charlie Taumoepeau,Portland State,TE,2020,0.1157,Day 2 Pick,191.29,98.73,284.2,185,,,0,0.0
+Blake Brandel,Oregon State,OT,2020,0.1154,Late Round Pick,193.45,136.89,252.38,,203,6,0,15.0
+Gerald Willis,Miami (FL),DL,2019,0.1151,Day 2 Pick,142.77,89.1,204.48,104,,,0,0.0
+K.J. Hill,Ohio State,WR,2020,0.1148,Day 2 Pick,129.43,77.83,179.85,98,220,7,0,1.0
+Terez Hall,Missouri,LB,2019,0.1143,Late Round Pick,198.8,120.02,300.0,162,,,0,0.0
+Blake Cashman,Minnesota,LB,2019,0.1142,Undrafted Prospect,194.42,88.39,271.1,271,157,5,1,25.0
+Dezmon Patmon,Washington State,WR,2020,0.114,Undrafted Prospect,217.98,135.31,290.23,200,212,6,0,0.0
+Donnie Lewis Jr.,Tulane,CB,2019,0.1138,Late Round Pick,176.45,153.43,245.93,366,221,7,0,0.0
+Kevin Dotson,Louisiana,OG,2020,0.1135,Late Round Pick,183.65,114.94,250.91,205,135,4,1,32.0
+Jordan Miller,Washington,CB,2019,0.1133,Day 2 Pick,172.15,102.03,293.38,160,172,5,0,1.0
+Danny Pinter,Ball State,OG,2020,0.113,Late Round Pick,196.91,111.36,300.0,244,149,5,0,7.0
+Vosean Joseph,Florida,LB,2019,0.1127,Undrafted Prospect,204.4,123.32,299.22,196,147,5,0,0.0
+Kingsley Keke,Texas A&M,DT,2019,0.1124,Day 2 Pick,176.52,96.94,300.0,169,150,5,0,9.0
+Marcus Epps,Wyoming,S,2019,0.1109,Late Round Pick,184.84,171.51,209.09,,191,6,0,18.0
+Arlington Hambright,Colorado,OT,2020,0.1109,Late Round Pick,190.93,129.92,251.94,,226,7,0,1.0
+Tyler Johnson,Minnesota,WR,2020,0.1108,Late Round Pick,186.05,107.21,300.0,173,161,5,0,9.0
+Damien Harris,Alabama,RB,2019,0.1108,Day 2 Pick,117.69,96.19,214.9,108,87,3,1,16.0
+Lachavious Simmons,Tennessee State,OG,2020,0.1104,Late Round Pick,192.35,136.55,251.99,,227,7,0,0.0
+Te'von Coney,Notre Dame,LB,2019,0.1093,Day 2 Pick,160.71,96.2,266.47,134,,,0,0.0
+Marvell Tell III,USC,S,2019,0.1085,Day 2 Pick,151.76,88.48,236.24,120,144,5,0,1.0
+Nick Allegretti,Illinois,OG,2019,0.1071,Late Round Pick,191.88,135.63,252.38,,216,7,0,20.0
+Larrell Murchison,NC State,DT,2020,0.1067,Late Round Pick,178.56,103.57,300.0,181,174,5,0,7.0
+Mark Fields,Clemson,CB,2019,0.1066,Undrafted Prospect,207.36,124.83,300.0,275,,,0,0.0
+Jordan Mack,Virginia,LB,2020,0.1057,Undrafted Prospect,226.98,164.65,300.0,210,,,0,0.0
+Shaquille Quarterman,Miami (FL),LB,2020,0.1037,Undrafted Prospect,222.35,156.48,195.76,218,140,4,0,5.0
+Trystan Colon-Castillo,Missouri,OL,2020,0.1036,Undrafted Prospect,251.63,145.73,300.0,294,,,0,0.0
+Jacob Phillips,LSU,LB,2020,0.1036,Day 2 Pick,134.09,93.07,250.06,121,97,3,0,5.0
+Andrew Wingard,Wyoming,S,2019,0.1036,Late Round Pick,194.82,123.5,225.14,200,,,0,0.0
+Cole Holcomb,North Carolina,LB,2019,0.1022,Late Round Pick,190.73,155.71,250.88,,173,5,1,26.0
+Azeez Al-Shaair,Florida Atlantic,LB,2019,0.1021,Undrafted Prospect,255.68,172.94,300.0,338,,,0,0.0
+Javon Patterson,Ole Miss,C,2019,0.1019,Late Round Pick,212.36,111.32,300.0,238,246,7,0,0.0
+Jordan Brown,South Dakota State,CB,2019,0.0998,Late Round Pick,184.24,105.04,300.0,194,223,7,0,0.0
+Tipa Galeai,Utah State,LB,2020,0.0989,Late Round Pick,212.76,137.44,300.0,186,,,0,0.0
+Cameron Smith,USC,LB,2019,0.0985,Day 2 Pick,176.19,104.89,292.17,156,162,5,0,0.0
+Carter Coughlin,Minnesota,LB,2020,0.0978,Day 2 Pick,180.07,111.31,299.92,190,218,7,0,5.0
+Darius West,Kentucky,S,2019,0.0977,Late Round Pick,191.48,99.15,269.77,217,,,0,0.0
+Austin Cutting,Air Force,LS,2019,0.0958,Late Round Pick,190.97,130.91,252.2,,250,7,0,2.0
+Kevin Givens,Penn State,DL,2019,0.0951,Undrafted Prospect,237.16,130.82,300.0,235,,,0,0.0
+Scott Miller,Bowling Green,WR,2019,0.095,Late Round Pick,196.99,162.78,250.95,,208,6,0,11.0
+Vernon Scott,TCU,S,2020,0.0942,Late Round Pick,190.67,150.05,253.11,,236,7,0,1.0
+Isaiah Hodgins,Oregon State,WR,2020,0.094,Day 2 Pick,176.63,97.97,300.0,187,207,6,0,6.0
+Reggie Robinson II,Tulsa,CB,2020,0.0923,Late Round Pick,198.15,133.68,297.71,,123,4,0,0.0
+George Asafo-Adjei,Kentucky,OT,2019,0.0914,Late Round Pick,195.85,135.67,252.51,,232,7,0,0.0
+Ryan Pope,San Diego State,OT,2019,0.0897,Undrafted Prospect,235.9,157.95,300.0,289,,,0,0.0
+Jared Pinkney,Vanderbilt,TE,2020,0.0896,Undrafted Prospect,206.44,125.24,297.35,145,,,0,0.0
+Zach Gentry,Michigan,TE,2019,0.0895,Undrafted Prospect,271.98,203.66,278.98,295,141,5,0,2.0
+Montre Hartage,Northwestern,CB,2019,0.0893,Undrafted Prospect,268.14,194.95,300.0,266,,,0,0.0
+Ka'dar Hollman,Toledo,CB,2019,0.0879,Late Round Pick,185.79,141.93,253.03,,185,6,0,4.0
+Diontae Johnson,Toledo,WR,2019,0.0879,Day 2 Pick,192.12,111.74,280.66,137,66,3,1,35.0
+Alec Ingold,Wisconsin,FB,2019,0.0867,Undrafted Prospect,261.53,189.64,300.0,342,,,0,0.0
+Yosh Nijman,Virginia Tech,OT,2019,0.0862,Undrafted Prospect,204.4,150.57,296.58,,,,0,0.0
+Michael Jackson,Miami (FL),CB,2019,0.0859,Undrafted Prospect,239.68,141.25,300.0,239,158,5,1,18.0
+Khalid Kareem,Notre Dame,DE,2020,0.0857,Late Round Pick,199.59,119.85,296.83,148,147,5,0,2.0
+Trevis Gipson,Tulsa,DE,2020,0.0853,Undrafted Prospect,243.83,173.77,300.0,,155,5,0,11.0
+Donnell Greene,Minnesota,OT,2019,0.0847,Undrafted Prospect,243.34,157.24,300.0,,,,0,0.0
+James Proche,SMU,WR,2020,0.0845,Late Round Pick,196.9,127.59,300.0,164,201,6,0,4.0
+Ulysees Gilbert,Akron,LB,2019,0.0842,Late Round Pick,189.51,161.53,182.95,358,207,6,0,2.0
+Charlie Woerner,Georgia,TE,2020,0.0842,Undrafted Prospect,251.73,128.77,300.0,,190,6,0,0.0
+JJ Molson,UCLA,K,2020,0.0841,Undrafted Prospect,267.82,165.33,300.0,298,,,0,0.0
+Mitch Wishnowsky,Utah,P,2019,0.0839,Undrafted Prospect,217.68,133.54,300.0,265,110,4,1,10.0
+Cale Garrett,Missouri,LB,2020,0.0839,Undrafted Prospect,245.39,198.21,300.0,,,,0,0.0
+Derrek Thomas,Baylor,CB,2019,0.0835,Day 2 Pick,191.52,120.25,273.0,189,,,0,0.0
+Anthony Johnson,Buffalo,WR,2019,0.0828,Day 2 Pick,181.08,140.07,297.45,152,,,0,0.0
+Javaris Davis,Auburn,CB,2020,0.0827,Day 2 Pick,143.61,93.94,278.02,129,,,0,0.0
+Simon Stepaniak,Indiana,OT,2020,0.0825,Undrafted Prospect,222.62,154.44,295.26,304,209,6,0,0.0
+Myles Bryant,Washington,CB,2020,0.0821,Undrafted Prospect,260.84,155.32,300.0,272,,,0,0.0
+Jonathan Ledbetter,Georgia,DL,2019,0.0821,Undrafted Prospect,192.1,112.85,300.0,171,,,0,0.0
+A.J. Green,Oklahoma State,CB,2020,0.0821,Undrafted Prospect,216.24,128.92,300.0,167,,,0,0.0
+Michael Onwenu,Michigan,OG,2020,0.082,Undrafted Prospect,224.05,151.32,300.0,,182,6,1,33.0
+Matt Gay,Utah,K,2019,0.0816,Undrafted Prospect,251.65,166.15,300.0,328,145,5,1,19.0
+Alizé Mack,Notre Dame,TE,2019,0.0814,Undrafted Prospect,238.95,123.08,300.0,,231,7,0,0.0
+Joe Giles-Harris,Duke,LB,2019,0.0809,Undrafted Prospect,265.2,170.26,300.0,365,,,0,0.0
+Collin Johnson,Texas,WR,2020,0.0809,Day 2 Pick,154.91,118.07,217.91,107,165,5,0,3.0
+Cameron Clark,Charlotte,OT,2020,0.0808,Undrafted Prospect,244.38,133.44,300.0,253,129,4,0,0.0
+Michael Danna,Michigan,DE,2020,0.0803,Late Round Pick,190.63,129.39,250.13,,177,5,1,23.0
+Cordel Iwuagwu,TCU,OL,2020,0.08,Undrafted Prospect,245.21,125.62,300.0,,,,0,0.0
+Jamal Davis,Akron,EDGE,2019,0.0798,Late Round Pick,176.02,73.37,258.44,276,,,0,0.0
+Joshua Kelley,UCLA,RB,2020,0.0794,Late Round Pick,166.96,138.85,296.78,166,112,4,0,9.0
+Chris Claybrooks,Memphis,CB,2020,0.0786,Late Round Pick,186.37,137.18,252.27,,223,7,0,5.0
+Tyler Davis,Georgia Tech,TE,2020,0.0785,Late Round Pick,202.14,148.44,251.86,,206,6,0,0.0
+Duke Shelley,Kansas State,CB,2019,0.0782,Late Round Pick,190.22,151.19,251.91,,205,6,0,6.0
+Jalen Hurd,Baylor,WR,2019,0.078,Day 2 Pick,164.38,181.31,266.21,130,67,3,0,0.0
+Benny Snell Jr.,Kentucky,RB,2019,0.0775,Undrafted Prospect,218.82,155.05,299.69,245,122,4,0,8.0
+Carl Granderson,Wyoming,EDGE,2019,0.077,Undrafted Prospect,233.95,157.69,300.0,229,,,0,0.0
+Quez Watkins,Southern Miss,WR,2020,0.0766,Day 2 Pick,157.31,97.87,247.9,136,200,6,0,13.0
+Caleb Wilson,UCLA,TE,2019,0.0766,Day 2 Pick,160.41,96.52,282.34,182,254,7,0,0.0
+Ross Pierschbacher,Alabama,OG,2019,0.076,Late Round Pick,194.59,97.42,300.0,172,153,5,0,0.0
+Blessuan Austin,Rutgers,CB,2019,0.0755,Undrafted Prospect,197.76,135.92,300.0,183,196,6,0,6.0
+Dakota Allen,Texas Tech,LB,2019,0.0755,Undrafted Prospect,228.1,144.39,300.0,207,251,7,0,2.0
+Jack Fox,Rice,P,2019,0.0754,Undrafted Prospect,265.65,150.7,300.0,,,,0,0.0
+Jason Huntley,New Mexico State,RB,2020,0.0741,Late Round Pick,203.3,194.12,250.49,,172,5,0,0.0
+William Sweet,North Carolina,OT,2019,0.074,Undrafted Prospect,237.52,125.6,300.0,364,,,0,0.0
+Ty Summers,TCU,LB,2019,0.0739,Undrafted Prospect,210.49,123.44,300.0,284,226,7,0,6.0
+Olabisi Johnson,Colorado State,WR,2019,0.0735,Undrafted Prospect,254.86,154.34,300.0,224,247,7,0,5.0
+Rashad Fenton,South Carolina,CB,2019,0.0732,Undrafted Prospect,252.8,152.43,300.0,252,201,6,0,7.0
+Brandon Knight,Indiana,OT,2019,0.0725,Undrafted Prospect,232.96,137.12,300.0,215,,,0,0.0
+Khalil Davis,Nebraska,DT,2020,0.0725,Undrafted Prospect,204.12,114.23,300.0,246,194,6,0,3.0
+Devon Johnson,Ferris State,OT,2019,0.072,Undrafted Prospect,224.77,116.48,300.0,,,,0,0.0
+Tyler Roemer,San Diego State,OT,2019,0.0712,Undrafted Prospect,223.3,121.17,300.0,303,,,0,0.0
+Tyre Phillips,Mississippi State,OT,2020,0.0706,Undrafted Prospect,236.71,135.21,300.0,235,106,3,0,11.0
+Lynn Bowden Jr.,Kentucky,WR,2020,0.0705,Day 2 Pick,178.84,117.36,277.98,144,80,3,0,3.0
+Ryan Connelly,Wisconsin,LB,2019,0.0695,Late Round Pick,208.65,112.19,300.0,202,143,5,0,4.0
+Jackson Barton,Utah,OT,2019,0.0688,Undrafted Prospect,228.52,117.88,300.0,233,240,7,0,1.0
+Sterling Hofrichter,Syracuse,P,2020,0.0688,Undrafted Prospect,270.84,169.33,300.0,,228,7,0,1.0
+Emeke Egbule,Houston,LB,2019,0.0685,Undrafted Prospect,245.79,146.2,300.0,232,200,6,0,2.0
+Dillon Mitchell,Oregon,WR,2019,0.0685,Late Round Pick,184.36,118.14,295.82,188,239,7,0,0.0
+Byron Cowart,Maryland,DT,2019,0.0685,Day 2 Pick,185.83,97.3,299.15,161,159,5,0,14.0
+Ugo Amadi,Oregon,S,2019,0.0685,Undrafted Prospect,217.16,98.5,300.0,,132,4,0,8.0
+Tyrel Dodson,Texas A&M,LB,2019,0.0682,Undrafted Prospect,234.01,132.81,300.0,272,,,0,0.0
+Chris Jackson,Marshall,S,2020,0.0674,Late Round Pick,187.68,170.71,198.68,,243,7,0,2.0
+Daylon Mack,Texas A&M,DT,2019,0.0672,Undrafted Prospect,206.82,118.71,300.0,184,160,5,0,0.0
+Will Grier,West Virginia,QB,2019,0.0665,Day 2 Pick,136.57,86.44,264.55,124,100,3,0,1.0
+Joshua Miles,Morgan State,OT,2019,0.0663,Undrafted Prospect,251.68,157.65,300.0,,248,7,0,2.0
+Jet Anderson,TCU,RB,2020,0.0662,Undrafted Prospect,230.99,127.9,300.0,,,,0,0.0
+Chris Miller,Baylor,S,2020,0.0656,Undrafted Prospect,254.83,159.02,293.48,279,,,0,0.0
+Javelin Guidry,Utah,CB,2020,0.065,Undrafted Prospect,201.68,113.46,286.46,287,,,0,0.0
+Sean McKeon,Michigan,TE,2020,0.0644,Undrafted Prospect,259.82,169.49,300.0,222,,,0,0.0
+Daniel Bituli,Tennessee,LB,2020,0.0641,Undrafted Prospect,246.54,186.77,300.0,,,,0,0.0
+Michael Pinckney,Miami,LB,2020,0.064,Undrafted Prospect,244.98,175.77,187.79,274,,,0,0.0
+John Ursua,Hawaii,WR,2019,0.0636,Late Round Pick,199.1,180.17,241.53,335,236,7,0,0.0
+Dontavius Russell,Auburn,DT,2019,0.0632,Day 2 Pick,156.8,89.23,281.09,133,235,7,0,0.0
+Isaac Nauta,Georgia,TE,2019,0.0632,Undrafted Prospect,270.18,166.34,300.0,191,224,7,0,0.0
+Antonio Gibson,Memphis,RB,2020,0.0628,Day 2 Pick,142.76,85.48,261.52,119,66,3,0,29.0
+Bravvion Roy,Baylor,DT,2020,0.0628,Late Round Pick,197.18,157.04,251.77,,184,6,0,9.0
+Kerrith Whyte Jr,Florida Atlantic,RB,2019,0.0622,Late Round Pick,203.02,197.75,254.12,262,222,7,0,1.0
+Isaiah Coulter,Rhode Island,WR,2020,0.0601,Undrafted Prospect,229.27,124.44,300.0,178,171,5,0,0.0
+Jordan Jones,Kentucky,LB,2019,0.0595,Undrafted Prospect,242.74,137.17,300.0,,,,0,0.0
+Marcus Green,La-Monroe,WR,2019,0.0592,Late Round Pick,189.72,132.62,250.2,,203,6,0,0.0
+James Smith-Williams,NC State,DE,2020,0.0589,Undrafted Prospect,206.02,103.35,285.35,229,229,7,0,15.0
+Tre Lamar,Clemson,LB,2019,0.0587,Undrafted Prospect,212.18,158.13,298.62,243,,,0,0.0
+Anthony McFarland Jr.,Maryland,RB,2020,0.0585,Undrafted Prospect,207.44,119.06,297.99,182,124,4,0,1.0
+Greg Dortch,Wake Forest,WR,2019,0.0582,Undrafted Prospect,238.61,182.97,290.53,257,,,0,0.0
+Saivion Smith,Alabama,CB,2019,0.0579,Undrafted Prospect,199.09,122.84,300.0,168,,,0,0.0
+Dom Wood-Anderson,Tennessee,TE,2020,0.0575,Undrafted Prospect,249.07,149.2,300.0,,,,0,0.0
+Tyrie Cleveland,Florida,WR,2020,0.0569,Undrafted Prospect,255.82,144.66,287.02,256,252,7,0,0.0
+Davante Davis,Texas,CB,2019,0.0556,Undrafted Prospect,247.08,154.98,300.0,270,,,0,0.0
+Michael Ojemudia,Iowa,CB,2020,0.0552,Late Round Pick,184.46,124.76,300.0,199,77,3,0,4.0
+Cassh Maluia,Wyoming,LB,2020,0.055,Late Round Pick,195.4,160.38,253.23,,204,6,0,1.0
+Michael Turk,Arizona State,P,2020,0.0545,Undrafted Prospect,249.88,149.88,300.0,295,,,0,0.0
+Dre Greenlaw,Arkansas,LB,2019,0.0539,Undrafted Prospect,216.6,143.44,295.73,213,148,5,1,31.0
+Jamal Peters,Mississippi State,CB,2019,0.0537,Undrafted Prospect,241.33,159.24,300.0,220,,,0,0.0
+Jake Hanson,Oregon,C,2020,0.0528,Undrafted Prospect,257.67,148.84,300.0,,208,6,0,4.0
+D'Cota Dixon,Wisconsin,S,2019,0.0528,Undrafted Prospect,261.81,167.94,300.0,253,,,0,0.0
+Ryan Pulley,Arkansas,CB,2019,0.0527,Undrafted Prospect,269.65,181.89,300.0,315,,,0,0.0
+Keelan Doss,UC Davis,WR,2019,0.0524,Undrafted Prospect,236.38,169.61,300.0,294,,,0,0.0
+Joshua Uche,Michigan,LB,2020,0.0518,Undrafted Prospect,228.02,129.55,300.0,,60,2,0,9.0
+Azur Kamara,Kansas,LB,2020,0.0517,Undrafted Prospect,230.71,116.82,300.0,,,,0,0.0
+C.J. O'Grady,Arkansas,TE,2020,0.0516,Undrafted Prospect,241.21,131.65,300.0,,,,0,0.0
+Rodney Anderson,Oklahoma,RB,2019,0.0516,Day 2 Pick,192.48,142.4,286.03,197,211,6,0,0.0
+John Reid,Penn State,CB,2020,0.0514,Undrafted Prospect,223.82,120.06,300.0,214,141,4,0,2.0
+Easton Stick,North Dakota State,QB,2019,0.0511,Undrafted Prospect,221.63,128.99,300.0,330,166,5,0,4.0
+Austin Bryant,Clemson,DE,2019,0.0502,Undrafted Prospect,241.73,158.28,300.0,211,117,4,0,5.0
+Porter Gustin,USC,EDGE,2019,0.0502,Late Round Pick,210.43,114.36,300.0,221,,,0,0.0
+Rashard Lawrence,LSU,DT,2020,0.05,Day 2 Pick,161.04,116.89,274.88,135,131,4,0,6.0
+Juwan Johnson,Oregon,WR,2020,0.0499,Undrafted Prospect,201.82,130.97,295.67,183,,,0,0.0
+Jalin Moore,Appalachian State,RB,2019,0.0498,Undrafted Prospect,245.49,166.84,300.0,230,,,0,0.0
+Lamont Gaillard,Georgia,C,2019,0.0495,Undrafted Prospect,200.03,108.36,300.0,185,179,6,0,2.0
+Cole Tracy,LSU,K,2019,0.0493,Undrafted Prospect,255.91,150.67,300.0,,,,0,0.0
+Jalen Elliott,Notre Dame,S,2020,0.0488,Undrafted Prospect,254.42,157.75,300.0,273,,,0,0.0
+Tyler Bass,Georgia Southern,K,2020,0.0488,Undrafted Prospect,253.41,150.93,300.0,275,188,6,0,13.0
+Armon Watts,Arkansas,DT,2019,0.0486,Undrafted Prospect,256.95,161.91,300.0,242,190,6,0,12.0
+Hamp Cheevers,Boston College,CB,2019,0.0485,Late Round Pick,202.63,111.43,285.39,176,,,0,0.0
+Alex Pechin,Bucknell,P,2020,0.0485,Undrafted Prospect,266.33,146.95,300.0,,,,0,0.0
+Cullen Gillaspia,Texas A&M,RB,2019,0.0484,Late Round Pick,203.39,156.58,250.68,,220,7,0,0.0
+Ty Johnson,Maryland,RB,2019,0.0484,Late Round Pick,206.65,193.91,255.35,293,186,6,0,18.0
+Tommy Townsend,Florida,P,2020,0.0481,Undrafted Prospect,265.99,136.78,300.0,,,,0,0.0
+Arryn Siposs,Auburn,P,2020,0.0479,Undrafted Prospect,268.34,170.31,300.0,,,,0,0.0
+Tommy Stevens,Mississippi State,QB,2020,0.0477,Late Round Pick,204.19,168.67,243.54,,240,7,0,0.0
+Cam Brown,Penn State,LB,2020,0.0476,Undrafted Prospect,226.7,142.85,300.0,260,183,6,0,4.0
+Lamar Jackson,Nebraska,CB,2020,0.0473,Undrafted Prospect,233.61,163.55,300.0,212,,,0,0.0
+Andre James,UCLA,OT,2019,0.0472,Undrafted Prospect,243.31,128.71,300.0,208,,,0,0.0
+Chris Slayton,Syracuse,DT,2019,0.047,Undrafted Prospect,244.44,143.77,300.0,254,245,7,0,0.0
+Darwin Thompson,Utah State,RB,2019,0.0465,Late Round Pick,202.6,200.39,252.27,305,214,6,0,2.0
+Brian Cole II,Mississippi State,S,2020,0.0464,Undrafted Prospect,216.76,125.19,300.0,239,249,7,0,0.0
+Jamal Custis,Syracuse,WR,2019,0.0464,Undrafted Prospect,256.94,173.91,300.0,373,,,0,0.0
+Derrek Tuszka,North Dakota State,LB,2020,0.0464,Late Round Pick,217.5,138.2,300.0,,254,7,0,3.0
+Trevon Tate,Memphis,OL,2019,0.0463,Undrafted Prospect,268.13,159.2,300.0,,,,0,0.0
+Shane Lemieux,Oregon,OG,2020,0.0462,Undrafted Prospect,228.52,113.11,300.0,240,150,5,0,5.0
+Brian Herrien,Georgia,RB,2020,0.0462,Undrafted Prospect,251.06,194.84,290.12,281,,,0,0.0
+Mark McLaurin,Mississippi State,S,2019,0.0459,Undrafted Prospect,273.64,180.1,300.0,318,,,0,0.0
+Martez Ivey,Florida,OL,2019,0.0456,Undrafted Prospect,237.68,147.84,300.0,362,,,0,0.0
+Cohl Cabral,Arizona State,OL,2020,0.0455,Undrafted Prospect,271.87,172.53,300.0,,,,0,0.0
+Brett Rypien,Boise State,QB,2019,0.0454,Undrafted Prospect,255.2,156.99,300.0,309,,,0,0.0
+Cole McDonald,Hawaii,QB,2020,0.0454,Late Round Pick,183.18,121.03,264.55,213,224,7,0,0.0
+Kaden Smith,Stanford,TE,2019,0.0451,Undrafted Prospect,205.13,154.67,300.0,165,176,6,0,3.0
+Stanley Morgan,Nebraska,WR,2019,0.045,Undrafted Prospect,245.71,155.36,300.0,320,,,0,0.0
+Chandler Cox,Auburn,RB,2019,0.0446,Late Round Pick,209.67,172.29,251.09,,233,7,0,0.0
+David Sills,West Virginia,WR,2019,0.044,Undrafted Prospect,242.43,143.14,300.0,277,,,0,0.0
+Kendall Coleman,Syracuse,DL,2020,0.0439,Undrafted Prospect,253.07,143.67,298.5,,,,0,0.0
+Kendrick Rogers,Texas A&M,WR,2020,0.0438,Undrafted Prospect,263.79,141.06,300.0,261,,,0,0.0
+Jordan Glasgow,Michigan,LB,2020,0.0437,Late Round Pick,192.81,146.78,250.53,,213,6,0,2.0
+Derrick Baity,Kentucky,CB,2019,0.0437,Undrafted Prospect,254.16,185.24,300.0,278,,,0,0.0
+Gabe Davis,UCF,WR,2020,0.0435,Undrafted Prospect,233.45,122.66,300.0,,128,4,1,28.0
+Mike Weber,Ohio State,RB,2019,0.0434,Late Round Pick,190.24,124.35,295.0,190,218,7,0,0.0
+Justin Strnad,Wake Forest,LB,2020,0.0431,Undrafted Prospect,216.25,118.22,300.0,174,178,5,0,14.0
+Zack Bailey,South Carolina,OL,2019,0.0424,Undrafted Prospect,257.44,162.6,300.0,353,,,0,0.0
+DeeJay Dallas,Miami (FL),RB,2020,0.0417,Day 2 Pick,181.21,110.78,291.1,154,144,4,0,7.0
+Donovan Wilson,Texas A&M,S,2019,0.0417,Undrafted Prospect,223.07,152.92,300.0,234,213,6,1,23.0
+KeeSean Johnson,Fresno State,WR,2019,0.0412,Day 2 Pick,187.42,129.64,281.76,159,174,6,0,4.0
+E.J. Speed,Tarleton State,LB,2019,0.0411,Late Round Pick,193.18,145.18,250.51,,164,5,1,20.0
+J.J. Taylor,Arizona,RB,2020,0.041,Undrafted Prospect,257.43,180.17,283.29,221,,,0,0.0
+Gerri Green,Mississippi State,DE,2019,0.0409,Undrafted Prospect,212.46,102.2,300.0,336,199,6,0,0.0
+Van Jefferson,Florida,WR,2020,0.0408,Day 2 Pick,151.91,105.54,251.36,113,57,2,1,19.0
+Rico Dowdle,South Carolina,RB,2020,0.0407,Undrafted Prospect,265.15,169.61,300.0,289,,,0,0.0
+McTelvin Agim,Arkansas,DT,2020,0.0402,Undrafted Prospect,238.32,184.61,300.0,,95,3,0,2.0
+Eno Benjamin,Arizona State,RB,2020,0.0401,Late Round Pick,185.82,129.3,290.38,180,222,7,0,4.0
+Alex Highsmith,Charlotte,LB,2020,0.04,Undrafted Prospect,227.83,148.36,297.51,265,102,3,1,35.0
+Hunter Renfrow,Clemson,WR,2019,0.0398,Undrafted Prospect,249.83,147.55,300.0,306,149,5,1,22.0
+Albert Huggins,Clemson,DL,2019,0.0394,Undrafted Prospect,232.13,133.42,300.0,214,,,0,0.0
+Tae Crowder,Georgia,LB,2020,0.0394,Late Round Pick,196.07,151.53,250.74,,255,7,0,16.0
+Jaylen Smith,Louisville,WR,2019,0.039,Undrafted Prospect,262.66,143.56,300.0,216,,,0,0.0
+Iman Marshall,USC,CB,2019,0.039,Undrafted Prospect,213.54,128.6,300.0,199,127,4,0,0.0
+Trajan Bandy,Miami,CB,2020,0.0389,Undrafted Prospect,254.49,142.99,300.0,243,,,0,0.0
+James Pierre,Florida Atlantic,CB,2020,0.0389,Undrafted Prospect,285.46,176.21,300.0,,,,0,0.0
+Patrick Taylor,Memphis,RB,2020,0.0387,Undrafted Prospect,232.84,146.46,300.0,203,,,0,0.0
+Chapelle Russell,Temple,LB,2020,0.0386,Undrafted Prospect,238.37,141.99,300.0,211,241,7,0,2.0
+Dexter Williams,Notre Dame,RB,2019,0.0385,Late Round Pick,217.44,155.52,280.41,212,194,6,0,0.0
+Shyheim Carter,Alabama,S,2020,0.0384,Undrafted Prospect,223.79,156.83,300.0,258,,,0,0.0
+Felton Davis,Michigan State,WR,2019,0.0381,Undrafted Prospect,244.96,209.24,300.0,263,,,0,0.0
+Steven Montez,Colorado,QB,2020,0.0379,Undrafted Prospect,222.82,148.28,300.0,228,,,0,0.0
+Carlos Davis,Nebraska,DT,2020,0.0378,Undrafted Prospect,212.82,112.58,300.0,206,232,7,0,1.0
+Josiah Deguara,Cincinnati,TE,2020,0.0378,Undrafted Prospect,239.04,155.9,300.0,,94,3,0,4.0
+Andrew Van Ginkel,Wisconsin,LB,2019,0.0377,Undrafted Prospect,234.53,161.31,300.0,291,151,5,1,45.0
+Tyler Jones,NC State,OT,2019,0.0374,Undrafted Prospect,244.94,158.29,300.0,288,,,0,0.0
+Anthony Gordon,Washington State,QB,2020,0.0374,Day 2 Pick,175.1,80.32,267.33,155,,,0,0.0
+Francis Bernard,Utah,LB,2020,0.0373,Undrafted Prospect,244.46,168.63,300.0,296,,,0,0.0
+LeVante Bellamy,Western Michigan,RB,2020,0.0373,Late Round Pick,180.55,132.11,281.29,198,,,0,0.0
+Darryl Williams,Mississippi State,OL,2020,0.0371,Undrafted Prospect,246.49,135.3,300.0,238,,,0,0.0
+Casey Toohill,Stanford,DE,2020,0.0371,Late Round Pick,190.68,81.86,282.15,283,233,7,0,11.0
+Jeff Thomas,Miami,WR,2020,0.0369,Undrafted Prospect,252.79,140.8,284.65,306,,,0,0.0
+Broderick Washington Jr.,Texas Tech,DT,2020,0.0368,Undrafted Prospect,251.56,175.92,300.0,,170,5,0,15.0
+Ken Webster,Ole Miss,CB,2019,0.0364,Undrafted Prospect,220.28,106.45,298.88,322,252,7,0,3.0
+Trishton Jackson,Syracuse,WR,2020,0.0363,Undrafted Prospect,251.8,167.68,300.0,224,,,0,0.0
+Bryce Love,Stanford,RB,2019,0.0363,Day 2 Pick,206.19,146.38,300.0,145,112,4,0,0.0
+Darryl Johnson,North Carolina A&T,DE,2019,0.0363,Undrafted Prospect,256.22,180.92,300.0,279,225,7,0,4.0
+Gardner Minshew II,Washington State,QB,2019,0.0363,Undrafted Prospect,226.67,165.7,294.86,240,178,6,1,32.0
+Rodrigo Blankenship,Georgia,K,2020,0.036,Undrafted Prospect,264.32,171.86,300.0,290,,,0,0.0
+Stanford Samuels,Florida State,CB,2020,0.0357,Undrafted Prospect,274.37,179.43,300.0,227,,,0,0.0
+Juwann Winfree,Colorado,WR,2019,0.0352,Late Round Pick,209.43,165.76,256.06,,187,6,0,1.0
+Benny LeMay,Charlotte,RB,2020,0.0337,Undrafted Prospect,275.98,192.38,300.0,,,,0,0.0
+Calvin Throckmorton,Oregon,OL,2020,0.0335,Undrafted Prospect,255.59,156.6,300.0,234,,,0,0.0
+Kendall Blanton,Missouri,TE,2019,0.0334,Undrafted Prospect,272.2,184.15,300.0,316,,,0,0.0
+Jordan Brailford,Oklahoma State,DE,2019,0.0333,Late Round Pick,204.44,102.45,288.86,244,253,7,0,1.0
+Mike Bell,Fresno State,S,2019,0.0333,Undrafted Prospect,249.23,158.13,298.99,310,,,0,0.0
+Nate Hall,Northwestern,LB,2019,0.0331,Undrafted Prospect,259.97,173.02,300.0,357,,,0,0.0
+Malik Gant,Marshall,S,2019,0.0325,Undrafted Prospect,237.16,131.54,288.7,323,,,0,0.0
+James Williams,Washington State,RB,2019,0.0325,Undrafted Prospect,267.21,179.83,300.0,286,,,0,0.0
+Justin Herron,Wake Forest,OT,2020,0.0319,Undrafted Prospect,241.01,143.8,292.84,288,195,6,0,7.0
+John Penisini,Utah,DT,2020,0.0315,Undrafted Prospect,250.16,142.94,300.0,215,197,6,0,6.0
+Jazz Ferguson,Northwestern State (LA),WR,2019,0.0314,Undrafted Prospect,222.08,133.93,300.0,231,,,0,0.0
+Quartney Davis,Texas A&M,WR,2020,0.0311,Day 2 Pick,187.92,106.98,300.0,149,,,0,0.0
+Quintez Cephus,Wisconsin,WR,2020,0.031,Undrafted Prospect,269.46,206.49,278.17,248,166,5,0,5.0
+Ben Victor,Ohio State,WR,2020,0.0309,Undrafted Prospect,239.88,122.56,300.0,,,,0,0.0
+Dane Jackson,Pittsburgh,CB,2020,0.0308,Late Round Pick,224.45,144.31,300.0,195,239,7,0,12.0
+C.J. Conrad,Kentucky,TE,2019,0.0307,Undrafted Prospect,268.97,182.41,300.0,,,,0,0.0
+Jordan Ta'amu,Ole Miss,QB,2019,0.0306,Undrafted Prospect,256.11,171.41,300.0,,,,0,0.0
+Marquez Callaway,Tennessee,WR,2020,0.0298,Undrafted Prospect,251.93,144.88,300.0,209,,,0,0.0
+Chris Finke,Notre Dame,WR,2020,0.0297,Undrafted Prospect,267.05,144.3,300.0,,,,0,0.0
+Tony Pollard,Memphis,RB,2019,0.0297,Late Round Pick,204.58,138.64,300.0,181,128,4,1,45.0
+Ben DiNucci,James Madison,QB,2020,0.0293,Late Round Pick,196.65,150.85,249.96,,231,7,0,1.0
+Jake Browning,Washington,QB,2019,0.0291,Undrafted Prospect,263.85,158.83,300.0,,,,0,0.0
+Cody Thompson,Toledo,WR,2019,0.0291,Undrafted Prospect,264.53,167.9,289.44,327,,,0,0.0
+Christian Miller,Alabama,LB,2019,0.0288,Day 2 Pick,169.46,112.89,292.41,149,115,4,0,1.0
+Nick Fitzgerald,Mississippi State,QB,2019,0.0287,Undrafted Prospect,218.69,163.53,291.05,,,,0,0.0
+Myles Gaskin,Washington,RB,2019,0.0285,Undrafted Prospect,248.08,178.95,300.0,236,234,7,0,13.0
+Clay Johnston,Baylor,LB,2020,0.0284,Undrafted Prospect,264.91,175.38,300.0,,234,7,0,2.0
+J.R. Reed,Georgia,S,2020,0.0283,Undrafted Prospect,207.78,154.35,300.0,,,,0,0.0
+Sewo Olonilua,TCU,RB,2020,0.0281,Undrafted Prospect,255.24,179.86,253.19,,,,0,0.0
+Scoota Harris,Arkansas,LB,2020,0.0279,Undrafted Prospect,254.15,137.46,300.0,,,,0,0.0
+John Hightower,Boise State,WR,2020,0.0278,Undrafted Prospect,229.22,138.56,300.0,231,168,5,0,1.0
+Darrion Daniels,Nebraska,DL,2020,0.0272,Undrafted Prospect,241.2,154.56,300.0,191,,,0,0.0
+Raymond Calais,Louisiana,RB,2020,0.0272,Undrafted Prospect,235.15,164.07,295.89,254,245,7,0,0.0
+Michael Divinity,LSU,LB,2020,0.0271,Undrafted Prospect,240.74,143.44,300.0,,,,0,0.0
+Dante Olson,Montana,LB,2020,0.027,Undrafted Prospect,241.85,166.43,299.0,280,,,0,0.0
+Jashon Cornell,Ohio State,DT,2020,0.0269,Late Round Pick,199.94,147.51,249.95,,235,7,0,0.0
+Karan Higdon,Michigan,RB,2019,0.0265,Late Round Pick,213.78,145.76,295.13,223,,,0,0.0
+Alex Bars,Notre Dame,OL,2019,0.0265,Undrafted Prospect,250.34,163.85,300.0,258,,,0,0.0
+Nick Scott,Penn State,S,2019,0.0265,Late Round Pick,194.26,147.98,251.85,,243,7,1,17.0
+Jacob Breeland,Oregon,TE,2020,0.0262,Undrafted Prospect,254.0,189.57,300.0,297,,,0,0.0
+Terry Beckner,Missouri,DT,2019,0.0261,Undrafted Prospect,240.86,143.27,300.0,195,215,7,0,0.0
+Clayton Thorson,Northwestern,QB,2019,0.026,Day 2 Pick,180.71,126.93,280.94,138,167,5,0,0.0
+Travis Homer,Miami (FL),RB,2019,0.026,Undrafted Prospect,230.5,151.59,294.12,255,204,6,0,8.0
+Daniel Wise,Kansas,DL,2019,0.0256,Undrafted Prospect,268.49,182.84,297.87,261,,,0,0.0
+Antoine Wesley,Texas Tech,WR,2019,0.0253,Late Round Pick,210.54,149.28,288.96,205,,,0,0.0
+Jakobi Meyers,NC State,WR,2019,0.0251,Undrafted Prospect,266.69,218.47,300.0,251,,,0,0.0
+Deshaun Davis,Auburn,LB,2019,0.0247,Undrafted Prospect,234.86,150.07,287.84,225,210,6,0,0.0
+Terry Godwin,Georgia,WR,2019,0.0246,Undrafted Prospect,273.7,165.81,300.0,274,237,7,0,0.0
+Jamarius Way,South Alabama,WR,2019,0.0246,Undrafted Prospect,264.44,225.74,300.0,,,,0,0.0
+Kendall Joseph,Clemson,LB,2019,0.0239,Undrafted Prospect,252.68,159.46,300.0,324,,,0,0.0
+Raequan Williams,Michigan State,DL,2020,0.0235,Undrafted Prospect,206.96,117.86,300.0,179,,,0,0.0
+Alex Wesley,Northern Colorado,WR,2019,0.0232,Undrafted Prospect,250.07,132.03,300.0,269,,,0,0.0
+Salvon Ahmed,Washington,RB,2020,0.0231,Late Round Pick,211.67,141.13,297.88,194,,,0,0.0
+Blake Ferguson,LSU,LS,2020,0.0231,Late Round Pick,235.01,133.39,300.0,276,185,6,0,4.0
+Grayland Arnold,Baylor,CB,2020,0.0231,Undrafted Prospect,283.52,178.2,300.0,282,,,0,0.0
+Lil'Jordan Humphrey,Texas,WR,2019,0.0231,Undrafted Prospect,247.51,178.25,300.0,287,,,0,0.0
+Lawrence Cager,Georgia,WR,2020,0.0228,Undrafted Prospect,232.11,180.54,300.0,,,,0,0.0
+Thakarius Keyes,Tulane,CB,2020,0.022,Undrafted Prospect,241.89,169.34,300.0,,237,7,0,1.0
+Darrell Stewart,Michigan State,WR,2020,0.0219,Undrafted Prospect,261.64,199.2,300.0,286,,,0,0.0
+Nevelle Clarke,UCF,CB,2020,0.0218,Undrafted Prospect,250.64,180.0,300.0,305,,,0,0.0
+Dax Raymond,Utah State,TE,2019,0.0217,Late Round Pick,218.91,138.3,300.0,198,,,0,0.0
+Trevon Hill,Miami,DL,2020,0.0217,Undrafted Prospect,258.11,145.8,300.0,302,,,0,0.0
+Jaylinn Hawkins,California,S,2020,0.0215,Undrafted Prospect,245.61,189.57,298.18,,134,4,0,17.0
+Omar Bayless,Arkansas State,WR,2020,0.0215,Undrafted Prospect,259.12,222.6,296.08,,,,0,0.0
+Chris Williamson,Minnesota,CB,2020,0.0214,Late Round Pick,195.15,154.25,251.43,,247,7,0,0.0
+Keenen Brown,Texas State,TE,2019,0.0212,Undrafted Prospect,248.05,162.99,300.0,285,,,0,0.0
+Kevin Davidson,Princeton,QB,2020,0.0208,Undrafted Prospect,273.91,177.37,300.0,,,,0,0.0
+Trace McSorley,Penn State,QB,2019,0.0206,Undrafted Prospect,237.43,146.05,290.25,259,197,6,0,1.0
+Tyre Brady,Marshall,WR,2019,0.0203,Undrafted Prospect,253.07,201.58,300.0,281,,,0,0.0
+Elijah Holyfield,Georgia,RB,2019,0.0201,Late Round Pick,209.95,145.43,291.12,203,,,0,0.0
+Aaron Fuller,Washington,WR,2020,0.0193,Undrafted Prospect,282.62,185.96,300.0,242,,,0,0.0
+Xavier Crawford,Central Michigan,CB,2019,0.0191,Undrafted Prospect,258.29,158.3,300.0,282,195,6,0,1.0
+Jordan Fuller,Ohio State,S,2020,0.0191,Undrafted Prospect,248.13,170.76,300.0,268,199,6,1,18.0
+Jeff Allison,Fresno State,LB,2019,0.0189,Undrafted Prospect,255.0,146.08,300.0,301,,,0,0.0
+Javon Leake,Maryland,RB,2020,0.0189,Undrafted Prospect,243.17,144.47,300.0,216,,,0,0.0
+Darnell Mooney,Tulane,WR,2020,0.0188,Undrafted Prospect,247.92,155.69,299.8,,173,5,1,33.0
+Otaro Alaka,Texas A&M,LB,2019,0.0188,Undrafted Prospect,233.67,166.71,300.0,249,,,0,0.0
+Dan Godsil,Indiana,LS,2019,0.0188,Undrafted Prospect,220.11,133.56,292.78,,,,0,0.0
+Alijah Holder,Stanford,CB,2019,0.0185,Undrafted Prospect,275.66,174.3,300.0,351,,,0,0.0
+Isaiah Buggs,Alabama,DT,2019,0.0185,Undrafted Prospect,212.96,132.51,300.0,246,192,6,0,11.0
+Derwin Gray,Maryland,OT,2019,0.0185,Undrafted Prospect,251.96,156.49,300.0,267,219,7,0,0.0
+Stephen Guidry,Mississippi State,WR,2020,0.018,Undrafted Prospect,277.35,187.89,300.0,,,,0,0.0
+Freddie Swain,Florida,WR,2020,0.018,Undrafted Prospect,240.76,156.91,289.66,,214,6,0,5.0
+James Morgan,Florida International,QB,2020,0.0178,Undrafted Prospect,216.77,137.69,300.0,171,125,4,0,0.0
+Scottie Phillips,Ole Miss,RB,2020,0.0178,Undrafted Prospect,286.22,216.08,299.35,285,,,0,0.0
+K.J. Osborn,Miami (FL),WR,2020,0.0175,Undrafted Prospect,258.04,177.11,300.0,293,176,5,0,13.0
+Mitchell Wilcox,South Florida,TE,2020,0.0175,Undrafted Prospect,280.17,163.83,300.0,217,,,0,0.0
+Chase Hansen,Utah,LB,2019,0.0164,Undrafted Prospect,203.8,143.67,298.14,201,,,0,0.0
+Jordan Scarlett,Florida,RB,2019,0.0149,Undrafted Prospect,271.04,222.03,300.0,268,154,5,0,0.0
+Emmanuel Butler,Northern Arizona,WR,2019,0.0147,Undrafted Prospect,252.3,180.95,296.01,,,,0,0.0
+Chauncey Rivers,Mississippi State,DL,2020,0.0145,Undrafted Prospect,259.95,151.53,300.0,236,,,0,0.0
+David Woodward,Utah State,LB,2020,0.0142,Undrafted Prospect,277.54,225.68,300.0,255,,,0,0.0
+Blace Brown,Troy,CB,2019,0.0141,Undrafted Prospect,280.83,179.16,300.0,227,,,0,0.0
+Mike Warren,Cincinnati,RB,2020,0.0138,Undrafted Prospect,266.84,193.9,300.0,,,,0,0.0
+Tim Harris,Virginia,CB,2019,0.0138,Late Round Pick,199.66,180.12,252.95,,198,6,0,0.0
+Jake Luton,Oregon State,QB,2020,0.0136,Undrafted Prospect,229.33,179.53,284.75,204,189,6,0,2.0
+Aaron Parker,Rhode Island,WR,2020,0.0136,Undrafted Prospect,262.54,139.65,300.0,,,,0,0.0
+Daniel Helm,Duke,TE,2019,0.0135,Undrafted Prospect,283.53,181.04,300.0,331,,,0,0.0
+Malcolm Perry,Navy,RB,2020,0.0135,Undrafted Prospect,242.81,160.33,295.72,,246,7,0,1.0
+Johnnie Dixon,Ohio State,WR,2019,0.0133,Undrafted Prospect,241.65,154.31,291.97,313,,,0,0.0
+Tony Jones,Notre Dame,RB,2020,0.013,Undrafted Prospect,263.82,167.51,299.98,241,,,0,0.0
+Gary Johnson,Texas,LB,2019,0.0125,Late Round Pick,202.1,148.52,295.73,292,,,0,0.0
+Qadree Ollison,Pittsburgh,RB,2019,0.0118,Undrafted Prospect,264.27,205.44,300.0,250,152,5,0,1.0
+Damarkus Lodge,Ole Miss,WR,2019,0.0113,Undrafted Prospect,277.8,218.69,300.0,314,,,0,0.0
+Cece Jefferson,Florida,EDGE,2019,0.0112,Undrafted Prospect,291.27,200.7,300.0,264,,,0,0.0
+Kyle Shurmur,Vanderbilt,QB,2019,0.011,Undrafted Prospect,274.74,199.81,300.0,,,,0,0.0
+Cody White,Michigan State,WR,2020,0.0109,Undrafted Prospect,285.71,231.7,300.0,270,,,0,0.0
+Shea Patterson,Michigan,QB,2020,0.0107,Undrafted Prospect,256.79,168.83,288.28,299,,,0,0.0
+Benito Jones,Ole Miss,DL,2020,0.0101,Undrafted Prospect,283.18,210.67,292.25,219,,,0,0.0
+Ryan Davis,Auburn,WR,2019,0.0099,Undrafted Prospect,290.3,210.57,300.0,339,,,0,0.0
+Jovon Durante,Florida Atlantic,WR,2019,0.0099,Undrafted Prospect,277.67,183.99,300.0,372,,,0,0.0
+Josiah Coatney,Ole Miss,DL,2020,0.0097,Undrafted Prospect,277.08,190.19,300.0,225,,,0,0.0
+Kelly Bryant,Missouri,QB,2020,0.0097,Undrafted Prospect,251.18,145.47,300.0,,,,0,0.0
+Jauan Jennings,Tennessee,WR,2020,0.0093,Undrafted Prospect,265.26,200.82,300.0,278,217,7,0,21.0
+Nyqwan Murray,Florida State,WR,2019,0.0088,Undrafted Prospect,294.31,226.23,300.0,237,,,0,0.0
+JaMycal Hasty,Baylor,RB,2020,0.0085,Undrafted Prospect,273.88,190.01,289.85,271,,,0,0.0
+Brian Lewerke,Michigan State,QB,2020,0.0071,Undrafted Prospect,285.4,180.63,300.0,266,,,0,0.0
+Demarcus Christmas,Florida State,DT,2019,0.006,Undrafted Prospect,270.15,175.91,300.0,222,209,6,0,0.0
+John Battle,LSU,S,2019,0.0055,Undrafted Prospect,271.01,161.6,300.0,332,,,0,0.0
+Bryson Allen-Williams,South Carolina,LB,2019,0.005,Undrafted Prospect,274.69,196.72,300.0,333,,,0,0.0
+Tony Brown,Colorado,WR,2020,0.0039,Undrafted Prospect,293.54,229.72,300.0,,,,0,0.0
+Nick Brossette,LSU,RB,2019,0.0036,Undrafted Prospect,285.9,257.91,300.0,371,,,0,0.0
+Lj Scott,Michigan State,RB,2019,0.003,Undrafted Prospect,274.38,224.61,300.0,256,,,0,0.0

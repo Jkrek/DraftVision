@@ -654,7 +654,10 @@ def classifier_expected_pick(P: np.ndarray) -> np.ndarray:
 
 
 def pick_metrics(y_pick: np.ndarray, pred: np.ndarray) -> dict:
-    drafted = y_pick < UDFA_PICK
+    # y_pick comes back through exp(log(300)) = 299.99999999999994, so a
+    # strict `< UDFA_PICK` counted every UDFA row as drafted (found by the
+    # 2026-09-09 backtest review). Half-pick tolerance = drafted rows only.
+    drafted = y_pick < UDFA_PICK - 0.5
     rho = spearmanr(y_pick, pred).statistic
     rho_d = spearmanr(y_pick[drafted], pred[drafted]).statistic
     mae_d = float(np.mean(np.abs(y_pick[drafted] - pred[drafted])))

@@ -4,23 +4,23 @@
   "pick_eval": {
     "blend_50_50_SERVED": {
       "spearman_all": 0.7972,
-      "spearman_drafted": 0.7972,
+      "spearman_drafted": 0.7867,
       "spearman_top64": 0.6886,
-      "mae_picks_drafted": 45.1,
+      "mae_picks_drafted": 36.0,
       "r1_recall_within_45": 0.8438
     },
     "regressor": {
       "spearman_all": 0.788,
-      "spearman_drafted": 0.788,
+      "spearman_drafted": 0.7924,
       "spearman_top64": 0.7013,
-      "mae_picks_drafted": 45.2,
+      "mae_picks_drafted": 36.0,
       "r1_recall_within_45": 0.8125
     },
     "classifier_expected": {
       "spearman_all": 0.7971,
-      "spearman_drafted": 0.7971,
+      "spearman_drafted": 0.7747,
       "spearman_top64": 0.5274,
-      "mae_picks_drafted": 45.9,
+      "mae_picks_drafted": 37.4,
       "r1_recall_within_45": 0.8281
     },
     "n_train_rows": 6599
@@ -62,8 +62,8 @@
       "brier": 0.3137
     }
   },
-  "generated_at": "2026-08-29T18:02:57.622429+00:00",
-  "git_sha": "7f10da4d260e00042885ba503595ec93c2660732",
+  "generated_at": "2026-09-09T17:45:55.404564+00:00",
+  "git_sha": "7d9116121d2d4207e62a87372ece7a0a1284e00e",
   "training_data": {
     "path": "training_data/combine_outcomes.csv",
     "sha256": "112d0b884f7534f3eaa2a63cabd9b6aaf967325059199ee37780a1e946980b00"
