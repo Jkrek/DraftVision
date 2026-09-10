@@ -466,6 +466,23 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* "vs. the market" — the sm GapBar beside the signed gap numeral. Mounts
+   only once the market promise resolves; it never gates the reveal. */
+.report-market {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.report-market .gap { flex: 0 0 160px; }
+.report-market-gap {
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.report-market-sub { font-variant-numeric: tabular-nums; }
+.report-market-model { color: var(--color-accent-300); }
+
 /* The grade is the verdict — same visual weight as the probability,
    color-coded by tier (gold A / accent B / muted C-D, house pattern) */
 .report-grade {
@@ -706,6 +723,10 @@
   .report-reveal .report-grade {
     animation: rvStamp 0.55s var(--rv-stamp-delay, 0.7s) cubic-bezier(0.2, 1.5, 0.4, 1) both;
   }
+  /* the market metric is the LAST beat — one beat after the stamp */
+  .report-reveal .report-metric-market {
+    animation: rvFade 0.3s var(--rv-market-delay, calc(var(--rv-stamp-delay, 0.7s) + 0.35s)) ease-out both;
+  }
   .report-reveal--gen   { --rv-stamp-delay: 1.7s; }
   .report-reveal--elite { --rv-stamp-delay: 1.1s; }
   .report-reveal--first { --rv-stamp-delay: 0.8s; }
@@ -797,6 +818,10 @@
   0%   { opacity: 0; transform: scale(2.3) rotate(-7deg); }
   100% { opacity: 1; transform: none; }
 }
+@keyframes rvFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 @keyframes rvMaterialize {
   from { opacity: 0; letter-spacing: 0.32em; filter: blur(5px); }
   to   { opacity: 1; letter-spacing: normal; filter: none; }
@@ -864,4 +889,5 @@
   .report-prob-value { font-size: 52px; }
   .report-grade { font-size: 46px; }
   .report-panel { padding: 24px 20px; }
+  .report-market .gap { flex-basis: 130px; width: 130px !important; }
 }

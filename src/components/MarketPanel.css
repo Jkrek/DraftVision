@@ -1,0 +1,130 @@
+/* ── MarketPanel — "The market" on a player profile (pp-grade-card grammar) ── */
+
+.pp-market .pp-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.mp-sub {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+}
+
+.mp-card {
+  margin-bottom: 0;
+}
+
+.mp-cell {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.mp-cell .pp-cell-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* numerals row — '77¢' market · '42%' model-implied · signed gap */
+.mp-numerals {
+  display: flex;
+  align-items: flex-end;
+  gap: 22px;
+  margin-bottom: 14px;
+}
+.mp-num {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.mp-num-value {
+  font-size: 40px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+.mp-num-model .mp-num-value { color: var(--color-accent-300); }
+.mp-num-none { color: var(--color-neutral-600); }
+.mp-num-unit {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--color-neutral-500);
+}
+
+.mp-gap {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+.mp-gap-value {
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--color-neutral-200);
+  font-variant-numeric: tabular-nums;
+}
+.mp-gap-word {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+  white-space: nowrap;
+}
+
+.mp-caption {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+}
+.mp-caption-wide {
+  color: var(--color-neutral-500);
+}
+
+.mp-sentence {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-neutral-300);
+  font-variant-numeric: tabular-nums;
+}
+.mp-sentence-model { color: var(--color-accent-300); }
+.mp-sentence-muted { color: var(--color-neutral-500); }
+
+/* source — 11px muted text, never a button */
+.mp-source {
+  margin-top: 10px;
+  text-align: right;
+  font-size: 11px;
+}
+.mp-source a {
+  color: var(--color-neutral-500);
+  text-decoration: none;
+}
+.mp-source a:hover {
+  color: var(--color-neutral-300);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mp-ledger {
+  margin: 12px 0 0;
+  font-size: 12px;
+}
+.mp-ledger a {
+  color: var(--color-accent-300);
+  text-decoration: none;
+}
+.mp-ledger a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 560px) {
+  .mp-num-value { font-size: 32px; }
+  .mp-numerals { gap: 16px; }
+}

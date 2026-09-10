@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { anonFetch } from '../lib/api';
+import { getPlayerMarkets, getSpotlight } from '../lib/edgeData';
+import { topFiveRow } from './MarketPanel';
 import './HeroSection.css';
 
 /* Static fallback so the "Live model output" card never looks broken. */
@@ -66,6 +68,18 @@ function toHeroPlayer(p) {
   };
 }
 
+/* The featured player's priced top-5 row from the home band's spotlight
+   payload (name + team match), or null. Saves the per-player request when
+   the hero player is already one of the three largest gaps. */
+const normKey = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+function spotlightTopFive(spot, name, team) {
+  const rows = [spot.headline, ...(Array.isArray(spot.rows) ? spot.rows : [])];
+  return rows.find((r) => r && !r.match_ambiguous
+    && r.market != null && r.model != null
+    && r.question && r.question.kind === 'top_n' && Number(r.question.n) === 5
+    && normKey(r.player) === normKey(name) && normKey(r.team) === normKey(team)) || null;
+}
+
 /* Gates for the background-video enhancement: big screens, motion OK,
    and no data-saver / slow connection. The Ken-Burns photo is always the
    base layer, so failing any gate simply means "photo only". */
@@ -98,6 +112,37 @@ function HeroSection() {
       .catch(() => {});
     return () => { alive = false; };
   }, []);
+  // 5th card factor: the featured player's Kalshi top-5 price vs the model,
+  // appended under 'Projection' only when a priced, unambiguous top-5 row
+  // exists for him. Order of operations: never before the featured player
+  // resolves; the spotlight (the home band's own request, shared cache) is
+  // read first — if it already carries the player no second request is made,
+  // and while it is warming the per-player call is skipped entirely.
+  const [marketFactor, setMarketFactor] = useState(null);
+  useEffect(() => {
+    if (player === FALLBACK_PLAYER || !player.name || !player.team) return undefined;
+    let alive = true;
+    setMarketFactor(null);
+    getSpotlight(3)
+      .then((spot) => {
+        if (!alive || !spot || spot.state !== 'ok') return null;
+        const hit = spotlightTopFive(spot, player.name, player.team);
+        if (hit) return { market: hit.market, model: hit.model };
+        return getPlayerMarkets(player.name, player.team).then((d) => {
+          const row = topFiveRow(d);
+          return row ? { market: row.yes_price_cents, model: row.model_prob } : null;
+        });
+      })
+      .then((m) => {
+        if (!alive || !m) return;
+        setMarketFactor({
+          label: 'Top-5 market · Kalshi',
+          value: `${Math.round(m.market)}¢ vs ${Math.round(m.model)}% model`,
+        });
+      });
+    return () => { alive = false; };
+  }, [player]);
+  const factors = marketFactor ? [...player.factors, marketFactor] : player.factors;
   const [showVideo, setShowVideo] = useState(false); // mount <video> at all
   const [videoReady, setVideoReady] = useState(false); // 'canplay' fired → fade in
   const heroRef = useRef(null);
@@ -273,7 +318,7 @@ function HeroSection() {
                 style={{ width: `${Math.min(100, Math.max(0, player.prob))}%` }}
               />
             </div>
-            {player.factors.map((f) => (
+            {factors.map((f) => (
               <div className="hero-card-factor" key={f.label}>
                 <span className="hero-card-factor-label">{f.label}</span>
                 <span className="hero-card-factor-value">{f.value}</span>

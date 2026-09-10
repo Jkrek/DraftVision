@@ -1,0 +1,852 @@
+{
+  "tickers": {
+    "KXHEISMAN-27-AHARD": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-AMAC": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-AMANN": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          9,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-BBAC": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          2,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-BBRO": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-BJACK": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-BSORS": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-BUNDE": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-CBAI": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-CCARR": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          9,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-CSIM": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-DDAM": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-DMENS": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          16,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-DMES": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-DMOOR": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          5,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-DWILL": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-FBRA": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          2,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-GSTOC": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          2,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-JBAU": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-JHOOV": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          4,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-JMAIA": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          5,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-JMAT": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          4,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-JSAGA": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-JSAYI": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          7,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-JSMIT": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          7,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-KJEN": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          2,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-KLACY": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-KRUS": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          2,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-KTAY": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          2,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-LKIE": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-LSELL": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          3,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-MREED": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          3,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-MTONE": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          7,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-RBEC": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-SLEA": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          6,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-TCHAM": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          6,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-WHAM": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXHEISMAN-27-WWAT": {
+      "close_time": "2027-01-01T15:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-AMAN": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          29,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-CCAR": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          12,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-CCOL": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-DLAG": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          2,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-DMEN": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          21,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-DMES": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          4,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-DMOO": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          12,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-DSTE": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          2,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-JMAI": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          2,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-JMAT": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-JSAY": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          5,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-JSEA": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-JSMI": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          12,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-LMOO": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-LSEL": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          3,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-NIAM": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-QRHO": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-RWIL": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          1,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-SLEA": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          2,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTPICK-27-1-TCHA": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          5,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-AMAN": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          77,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-CCAR": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          25,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-CCOL": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          40,
+          "mid_wide"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-DLAG": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          23,
+          "ask"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-DMEN": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          51,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-DMES": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          39,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-DMOO": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          84,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-DSTE": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          82,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-JMAI": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          39,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-JMAT": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          45,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-JSAY": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          28,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-JSEA": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          33,
+          "mid_wide"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-JSMI": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          90,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-LMOO": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          54,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-LSEL": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          37,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-NIAM": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          25,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-QRHO": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          38,
+          "ask"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-RWIL": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          17,
+          "last"
+        ]
+      ]
+    },
+    "KXNFLDRAFTTOP-27-5-TCHA": {
+      "close_time": "2027-05-22T14:00:00Z",
+      "last_seen": "2026-09-10",
+      "points": [
+        [
+          "2026-09-10",
+          29,
+          "last"
+        ]
+      ]
+    }
+  },
+  "updated_at": "2026-09-10T16:48:14.643479+00:00"
+}

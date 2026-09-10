@@ -1,3 +1,400 @@
 {
-  "entries": []
+  "entries": [
+    {
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-09-10",
+      "edge": -29.1,
+      "espn_id": "4875127",
+      "espn_team_id": "2579",
+      "event_scale": 0.742,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 37,
+      "model_basis": "model-implied P(pick <= 5) from the 72% conformal pick interval [12, 3203], log-uniform mass; scaled x0.742 so the event's matched P(pick <= 5) sums to 5 (raw marginals overshot)",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 3203,
+        "lo": 12
+      },
+      "model_prob": 7.9,
+      "player": "LaNorris Sellers",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "lanorris-sellers-south-carolina-gamecocks",
+      "team": "South Carolina Gamecocks",
+      "ticker": "KXNFLDRAFTTOP-27-5-LSEL",
+      "title": "Will LaNorris Sellers be a top 5 draft pick in 2027?"
+    },
+    {
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-09-10",
+      "edge": -17.3,
+      "espn_id": "5079629",
+      "espn_team_id": "87",
+      "event_scale": 0.742,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 54,
+      "model_basis": "model-implied P(pick <= 5) from the 72% conformal pick interval [1, 32], log-uniform mass; scaled x0.742 so the event's matched P(pick <= 5) sums to 5 (raw marginals overshot)",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 32,
+        "lo": 1
+      },
+      "model_prob": 36.7,
+      "player": "Leonard Moore",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "leonard-moore-notre-dame-fighting-irish",
+      "team": "Notre Dame Fighting Irish",
+      "ticker": "KXNFLDRAFTTOP-27-5-LMOO",
+      "title": "Will Leonard Moore be a top 5 draft pick in 2027?"
+    },
+    {
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-09-10",
+      "edge": -52.7,
+      "espn_id": "5079720",
+      "espn_team_id": "194",
+      "event_scale": 0.742,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 90,
+      "model_basis": "model-implied P(pick <= 5) from the 72% conformal pick interval [1, 30], log-uniform mass; scaled x0.742 so the event's matched P(pick <= 5) sums to 5 (raw marginals overshot)",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 30,
+        "lo": 1
+      },
+      "model_prob": 37.3,
+      "player": "Jeremiah Smith",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "jeremiah-smith-ohio-state-buckeyes",
+      "team": "Ohio State Buckeyes",
+      "ticker": "KXNFLDRAFTTOP-27-5-JSMI",
+      "title": "Will Jeremiah Smith be a top 5 draft pick in 2027?"
+    },
+    {
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-09-10",
+      "edge": 13.9,
+      "espn_id": "5079712",
+      "espn_team_id": "194",
+      "event_scale": 0.742,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 28,
+      "model_basis": "model-implied P(pick <= 5) from the 72% conformal pick interval [1, 19], log-uniform mass; scaled x0.742 so the event's matched P(pick <= 5) sums to 5 (raw marginals overshot)",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 19,
+        "lo": 1
+      },
+      "model_prob": 41.9,
+      "player": "Julian Sayin",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "julian-sayin-ohio-state-buckeyes",
+      "team": "Ohio State Buckeyes",
+      "ticker": "KXNFLDRAFTTOP-27-5-JSAY",
+      "title": "Will Julian Sayin be a top 5 draft pick in 2027?"
+    },
+    {
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-09-10",
+      "edge": -35.9,
+      "espn_id": "4915980",
+      "espn_team_id": "201",
+      "event_scale": 0.742,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 45,
+      "model_basis": "model-implied P(pick <= 5) from the 72% conformal pick interval [8, 3884], log-uniform mass; scaled x0.742 so the event's matched P(pick <= 5) sums to 5 (raw marginals overshot)",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 3884,
+        "lo": 8
+      },
+      "model_prob": 9.1,
+      "player": "John Mateer",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "john-mateer-oklahoma-sooners",
+      "team": "Oklahoma Sooners",
+      "ticker": "KXNFLDRAFTTOP-27-5-JMAT",
+      "title": "Will John Mateer be a top 5 draft pick in 2027?"
+    },
+    {
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-09-10",
+      "edge": -23.0,
+      "espn_id": "4685454",
+      "espn_team_id": "30",
+      "event_scale": 0.742,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 39,
+      "model_basis": "model-implied P(pick <= 5) from the 72% conformal pick interval [3, 3884], log-uniform mass; scaled x0.742 so the event's matched P(pick <= 5) sums to 5 (raw marginals overshot)",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 3884,
+        "lo": 3
+      },
+      "model_prob": 16.0,
+      "player": "Jayden Maiava",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "jayden-maiava-usc-trojans",
+      "team": "USC Trojans",
+      "ticker": "KXNFLDRAFTTOP-27-5-JMAI",
+      "title": "Will Jayden Maiava be a top 5 draft pick in 2027?"
+    },
+    {
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-09-10",
+      "edge": -40.1,
+      "espn_id": "5079709",
+      "espn_team_id": "2579",
+      "event_scale": 0.742,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 82,
+      "model_basis": "model-implied P(pick <= 5) from the 72% conformal pick interval [1, 19], log-uniform mass; scaled x0.742 so the event's matched P(pick <= 5) sums to 5 (raw marginals overshot)",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 19,
+        "lo": 1
+      },
+      "model_prob": 41.9,
+      "player": "Dylan Stewart",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "dylan-stewart-south-carolina-gamecocks",
+      "team": "South Carolina Gamecocks",
+      "ticker": "KXNFLDRAFTTOP-27-5-DSTE",
+      "title": "Will Dylan Stewart be a top 5 draft pick in 2027?"
+    },
+    {
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-09-10",
+      "edge": -27.4,
+      "espn_id": "4870921",
+      "espn_team_id": "2483",
+      "event_scale": 0.742,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 84,
+      "model_basis": "model-implied P(pick <= 5) from the 72% conformal pick interval [1, 7], log-uniform mass; scaled x0.742 so the event's matched P(pick <= 5) sums to 5 (raw marginals overshot)",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 7,
+        "lo": 1
+      },
+      "model_prob": 56.6,
+      "player": "Dante Moore",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "dante-moore-oregon-ducks",
+      "team": "Oregon Ducks",
+      "ticker": "KXNFLDRAFTTOP-27-5-DMOO",
+      "title": "Will Dante Moore be a top 5 draft pick in 2027?"
+    },
+    {
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-09-10",
+      "edge": -15.4,
+      "espn_id": "5219834",
+      "espn_team_id": "197",
+      "event_scale": 0.742,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 39,
+      "model_basis": "model-implied P(pick <= 5) from the 72% conformal pick interval [1, 327], log-uniform mass; scaled x0.742 so the event's matched P(pick <= 5) sums to 5 (raw marginals overshot)",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 327,
+        "lo": 1
+      },
+      "model_prob": 23.6,
+      "player": "Drew Mestemaker",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "drew-mestemaker-oklahoma-state-cowboys",
+      "team": "Oklahoma State Cowboys",
+      "ticker": "KXNFLDRAFTTOP-27-5-DMES",
+      "title": "Will Drew Mestemaker be a top 5 draft pick in 2027?"
+    },
+    {
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-09-10",
+      "edge": -43.1,
+      "espn_id": "5121169",
+      "espn_team_id": "2390",
+      "event_scale": 0.742,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 51,
+      "model_basis": "model-implied P(pick <= 5) from the 72% conformal pick interval [12, 1270], log-uniform mass; scaled x0.742 so the event's matched P(pick <= 5) sums to 5 (raw marginals overshot)",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 1270,
+        "lo": 12
+      },
+      "model_prob": 7.9,
+      "player": "Darian Mensah",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "darian-mensah-miami-hurricanes",
+      "team": "Miami Hurricanes",
+      "ticker": "KXNFLDRAFTTOP-27-5-DMEN",
+      "title": "Will Darian Mensah be a top 5 draft pick in 2027?"
+    },
+    {
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-09-10",
+      "edge": -34.5,
+      "espn_id": "4870906",
+      "espn_team_id": "251",
+      "event_scale": 0.742,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 77,
+      "model_basis": "model-implied P(pick <= 5) from the 72% conformal pick interval [1, 18], log-uniform mass; scaled x0.742 so the event's matched P(pick <= 5) sums to 5 (raw marginals overshot)",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 18,
+        "lo": 1
+      },
+      "model_prob": 42.5,
+      "player": "Arch Manning",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "arch-manning-texas-longhorns",
+      "team": "Texas Longhorns",
+      "ticker": "KXNFLDRAFTTOP-27-5-AMAN",
+      "title": "Will Arch Manning be a top 5 draft pick in 2027?"
+    }
+  ]
 }

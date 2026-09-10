@@ -1,0 +1,161 @@
+/* ── GapBar — the "model vs. market" glyph (Nocturne) ─────────────────────
+   ring = market price · red disc = model-implied probability · band = the gap
+   Direction is never green/red; the marker colours are constants. */
+
+.gap {
+  position: relative;
+  width: 100%;
+  --gap-marker: 12px;
+  --gap-band-h: 6px;
+  --gap-track: color-mix(in srgb, var(--color-text) 14%, transparent);
+  --gap-tick: var(--color-neutral-700);
+  --gap-ring-border: var(--color-text);
+  --gap-ring-fill: var(--color-bg);
+  --gap-disc: var(--color-accent);
+  --gap-disc-halo: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  --gap-band-model: color-mix(in srgb, var(--color-accent) 50%, transparent);
+  --gap-band-market: color-mix(in srgb, var(--color-text) 22%, transparent);
+  --gap-band-agree: var(--color-neutral-800);
+  --gap-lbl-market: var(--color-neutral-400);
+  --gap-lbl-model: var(--color-accent-300);
+}
+.gap-row  { height: 28px; }
+.gap-sm   { height: 16px; --gap-marker: 8px;  --gap-band-h: 4px; }
+.gap-hero { height: 56px; --gap-marker: 16px; --gap-band-h: 10px; }
+
+/* the dark home band — pinned hex: the light-theme accent fails contrast on ink */
+.gap-ground-ink {
+  --gap-track: rgba(255, 255, 255, 0.16);
+  --gap-tick: rgba(255, 255, 255, 0.28);
+  --gap-ring-border: #E8EBEF;
+  --gap-ring-fill: #1B1D22;
+  --gap-disc: #E4574F;
+  --gap-disc-halo: rgba(228, 87, 79, 0.28);
+  --gap-band-model: rgba(228, 87, 79, 0.5);
+  --gap-band-market: rgba(232, 235, 239, 0.26);
+  --gap-band-agree: rgba(255, 255, 255, 0.12);
+  --gap-lbl-market: #C0C6CF;
+  --gap-lbl-model: #F5AFA9;
+}
+
+/* track + quarter ticks */
+.gap-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: translateY(-50%);
+  background-color: var(--gap-track);
+  background-image:
+    linear-gradient(var(--gap-tick), var(--gap-tick)),
+    linear-gradient(var(--gap-tick), var(--gap-tick)),
+    linear-gradient(var(--gap-tick), var(--gap-tick));
+  background-size: 1px 6px, 1px 6px, 1px 6px;
+  background-position: 25% -2px, 50% -2px, 75% -2px;
+  background-repeat: no-repeat;
+}
+.gap-end {
+  position: absolute;
+  top: 8px;
+  font-size: 10px;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+}
+.gap-end-0   { left: 0; }
+.gap-end-100 { right: 0; }
+
+/* the gap itself */
+.gap-band {
+  position: absolute;
+  top: 50%;
+  height: var(--gap-band-h);
+  transform: translateY(-50%);
+  border-radius: 3px;
+  z-index: 1;
+  opacity: 0;
+  transition:
+    left 600ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 600ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 450ms;
+}
+.gap.is-in .gap-band { opacity: 1; }
+.gap-band-model    { background: var(--gap-band-model); }
+.gap-band-market   { background: var(--gap-band-market); }
+.gap-band-agree,
+.gap-band-resolved { background: var(--gap-band-agree); }
+.gap-band-none     { display: none; }
+
+/* markers */
+.gap-market,
+.gap-model {
+  position: absolute;
+  top: 50%;
+  width: var(--gap-marker);
+  height: var(--gap-marker);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  transition: left 600ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 450ms;
+}
+.gap-market {
+  z-index: 2;
+  border: 2px solid var(--gap-ring-border);
+  background: var(--gap-ring-fill);
+}
+.gap-market-dashed { border-style: dashed; }
+.gap-model {
+  z-index: 3;
+  background: var(--gap-disc);
+  border: 2px solid var(--gap-ring-fill);
+  box-shadow: 0 0 0 3px var(--gap-disc-halo);
+  opacity: 0;
+}
+.gap.is-in .gap-model { opacity: 1; }
+
+/* resolved outcome squares — the only place green appears */
+.gap-outcome {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+  outline: 2px solid var(--color-bg);
+  z-index: 4;
+}
+.gap-outcome-yes { background: var(--color-up); }
+.gap-outcome-no  { background: var(--color-down); }
+
+/* ghost tick (e.g. the current price on a ledger row) */
+.gap-ghost {
+  position: absolute;
+  top: 50%;
+  width: 1px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  background: var(--color-neutral-600);
+  z-index: 1;
+}
+
+/* labels — opposite lanes so they never collide */
+.gap-lbl {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  line-height: 1;
+  pointer-events: none;
+}
+.gap-lbl-market { top: 0; color: var(--gap-lbl-market); }
+.gap-lbl-model  { bottom: 0; color: var(--gap-lbl-model); }
+.gap-hero .gap-lbl { font-size: 12px; }
+/* keep edge labels inside the rail */
+.gap-lbl[style*="left: clamp(0px, 0%"]   { transform: translateX(0); }
+.gap-lbl[style*="left: clamp(0px, 100%"] { transform: translateX(-100%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .gap-band, .gap-market, .gap-model { transition: none; }
+  .gap-band, .gap-model { opacity: 1; }
+}

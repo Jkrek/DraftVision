@@ -4,16 +4,36 @@ import './Navbar.css';
 import AuthButton from './AuthButton';
 import LogoMark from './Logo';
 import { getTheme, toggleTheme } from '../theme';
+import { getSpotlight } from '../lib/edgeData';
 
+// Seven links, no more — the logo is the home link, and an eighth entry
+// wraps at the 1024px viewport with the YouTube pill + toggle + auth + CTA.
 const NAV_LINKS = [
-  { to: '/',             label: 'Overview',      end: true },
   { to: '/services',     label: 'College Stars'  },
   { to: '/hs-prospects', label: 'HS Prospects'   },
   { to: '/mock-draft',   label: 'Mock Draft'     },
   { to: '/leaderboard',  label: 'Model Board'    },
   { to: '/big-board',    label: 'Big Board'      },
+  { to: '/futures',      label: 'Futures',       live: true },
   { to: '/predict',      label: 'Predict'        },
 ];
+
+const LIVE_LABEL = 'Futures — live disagreements on the board';
+
+// The live dot shows only when the market cache is healthy AND at least one
+// ledger-eligible disagreement clears the 10-point threshold. No badge count,
+// no dot while warming / seasonal / stale. One shared cache (edgeData): the
+// nav reads getSpotlight(3) — the same promise the home FuturesBand awaits —
+// so a home visit produces ONE /api/edge/spotlight request and the dot never
+// adds a second /api/edge call on top of the page's own.
+function liveFromSpotlight(d) {
+  if (!d || !d.discovery || d.discovery.state !== 'ok' || !d.summary) return false;
+  const s = d.summary;
+  const n = s.disagreements != null ? s.disagreements
+    : s.eligible_over_threshold != null ? s.eligible_over_threshold
+      : s.edges_over_threshold;
+  return Number(n) > 0;
+}
 
 function ThemeToggle() {
   const [theme, setTheme] = useState(getTheme);
@@ -38,7 +58,17 @@ function Navbar() {
   const [progress, setProgress] = useState(0);
   const location = useLocation();
 
+  const [live, setLive] = useState(false);
+
   const close = useCallback(() => setMenuOpen(false), []);
+
+  // Re-ask on every route change: the cache makes it free within its TTL and
+  // lets the dot appear once a warming first pass has finished.
+  useEffect(() => {
+    let alive = true;
+    getSpotlight(3).then((d) => { if (alive) setLive(liveFromSpotlight(d)); });
+    return () => { alive = false; };
+  }, [location.pathname]);
 
   // Close menu on route change
   useEffect(() => { close(); }, [location.pathname, close]);
@@ -94,9 +124,16 @@ function Navbar() {
 
         {/* Desktop links */}
         <div className="nav-menu-desktop">
-          {NAV_LINKS.map(({ to, label, end }) => (
-            <NavLink key={to} to={to} end={end} className={linkClass}>
+          {NAV_LINKS.map(({ to, label, end, live: isLive }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={linkClass}
+              aria-label={isLive && live ? LIVE_LABEL : undefined}
+            >
               {label}
+              {isLive && live && <span className="nav-live-dot" aria-hidden="true" />}
             </NavLink>
           ))}
         </div>
@@ -132,9 +169,17 @@ function Navbar() {
 
       {/* Mobile slide-down panel */}
       <div className={menuOpen ? 'nav-menu-mobile open' : 'nav-menu-mobile'}>
-        {NAV_LINKS.map(({ to, label, end }) => (
-          <NavLink key={to} to={to} end={end} className={linkClass} onClick={close}>
+        {NAV_LINKS.map(({ to, label, end, live: isLive }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className={linkClass}
+            onClick={close}
+            aria-label={isLive && live ? LIVE_LABEL : undefined}
+          >
             {label}
+            {isLive && live && <span className="nav-live-dot" aria-hidden="true" />}
           </NavLink>
         ))}
         <div className="nav-menu-mobile-auth">

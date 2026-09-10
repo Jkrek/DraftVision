@@ -40,6 +40,11 @@ const DESTINATIONS = [
     pitch: 'Play out draft night against the model’s projections, pick by pick.',
   },
   {
+    to: '/futures',
+    title: 'Futures',
+    pitch: 'Kalshi’s 2027 draft futures — top-5, #1 overall, Heisman — lined up against the model, every disagreement frozen in public and scored on draft night.',
+  },
+  {
     to: '/backtest',
     title: 'Backtest',
     pitch: 'The receipts: what the model would have said in 2019–20 — hits and misses, side by side.',

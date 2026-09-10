@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import requests
 import xgboost as xgb
-from flask import Flask, has_request_context, jsonify, redirect, request, send_from_directory
+from flask import Flask, g, has_request_context, jsonify, redirect, request, send_from_directory
 from flask_cors import CORS
 
 # Shared, side-effect-free modules (also imported by scripts/train_models.py so
@@ -3597,15 +3597,64 @@ def find_historical_comps(player_stats: Dict[str, object], n: int = 3) -> list:
 import dv_edge
 
 
+def _edge_json(payload):
+    """jsonify an /api/edge* payload and remember the Cache-Control it earns
+    (warming/error passes go out no-cache; see dv_edge.cache_control_for) for
+    the after_request hook below."""
+    g.edge_cache_control = dv_edge.cache_control_for(payload)
+    return jsonify(payload)
+
+
 @app.route("/api/edge")
 def api_edge():
     _maybe_reload_prospect_cache()
-    return jsonify(dv_edge.edge_payload(_PROSPECT_CACHE))
+    return _edge_json(dv_edge.edge_payload(_PROSPECT_CACHE))
 
 
 @app.route("/api/edge/ledger")
 def api_edge_ledger():
-    return jsonify(dv_edge.ledger_payload())
+    return _edge_json(dv_edge.ledger_payload())
+
+
+@app.get("/api/edge/player")
+def api_edge_player():
+    """One player's market rows: ?name=&team= | ?slug= | ?espn_id=. Always
+    200; state 'no_markets' | 'warming' | 'seasonal' means render nothing."""
+    _maybe_reload_prospect_cache()
+    a = request.args
+    return _edge_json(dv_edge.player_payload(
+        _PROSPECT_CACHE,
+        name=(a.get("name") or "").strip() or None,
+        team=(a.get("team") or "").strip() or None,
+        slug=(a.get("slug") or "").strip() or None,
+        espn_id=(a.get("espn_id") or "").strip() or None,
+    ))
+
+
+@app.get("/api/edge/spotlight")
+def api_edge_spotlight():
+    """Compact home-band summary: headline + top-n rows + record (n 1..6)."""
+    _maybe_reload_prospect_cache()
+    return _edge_json(dv_edge.spotlight_payload(_PROSPECT_CACHE, n=request.args.get("n", 3)))
+
+
+@app.get("/api/edge/history")
+def api_edge_history():
+    """Captured price points for one ticker; unknown ticker → empty points."""
+    return _edge_json(dv_edge.history_payload(request.args.get("ticker") or ""))
+
+
+@app.after_request
+def _edge_cache_control(resp):
+    # Scoped by ENDPOINT (api_edge*), not by path prefix: an unknown path
+    # such as /api/edgex falls through to the SPA catch-all and must not
+    # inherit this header. A 200 with a settled payload is shared for two
+    # minutes (the market cache refreshes every ten); a warming/error payload
+    # or any non-200 goes out no-cache so pollers re-ask. (Spec: api_contract.)
+    if (request.endpoint or "").startswith("api_edge"):
+        directive = getattr(g, "edge_cache_control", None) if resp.status_code == 200 else None
+        resp.headers["Cache-Control"] = directive or dv_edge.CACHE_CONTROL_NONE
+    return resp
 
 
 # ── Serve React production build ──────────────────────────────────────────────

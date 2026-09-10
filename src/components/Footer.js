@@ -9,7 +9,7 @@ const FOOTER_LINKS = [
   { label: 'Mock Draft',  to: '/mock-draft'  },
   { label: 'Compare',     to: '/compare'     },
   { label: 'Backtest',    to: '/backtest'    },
-  { label: 'Market Edge', to: '/edge'        },
+  { label: 'Futures',     to: '/futures'     },
 ];
 
 function Footer() {

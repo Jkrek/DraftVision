@@ -111,7 +111,10 @@ jobs:
       # survives. Best-effort (public GET only; never touches order endpoints).
       - name: Sync Kalshi paper ledger
         continue-on-error: true
-        run: python dv_edge.py --sync-ledger https://draft.jkrek.com
+        run: |
+          python dv_edge.py --sync-ledger https://draft.jkrek.com
+          python dv_edge.py --score-ledger
+          python dv_edge.py --sync-history https://draft.jkrek.com
 
       - name: Stop prediction server
         if: always()
@@ -131,6 +134,7 @@ jobs:
                   training_data/board_movers.json \
                   training_data/enrichment.json \
                   training_data/edge_ledger.json \
+                  training_data/edge_history.json \
                   content/recaps
           if git diff --cached --quiet; then
             echo "Board unchanged — nothing to commit."

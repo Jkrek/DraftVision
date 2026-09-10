@@ -3,7 +3,10 @@ import React, {
 } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { anonFetch } from '../lib/api';
+import { getPlayerMarkets } from '../lib/edgeData';
 import InfoTip from './InfoTip';
+import GapBar, { gapWord } from './GapBar';
+import { playerRows, topFiveRow, gapOf, fmtGap } from './MarketPanel';
 import './PredictionComponent.css';
 
 // ── Reveal animation tiers — the bigger the projection, the bigger the show ─
@@ -21,6 +24,10 @@ const REDUCED_MOTION = typeof window !== 'undefined'
 
 // Probability counts up to its value — slower for bigger reveals
 const COUNT_MS = { gen: 2000, elite: 1300, first: 1000, mid: 750, late: 750 };
+// Grade-stamp delay per tier (mirrors --rv-stamp-delay in the CSS) — the
+// market metric is the LAST beat, 350ms after the stamp.
+const STAMP_MS = { gen: 1700, elite: 1100, first: 800, mid: 550, late: 550 };
+const MARKET_BEAT_MS = 350;
 
 function useCountUp(target, duration) {
   const [val, setVal] = useState(REDUCED_MOTION ? target : 0);
@@ -68,7 +75,7 @@ const TIP = {
     + 'how careers actually accumulated value (Pro Bowls, seasons started, '
     + 'production). 30+ is a long-time starter, 60+ is a perennial Pro '
     + 'Bowler. It ranks the ceiling among likely hits; the success '
-    + 'probability stays the odds he hits at all.',
+    + 'probability stays the chance he hits at all.',
   grade:
     'Letter grade from percentile cutoffs of success probability across the '
     + 'full FBS board — A+ is the top 2%, A- the top 10%, C+ sits near the '
@@ -82,12 +89,19 @@ const TIP = {
     + 'group — statistical distance over height, weight, speed, 40/vertical '
     + '(when measured), production, recruiting stars and competition level. '
     + 'Capped at 99%: no comp is a clone.',
+  market:
+    'Public Kalshi price for this player being a top-5 pick, next to what the '
+    + 'model’s 72% pick interval implies. The model-implied number is '
+    + 'conservative at the top by construction. Analysis only — no positions.',
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const img = (file) => `${process.env.PUBLIC_URL}/images/CFB Content/${file}`;
 
 // "Name-Team" → player-page / compare slug (same encoding the boards use).
+/* A usable team string, or '' — 'Unknown' is the cache's placeholder. */
+const teamOf = (t) => (t && String(t).trim() && String(t).trim() !== 'Unknown' ? String(t).trim() : '');
+
 const slugify = (name, team) =>
   `${name || ''}-${team || ''}`
     .toLowerCase()
@@ -154,6 +168,11 @@ export default function PredictionComponent() {
   const [predicting, setPredicting] = useState(false);
   const [predError, setPredError]   = useState(null);
 
+  // the market — Kalshi rows for the predicted player (shared edgeData
+  // cache). Resolves AFTER the report mounts and never gates the reveal.
+  const [market, setMarket]         = useState(null); // { rows, top5, delay }
+  const marketSeq                   = useRef(0);
+
   // sync
   const [syncing, setSyncing]       = useState(false);
   const [syncMsg, setSyncMsg]       = useState('');
@@ -203,6 +222,8 @@ export default function PredictionComponent() {
     setPredicting(true);
     setAcOpen(false);
     setAcQuery('');
+    setMarket(null);
+    const seq = ++marketSeq.current;
     try {
       const res  = await anonFetch(apiUrl('/predict'), {
         method: 'POST',
@@ -219,6 +240,28 @@ export default function PredictionComponent() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Prediction failed.');
       setPrediction(data);
+      // Market metric: fetched after the report is up. The animation delay is
+      // whatever is left of (stamp + one beat) at the moment it mounts.
+      // Team: the selected cache row first (it is the board's spelling, so
+      // the match rule lands), then whatever /predict resolved. 'Unknown'
+      // is a placeholder, not a team.
+      const mName = data?.resolved_name || player.name;
+      const mTeam = teamOf(player.team) || teamOf(data?.stats?.team);
+      if (mName && mTeam) {
+        const revealAt = performance.now();
+        const stampMs  = STAMP_MS[ANIM_TIER(data?.draft_grade)] || STAMP_MS.late;
+        getPlayerMarkets(mName, mTeam).then((payload) => {
+          if (seq !== marketSeq.current) return; // a newer prediction superseded this one
+          const rows = playerRows(payload);
+          if (rows.length === 0) return;
+          const elapsed = performance.now() - revealAt;
+          setMarket({
+            rows,
+            top5: topFiveRow(payload),
+            delay: Math.max(0, Math.round(stampMs + MARKET_BEAT_MS - elapsed)),
+          });
+        });
+      }
     } catch (err) {
       setPredError(err.message || 'Could not reach backend.');
     } finally {
@@ -553,6 +596,47 @@ export default function PredictionComponent() {
                         {prediction?.prospect_grade || '—'}
                       </div>
                     </div>
+                    {market && (() => {
+                      const row = market.top5;
+                      const gap = row ? gapOf(row) : null;
+                      const listed = !row ? market.rows[0] : null;
+                      return (
+                        <div
+                          className="report-metric report-metric-market"
+                          style={{ '--rv-market-delay': `${market.delay}ms` }}
+                        >
+                          <div className="report-metric-label">
+                            vs. the market
+                            <InfoTip text={TIP.market} place="bottom-left" />
+                          </div>
+                          {row ? (
+                            <>
+                              <div className="report-market">
+                                <GapBar
+                                  size="sm"
+                                  market={row.yes_price_cents}
+                                  model={row.model_prob}
+                                  source={row.yes_price_source || 'last'}
+                                  delay={market.delay}
+                                  style={{ width: 160 }}
+                                />
+                                <span className="report-metric-value report-market-gap">{fmtGap(gap)}</span>
+                              </div>
+                              <div className="report-metric-sub report-market-sub">
+                                market {Math.round(row.yes_price_cents)}¢ ·{' '}
+                                model <span className="report-market-model">{Math.round(row.model_prob)}%</span>
+                                {' · gap '}{gap > 0 ? '+' : ''}{Math.round(gap)}{' · '}{gapWord(gap)}
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="report-metric-value">Listed · {listed.q.label}</div>
+                              <div className="report-metric-sub">not priced</div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </section>
@@ -625,6 +709,11 @@ export default function PredictionComponent() {
                 <Link className="report-next-btn report-next-quiet" to="/leaderboard">
                   Back to the board
                 </Link>
+                {market && (
+                  <Link className="report-next-btn report-next-quiet" to="/futures">
+                    See the futures board
+                  </Link>
+                )}
               </div>
 
               {/* Meta footer */}

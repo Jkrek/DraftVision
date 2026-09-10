@@ -1,0 +1,356 @@
+/* ── FuturesBand — the home page's ink band (model vs. market) ──────────────
+   Full-bleed on --color-section with the radial --color-section-glow. Every
+   colour INSIDE the band is pinned hex: the light-theme accent (#AE1015)
+   fails contrast on ink, and the band must read as a 1200×630 crop.
+   Composition: LEFT = eyebrow · H2 · lede · the 3-row ladder;
+   RIGHT = the 2×2 scoreboard · ghost CTA · record link · legend;
+   FOOTER strip spans both columns. */
+
+.futures-band {
+  position: relative;
+  background:
+    radial-gradient(900px 520px at 88% -10%, var(--color-section-glow), transparent 70%),
+    var(--color-section);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #F1F3F6;
+}
+
+.fb-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 72px 32px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 40px 56px;
+  align-items: start;
+}
+
+/* ── left: the story ── */
+.fb-story { min-width: 0; }
+
+.fb-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.fb-eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #E4574F;
+  box-shadow: 0 0 10px #E4574F;
+}
+.fb-eyebrow-text {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #F5AFA9;
+}
+
+.fb-heading {
+  margin: 0 0 16px;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(30px, 3.8vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  color: #F1F3F6;
+  font-variant-numeric: tabular-nums;
+}
+.fb-heading .fb-num-market { color: #F1F3F6; }
+.fb-heading .fb-num-model  { color: #F5AFA9; }
+
+.fb-lede {
+  margin: 0 0 26px;
+  font-size: 15px;
+  color: #9CA4B0;
+  font-variant-numeric: tabular-nums;
+}
+.fb-lede-name {
+  color: #F1F3F6;
+  text-decoration: none;
+}
+.fb-lede-name:hover {
+  color: #F5AFA9;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.fb-lede-gap { color: #F1F3F6; }
+
+/* board-link on ink — the accent-300 token flips in light theme */
+.futures-band .fb-link,
+.futures-band .fb-link:hover {
+  color: #F5AFA9;
+}
+.futures-band .fb-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── the ladder (Cards.css board-grid grammar, re-inked) ── */
+.futures-band .fb-grid {
+  grid-template-columns: 1fr;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.futures-band .fb-cell {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 96px;
+  grid-template-areas:
+    "shot who gap"
+    "shot bar gap";
+  column-gap: 14px;
+  row-gap: 8px;
+  align-items: center;
+  background: rgba(42, 45, 52, 0.6);
+  padding: 14px 18px;
+  min-height: 72px;
+  box-sizing: border-box;
+  color: #F1F3F6;
+  cursor: default;
+}
+.futures-band .fb-cell:hover {
+  background: rgba(48, 52, 60, 0.75);
+  transform: none;
+  box-shadow: inset 0 2px 0 #E4574F;
+}
+
+.fb-headshot {
+  grid-area: shot;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top center;
+  background: rgba(255, 255, 255, 0.06);
+  flex: 0 0 auto;
+  align-self: start;
+}
+.fb-headshot-logo { object-fit: contain; padding: 6px; box-sizing: border-box; }
+.fb-headshot-empty { display: inline-block; }
+
+.fb-cell-who { grid-area: who; min-width: 0; }
+.fb-cell-name {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+  color: #F1F3F6;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fb-cell-name:hover { color: #F5AFA9; }
+.fb-flag {
+  margin-left: 5px;
+  font-size: 11px;
+  color: #F5AFA9;
+}
+.fb-cell-meta {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: #7E8794;
+}
+
+.fb-cell-bar { grid-area: bar; min-width: 0; }
+
+/* the signed gap numeral + its caption */
+.fb-gap {
+  grid-area: gap;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+}
+.fb-gap-value {
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #F1F3F6;
+  font-variant-numeric: tabular-nums;
+}
+.fb-gap-word {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7E8794;
+  white-space: nowrap;
+}
+
+/* ── right: the scoreboard ── */
+.fb-side {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  /* clear the eyebrow so the scoreboard's top edge lines up with the H2 */
+  padding-top: 38px;
+}
+
+/* the one scoreboard component — hero-stats grammar on ink */
+.fb-record {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.fb-record-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fb-record-cell {
+  background: rgba(42, 45, 52, 0.6);
+  padding: 22px 20px 18px;
+  min-width: 0;
+}
+.fb-record-value {
+  font-size: 34px;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #F1F3F6;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.fb-record-label {
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7E8794;
+  line-height: 1.4;
+}
+
+.fb-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 22px;
+}
+/* dv-cta-ghost, ink variant — the neutral tokens flip in light theme */
+.futures-band .fb-cta,
+.futures-band .fb-cta:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+  color: #E8EBEF;
+  background: transparent;
+  box-shadow: none;
+}
+.futures-band .fb-cta:hover { border-color: rgba(255, 255, 255, 0.46); }
+.fb-quiet-link {
+  font-size: 13px;
+  color: #9CA4B0;
+  text-decoration: none;
+}
+.fb-quiet-link:hover {
+  color: #F5AFA9;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.fb-legend {
+  margin: 0;
+  font-size: 11px;
+  color: #7E8794;
+}
+
+/* ── footer strip ── */
+.fb-foot {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  color: #7E8794;
+}
+.fb-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #C0C6CF;
+}
+.fb-state-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #E4574F;
+}
+.fb-state-stale {
+  border-color: rgba(230, 168, 60, 0.6);
+  color: #E6A83C;
+}
+.fb-foot-link {
+  margin-left: auto;
+  color: #C0C6CF;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+.fb-foot-link:hover { color: #F5AFA9; }
+
+/* ── seasonal strip ── */
+.futures-band-seasonal .fb-inner-seasonal {
+  min-height: 180px;
+  padding: 40px 32px;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: center;
+}
+.fb-seasonal-line {
+  margin: 0 0 12px;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(20px, 2.4vw, 26px);
+  letter-spacing: -0.03em;
+  color: #F1F3F6;
+}
+.futures-band-seasonal .fb-record-value { font-size: 30px; }
+
+/* ── motion (gated) ── */
+@media (prefers-reduced-motion: no-preference) {
+  .fb-eyebrow-dot,
+  .fb-state-dot {
+    animation: fbPulse 2.4s infinite;
+  }
+}
+@keyframes fbPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+/* ── mobile ── */
+@media (max-width: 760px) {
+  .fb-inner,
+  .futures-band-seasonal .fb-inner-seasonal {
+    grid-template-columns: 1fr;
+    padding: 56px 20px;
+    gap: 28px;
+  }
+  .fb-heading { font-size: clamp(28px, 7vw, 36px); }
+  .fb-side { padding-top: 0; }
+  /* scoreboard becomes a 4-cell horizontal strip under the ladder */
+  .fb-record { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .fb-record-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fb-record-cell { padding: 14px 10px 12px; }
+  .fb-record-value { font-size: 22px; }
+  .fb-record-label { font-size: 9.5px; letter-spacing: 0.1em; }
+  /* ladder rows go two-line: name + gap numeral / full-width bar */
+  .futures-band .fb-cell {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "shot who gap"
+      "bar  bar bar";
+  }
+  .fb-gap-value { font-size: 20px; }
+  .fb-foot-link { margin-left: 0; }
+}

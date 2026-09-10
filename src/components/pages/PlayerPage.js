@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { anonFetch } from '../../lib/api';
 import InfoTip from '../InfoTip';
+import MarketPanel, { playerRows, gapOf, isPriced, fmtGap } from '../MarketPanel';
+import { getPlayerMarkets } from '../../lib/edgeData';
 import './PlayerPage.css';
 
 // ── Shared slug helper ───────────────────────────────────────────────────
@@ -82,6 +84,7 @@ export default function PlayerPage() {
   const [status, setStatus] = useState('loading'); // loading | ready | notfound
   const [why, setWhy] = useState({ loading: true, factors: null, comps: null, error: false });
   const [boardRank, setBoardRank] = useState(null);
+  const [marketChip, setMarketChip] = useState(null);
 
   // Resolve the player from the slug.
   useEffect(() => {
@@ -89,6 +92,7 @@ export default function PlayerPage() {
     setStatus('loading');
     setPlayer(null);
     setBoardRank(null);
+    setMarketChip(null);
     resolveFromSlug(slug || '').then((hit) => {
       if (cancelled) return;
       if (hit) {
@@ -145,6 +149,26 @@ export default function PlayerPage() {
         if (idx >= 0) setBoardRank(idx + 1);
       })
       .catch(() => { /* no owner board for this class — chip simply absent */ });
+    return () => { cancelled = true; };
+  }, [player]);
+
+  // Header chip — 'Gap −35 vs market' when the Top-5 row is ledger-eligible
+  // and ≥ 10 points apart; 'On the futures board' for a priced row inside the
+  // threshold. Same shared cache as MarketPanel, so this is one request.
+  useEffect(() => {
+    if (!player) return undefined;
+    let cancelled = false;
+    getPlayerMarkets(player.name, player.team).then((d) => {
+      if (cancelled) return;
+      const rows = playerRows(d);
+      const top5 = rows.find(({ row, q }) => q.kind === 'top_n' && q.n === 5 && isPriced(row));
+      const top5Gap = top5 ? gapOf(top5.row) : null;
+      if (top5 && top5.row.ledger_eligible && top5Gap != null && Math.abs(top5Gap) >= 10) {
+        setMarketChip(`Gap ${fmtGap(top5Gap)} vs market`);
+      } else if (rows.some(({ row }) => isPriced(row))) {
+        setMarketChip('On the futures board');
+      }
+    });
     return () => { cancelled = true; };
   }, [player]);
 
@@ -262,6 +286,9 @@ export default function PlayerPage() {
               {boardRank != null && cls && (
                 <span className="pp-board-chip">№{boardRank} on the {cls} Board</span>
               )}
+              {marketChip && (
+                <Link className="pp-board-chip pp-market-chip" to="/futures">{marketChip}</Link>
+              )}
             </div>
           </div>
         </div>
@@ -306,6 +333,9 @@ export default function PlayerPage() {
             <div className="pp-proj">{player.draft_grade || '—'}</div>
           </div>
         </section>
+
+        {/* ── The market (renders nothing when this player has no Kalshi row) ── */}
+        <MarketPanel name={player.name} team={player.team} />
 
         {/* ── Stat bars ── */}
         <section className="pp-section">

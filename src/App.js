@@ -4,7 +4,7 @@ import './App.css';
 import Navbar from './components/Navbar';
 import Ticker from './components/Ticker';
 import Footer from './components/Footer';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './components/pages/home';
 import Services from './components/pages/services';
 import Products from './components/pages/Products';
@@ -41,7 +41,9 @@ function App() {
           <Route path="/player/:slug" element={<PlayerPage />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/backtest" element={<Backtest />} />
-          <Route path="/edge" element={<Edge />} />
+          <Route path="/futures" element={<Edge />} />
+          {/* legacy path — the page moved to /futures; API paths (/api/edge*) are unchanged */}
+          <Route path="/edge" element={<Navigate to="/futures" replace />} />
           {/* private owner dashboard — intentionally not linked from the nav */}
           <Route path="/insights" element={<Insights />} />
         </Routes>

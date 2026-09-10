@@ -172,6 +172,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* market chip — same accent chip, but a link to the futures board */
+.pp-market-chip {
+  text-decoration: none;
+  cursor: pointer;
+}
+.pp-market-chip:hover {
+  background: color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
 /* ── Main column ── */
 
 .pp-main {
