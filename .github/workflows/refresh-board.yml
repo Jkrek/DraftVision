@@ -46,6 +46,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # Gate: a broken Kalshi parser or edge regression must never ship a
+      # board (the refresh commits the ledger + price history it produces).
+      - name: Regression suite
+        env:
+          DV_EDGE_NO_WARMUP: "1"
+        run: python tests/test_edge_parsing.py
+
       - name: Start prediction server on 127.0.0.1:5001
         # No ANALYTICS_KEY / AUTH0_* / DATABASE_URL: analytics and auth stay
         # dormant and the player DB falls back to a scratch sqlite file.
