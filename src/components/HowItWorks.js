@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { anonFetch } from '../lib/api';
 import './HowItWorks.css';
 
 /*
@@ -21,7 +22,7 @@ const STEPS = [
     number: '02',
     title: 'Run the ensemble',
     detail:
-      'One click engineers sixteen features on the fly — a position-normalized production score, a 1-10 conference tier, combine athleticism, award flags — and runs them through calibrated XGBoost, CatBoost and a rule-based fallback.',
+      'One click engineers the model’s features on the fly — a position-normalized production score, a 1-10 conference tier, combine athleticism, recruiting pedigree, scout consensus — and runs them through calibrated XGBoost and CatBoost ensembles with a rule-based fallback.',
   },
   {
     number: '03',
@@ -47,20 +48,37 @@ const IMPORTANCES = [
   { label: 'Award & All-America flags', pct: 13, tone: 'low' },
 ];
 
+/* Numbers in the "Under the hood" heading come from /api/model-info — the
+   one source of truth — so this copy can never drift from what production
+   runs (it said "sixteen features, three models" while v5 ran 31 and 5). */
+const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const word = (n) => (Number.isInteger(n) && n >= 0 && n <= 10 ? WORDS[n] : String(n));
+
 function HowItWorks() {
+  const [info, setInfo] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    anonFetch('/api/model-info')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (alive && j && j.ok) setInfo(j); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  const nFeat = info?.features_n;
+  const nHeads = Array.isArray(info?.heads) ? info.heads.length : null;
   return (
     <>
       {/* ── 1. How the number gets made ── */}
       <section className="hiw">
-        <div className="hiw-head">
+        <div className="hiw-head" data-reveal="">
           <h2 className="hiw-heading">How the number gets made</h2>
           <p className="hiw-intro">
             Three steps, no black box. Every prediction ships with the factors
             that moved it and the historical players it resembles.
           </p>
         </div>
-        {STEPS.map((st) => (
-          <div className="hiw-step" key={st.number}>
+        {STEPS.map((st, i) => (
+          <div className="hiw-step" key={st.number} data-reveal={i + 1}>
             <div className="hiw-step-num">{st.number}</div>
             <h3 className="hiw-step-title">{st.title}</h3>
             <p className="hiw-step-detail">{st.detail}</p>
@@ -70,7 +88,7 @@ function HowItWorks() {
       </section>
 
       {/* ── 2. Image strip ── */}
-      <section className="strip" aria-hidden="true">
+      <section className="strip" aria-hidden="true" data-reveal="">
         {STRIP.map((p) => (
           <div className={`strip-panel strip-panel--${p.mod}`} key={p.file}>
             <img src={img(p.file)} alt="" loading="lazy" />
@@ -91,12 +109,14 @@ function HowItWorks() {
           <div className="uth-content">
             <div className="uth-eyebrow">Under the hood</div>
             <h2 className="uth-heading">
-              Sixteen features, three models, one calibrated score
+              {nFeat && nHeads
+                ? `${nFeat} features, ${word(nHeads)} model heads, one calibrated score`
+                : 'Dozens of features, five model heads, one calibrated score'}
             </h2>
             <p className="uth-lede">
-              A calibrated XGBoost classifier and a CatBoost model are averaged
-              against a rule-based fallback, so the probability stays stable
-              when a prospect&rsquo;s data is thin.
+              Calibrated XGBoost and CatBoost members are averaged, then gated
+              against a rule-based baseline on held-out drafts &mdash; so the
+              number stays honest when a prospect&rsquo;s data is thin.
             </p>
             {IMPORTANCES.map((im, i) => (
               <div className="uth-bar" key={im.label}>

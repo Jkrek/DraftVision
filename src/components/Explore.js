@@ -54,13 +54,13 @@ const DESTINATIONS = [
 function Explore() {
   return (
     <section className="explore" aria-label="Explore the site">
-      <div className="explore-head">
+      <div className="explore-head" data-reveal="">
         <div className="explore-eyebrow">The toolkit</div>
         <h2 className="explore-heading">Everything on the site</h2>
       </div>
       <div className="explore-grid">
         {DESTINATIONS.map((d, i) => (
-          <Link className="explore-card" to={d.to} key={d.to}>
+          <Link className="explore-card" to={d.to} key={d.to} data-reveal={(i % 4) + 1}>
             <span className="explore-num">{String(i + 1).padStart(2, '0')}</span>
             <span className="explore-body">
               <span className="explore-title">

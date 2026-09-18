@@ -814,3 +814,12 @@
     width: 100%;
   }
 }
+
+/* Sticky footer bar: no backdrop blur on phones (perf) — opacity carries it. */
+@media (max-width: 640px) {
+  .bb-savebar {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: color-mix(in srgb, var(--color-bg) 96%, transparent);
+  }
+}

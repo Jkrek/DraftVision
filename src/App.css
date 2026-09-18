@@ -194,3 +194,12 @@ body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.25; }
 }
+
+/* Glass utility: blur is desktop-only — phones get opacity instead (perf). */
+@media (max-width: 640px) {
+  .glass-panel {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+  }
+}

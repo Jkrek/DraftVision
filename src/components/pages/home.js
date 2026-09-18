@@ -5,6 +5,7 @@ import FuturesBand from '../FuturesBand'
 import HowItWorks from '../HowItWorks'
 import Cards from '../Cards'
 import Explore from '../Explore'
+import '../../scroll-reveal.css'
 
 /*
  * Home — composes the Nocturne home screen:

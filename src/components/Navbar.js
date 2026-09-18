@@ -5,6 +5,7 @@ import AuthButton from './AuthButton';
 import LogoMark from './Logo';
 import { getTheme, toggleTheme } from '../theme';
 import { getSpotlight } from '../lib/edgeData';
+import { PALETTE_OPEN_EVENT } from './CommandPalette';
 
 // Seven links, no more — the logo is the home link, and an eighth entry
 // wraps at the 1024px viewport with the YouTube pill + toggle + auth + CTA.
@@ -33,6 +34,26 @@ function liveFromSpotlight(d) {
     : s.eligible_over_threshold != null ? s.eligible_over_threshold
       : s.edges_over_threshold;
   return Number(n) > 0;
+}
+
+// Desktop-only affordance: the palette answers ⌘K / Ctrl-K on its own, this
+// is just the visible hint that the shortcut exists. It dispatches the same
+// window event the palette listens for, so no shared state crosses the tree.
+function PaletteHint() {
+  const ua = typeof navigator === 'undefined' ? '' : (navigator.platform || navigator.userAgent || '');
+  const mac = /Mac|iPhone|iPad|iPod/.test(ua);
+  return (
+    <button
+      type="button"
+      className="nav-palette"
+      onClick={() => window.dispatchEvent(new Event(PALETTE_OPEN_EVENT))}
+      aria-label="Search players, pages and commands"
+      title={mac ? 'Search — ⌘K' : 'Search — Ctrl K'}
+    >
+      <i className="fas fa-search" aria-hidden="true" />
+      <span className="nav-palette-key">{mac ? '⌘K' : 'Ctrl K'}</span>
+    </button>
+  );
 }
 
 function ThemeToggle() {
@@ -149,6 +170,7 @@ function Navbar() {
           >
             ▶ YouTube
           </a>
+          <PaletteHint />
           <ThemeToggle />
           <AuthButton />
           <Link to="/sign-up" className="nav-cta">Get access</Link>

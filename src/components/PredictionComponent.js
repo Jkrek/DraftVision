@@ -6,6 +6,7 @@ import { anonFetch } from '../lib/api';
 import { getPlayerMarkets } from '../lib/edgeData';
 import InfoTip from './InfoTip';
 import GapBar, { gapWord } from './GapBar';
+import GenBurst from './GenBurst';
 import { playerRows, topFiveRow, gapOf, fmtGap } from './MarketPanel';
 import './PredictionComponent.css';
 
@@ -513,13 +514,7 @@ export default function PredictionComponent() {
                   )}
                 </div>
                 <div className="report-sweep" aria-hidden="true" />
-                {tier === 'gen' && (
-                  <div className="gen-sparks" aria-hidden="true">
-                    {Array.from({ length: 14 }).map((_, i) => (
-                      <span key={i} className="gen-spark" style={{ '--i': i }} />
-                    ))}
-                  </div>
-                )}
+                {tier === 'gen' && <GenBurst />}
                 <div className="report-hero-content">
                   {espnId && (
                     <img

@@ -1,0 +1,228 @@
+/* ── Command palette (⌘K) — Nocturne ───────────────────────────────────────
+   No backdrop-filter anywhere: the scrim is a flat color-mix so a full-page
+   repaint stays cheap on the boards. */
+
+.cmdk-root {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 14vh 16px 16px;
+}
+
+.cmdk-backdrop {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+  animation: cmdkFade 0.2s ease;
+}
+
+.cmdk-panel {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  max-height: 68vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: cmdkRise 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes cmdkFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes cmdkRise {
+  from { opacity: 0; transform: translateY(-6px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── Input row ── */
+.cmdk-inputrow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex: none;
+  padding: 0 16px;
+  height: 54px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.cmdk-search-icon {
+  flex: none;
+  font-size: 13px;
+  color: var(--color-neutral-500);
+}
+
+.cmdk-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-text);
+  caret-color: var(--color-accent);
+}
+
+.cmdk-input::placeholder { color: var(--color-neutral-600); }
+
+.cmdk-copied {
+  flex: none;
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--color-up) 45%, transparent);
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--color-up);
+}
+
+/* ── Results ── */
+.cmdk-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px 0;
+}
+
+.cmdk-eyebrow {
+  padding: 10px 16px 5px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+}
+
+.cmdk-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.cmdk-row:hover {
+  background: color-mix(in srgb, var(--color-accent) 4%, transparent);
+}
+
+/* Selected row — 6% accent wash plus the 2px accent bar */
+.cmdk-row-active,
+.cmdk-row-active:hover {
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  border-left-color: var(--color-accent);
+}
+
+/* Team logo, or a neutral circle when the row has no ESPN team */
+.cmdk-logo {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  overflow: hidden;
+}
+
+.cmdk-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cmdk-glyph {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+  color: var(--color-neutral-500);
+}
+
+.cmdk-row-main { min-width: 0; flex: 1; }
+
+.cmdk-row-name {
+  display: block;
+  font-size: 14px;
+  color: var(--color-neutral-100);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cmdk-row-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Grade pill — A gold, B accent, C/D muted (the board's tier ramp) */
+.cmdk-grade {
+  flex: none;
+  padding: 2px 9px;
+  border: 1px solid var(--color-accent-700);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-accent-300);
+  font-variant-numeric: tabular-nums;
+}
+.cmdk-grade-a {
+  border-color: color-mix(in srgb, var(--color-gold) 65%, transparent);
+  color: color-mix(in srgb, var(--color-gold) 72%, var(--color-text));
+  background: var(--color-gold-soft);
+}
+.cmdk-grade-b { border-color: var(--color-accent-600); color: var(--color-accent-300); }
+.cmdk-grade-c { border-color: var(--color-accent-800); color: var(--color-neutral-400); }
+.cmdk-grade-d { border-color: var(--color-neutral-800); color: var(--color-neutral-600); }
+
+.cmdk-empty {
+  margin: 0;
+  padding: 26px 16px 30px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-neutral-500);
+}
+
+/* ── Footer hint strip ── */
+.cmdk-footer {
+  flex: none;
+  padding: 9px 16px;
+  border-top: 1px solid var(--color-divider);
+  background: color-mix(in srgb, var(--color-text) 3%, transparent);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--color-neutral-500);
+}
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .cmdk-root { padding: 10vh 12px 12px; }
+  .cmdk-panel { max-width: none; max-height: 76vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cmdk-backdrop,
+  .cmdk-panel { animation: none; }
+  .cmdk-row { transition: none; }
+}

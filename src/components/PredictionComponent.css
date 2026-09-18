@@ -716,6 +716,28 @@
 .gen-spark:nth-child(odd)  { width: 3.5px; height: 3.5px; }
 .gen-spark:nth-child(3n)   { background: var(--color-accent-300); }
 
+/* GPU ember burst (GenBurst.js) — replaces the CSS sparks wherever WebGL is
+   available and motion is welcome. Sits above the hero media, below the hero
+   content, clipped to the card like .gen-sparks. The component fades this to
+   0 at the end of its ~4.5s run and then stops its rAF loop for good. */
+.gen-burst {
+  position: absolute;
+  inset: 0;
+  z-index: 1;              /* same layer as .report-hero-content, which wins on DOM order */
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-radius: var(--radius-lg);
+  opacity: 1;
+  transition: opacity 0.7s linear;
+}
+/* belt-and-braces: the canvas is never mounted under reduced motion, but if
+   the setting flips mid-reveal it should not keep burning */
+@media (prefers-reduced-motion: reduce) {
+  .gen-burst { display: none; }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .report-reveal .report-sweep { display: block; }
 

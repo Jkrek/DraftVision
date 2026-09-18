@@ -62,13 +62,13 @@ function Cards() {
     <>
       {/* ── Top of the board ── */}
       <section className="board">
-        <div className="board-head">
+        <div className="board-head" data-reveal="">
           <h2 className="board-heading">Top of the board</h2>
           <Link className="board-link" to="/leaderboard">
             The full board →
           </Link>
         </div>
-        <div className="board-grid">
+        <div className="board-grid" data-reveal="2">
           {cells.map((c) => (
             <CardItem key={c.rank + c.name} {...c} />
           ))}
@@ -85,7 +85,7 @@ function Cards() {
           />
         </div>
         <div className="ctaband-scrim" aria-hidden="true" />
-        <div className="ctaband-inner">
+        <div className="ctaband-inner" data-reveal="">
           <div className="ctaband-copy">
             <h2 className="ctaband-heading">Stay ahead of the draft</h2>
             <p className="ctaband-sub">

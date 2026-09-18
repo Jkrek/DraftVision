@@ -2,6 +2,7 @@ import React from 'react';
 import './nocturne.css';
 import './App.css';
 import Navbar from './components/Navbar';
+import CommandPalette from './components/CommandPalette';
 import Ticker from './components/Ticker';
 import Footer from './components/Footer';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -27,6 +28,7 @@ function App() {
     <Router>
       <Auth0ProviderWithHistory>
         <Navbar />
+        <CommandPalette />
         <Ticker />
         <Routes>
           <Route path="/" element={<Home />} />

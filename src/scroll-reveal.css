@@ -1,0 +1,127 @@
+/*
+ * scroll-reveal.css — native, zero-JS scroll-driven reveals (Nocturne home).
+ *
+ * Pattern: `animation-timeline: view()`. The element's own progress through the
+ * viewport drives the animation, so there is no IntersectionObserver, no state,
+ * no re-render, and nothing to clean up. Add `data-reveal` to an element and it
+ * fades + rises 18px as it enters. Nothing here is theme-dependent: only
+ * `opacity`, `translate` and `scale` are touched, never a colour token, so the
+ * same rules hold in light and dark.
+ *
+ * Contract / guard rails
+ *   - EVERYTHING that hides content lives inside
+ *     `@supports (animation-timeline: view())` + `(prefers-reduced-motion:
+ *     no-preference)`. A browser that cannot run the animation (~16% in 2026:
+ *     older Safari, older Firefox, WebViews) never sees `opacity: 0` at all —
+ *     it gets the static, fully visible page. Same for reduced-motion users.
+ *   - `translate` / `scale` (the individual transform properties) are used, not
+ *     `transform`, because `.explore-card:hover` and `.board-cell:hover` own
+ *     `transform: translateY(-5px)`. The two compose instead of fighting.
+ *   - Travel is capped at 18px; opacity + translate + scale only, no blur, no
+ *     filter — all compositor-friendly.
+ *   - `animation-duration: 1ms` is required by Firefox stable, which does not
+ *     accept the `auto` duration a progress-based timeline implies. Chromium
+ *     and Safari ignore the duration for progress timelines.
+ *
+ * Property order matters: the `animation` shorthand resets `animation-timeline`
+ * and `animation-range-start/end` to their initial values, so the longhands are
+ * always written AFTER the shorthand.
+ *
+ * Imported from src/components/pages/home.js (home page only — the hero is
+ * deliberately excluded so above-the-fold content paints immediately).
+ */
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* Big-numeral variant: the same rise, plus a 4% settle. */
+@keyframes reveal-in-scale {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+    scale: 0.96;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* ── base utility ───────────────────────────────────────────────────── */
+    [data-reveal] {
+      opacity: 0;
+      translate: 0 18px;
+      animation: reveal-in linear both;
+      animation-duration: 1ms; /* Firefox stable requires a non-auto duration */
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+
+    /* ── stagger: grid cells cascade as the row crosses the fold ─────────
+       Each step pushes the window ~10% later in the entry phase, so cells in
+       the same row land one after another instead of together. `data-reveal`
+       with no value (or "1") uses the base range above. */
+    [data-reveal='2'] { animation-range: entry 10% entry 45%; }
+    [data-reveal='3'] { animation-range: entry 20% entry 55%; }
+    [data-reveal='4'] { animation-range: entry 30% entry 65%; }
+
+    /* ── scale variant: the big scoreboard numerals ──────────────────────── */
+    [data-reveal='scale'] {
+      scale: 0.96;
+      animation-name: reveal-in-scale;
+      animation-range: entry 0% entry 40%;
+    }
+
+    /* ── escape hatch ────────────────────────────────────────────────────
+       `.no-reveal` on the element, or on any ancestor, opts the subtree out
+       and restores the static, fully visible rendering. */
+    .no-reveal[data-reveal],
+    .no-reveal [data-reveal] {
+      opacity: 1;
+      translate: none;
+      scale: none;
+      animation: none;
+    }
+
+    /* ── scroll-container correction ─────────────────────────────────────
+       `view()` binds to the element's NEAREST ancestor scroll container, and
+       `overflow: hidden` is a scroll container. Two reveal subjects sit inside
+       one: `.explore-card` inside `.explore-grid`, and `.ctaband-inner` inside
+       `.ctaband`. Bound to a box that never scrolls, the timeline cannot
+       advance and the content would stay at `opacity: 0` forever.
+       `overflow: clip` clips identically (both are used purely to keep the
+       Ken-Burns image and the 1px cell gaps inside the radius) but is NOT a
+       scroll container, so `view()` correctly resolves to the document
+       scroller. Scoped to this @supports block, so nothing changes for
+       browsers that never run the animation. The `[class]` suffix only lifts
+       specificity above the component rule — bundle order is not guaranteed. */
+    .explore-grid[class],
+    .ctaband[class] {
+      overflow: clip;
+    }
+  }
+
+  /* ── reduced motion ───────────────────────────────────────────────────
+     Belt and braces: the rules above are already scoped to `no-preference`,
+     so a reduced-motion user is never given `opacity: 0`. This block states
+     it explicitly and neutralises anything a future rule might add. */
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal] {
+      opacity: 1;
+      translate: none;
+      scale: none;
+      animation: none;
+    }
+  }
+}

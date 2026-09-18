@@ -110,7 +110,7 @@ function LadderRow({ row, year, delay }) {
 /* The one scoreboard component (hero-stats grammar on ink). */
 function Scoreboard({ cells, className }) {
   return (
-    <div className={`fb-record${className ? ` ${className}` : ''}`}>
+    <div className={`fb-record${className ? ` ${className}` : ''}`} data-reveal="scale">
       {cells.map((c) => (
         <div className="fb-record-cell" key={c.label}>
           <div className="fb-record-value">{c.value}</div>
@@ -219,7 +219,7 @@ export default function FuturesBand() {
     <section id="futures" className="futures-band" aria-label="The model versus the market">
       <div className="fb-inner">
         {/* ── left: the story + the ladder ── */}
-        <div className="fb-story">
+        <div className="fb-story" data-reveal="">
           <div className="fb-eyebrow">
             <span className="fb-eyebrow-dot" aria-hidden="true" />
             <span className="fb-eyebrow-text">
@@ -237,7 +237,7 @@ export default function FuturesBand() {
             {' · gap '}<span className="fb-lede-gap">{fmtGap(headGap)}</span>
             {' · '}{gapWord(headGap)}
           </p>
-          <div className="board-grid fb-grid">
+          <div className="board-grid fb-grid" data-reveal="2">
             {rows.map((row, i) => (
               <LadderRow key={row.ticker || `${row.player}-${i}`} row={row} year={year} delay={200 + i * 140} />
             ))}
@@ -257,7 +257,7 @@ export default function FuturesBand() {
         </div>
 
         {/* ── footer strip ── */}
-        <div className="fb-foot">
+        <div className="fb-foot" data-reveal="3">
           <span className={`fb-state${stale ? ' fb-state-stale' : ''}`}>
             {!stale && <span className="fb-state-dot" aria-hidden="true" />}
             {stale ? 'stale' : 'live'}

@@ -460,3 +460,14 @@
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
 }
+
+/* Glassmorphism, sparingly: backdrop blur over the playing hero video repaints
+   every frame and costs ~15-30% FPS on mid-tier phones. On small screens the
+   card drops the blur and leans on opacity instead — contrast holds, GPU rests. */
+@media (max-width: 640px) {
+  .hero-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+  }
+}
