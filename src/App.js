@@ -3,6 +3,7 @@ import './nocturne.css';
 import './App.css';
 import Navbar from './components/Navbar';
 import CommandPalette from './components/CommandPalette';
+import Ambient from './components/Ambient';
 import Ticker from './components/Ticker';
 import Footer from './components/Footer';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -29,6 +30,7 @@ function App() {
       <Auth0ProviderWithHistory>
         <Navbar />
         <CommandPalette />
+        <Ambient />
         <Ticker />
         <Routes>
           <Route path="/" element={<Home />} />

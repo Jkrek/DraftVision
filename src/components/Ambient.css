@@ -1,0 +1,46 @@
+/* ── Ambient — GLSL stadium-light ground behind every tab ────────────────── */
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;           /* above the body ground, below all page content */
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  animation: ambient-in 1.6s ease-out 0.2s forwards;
+}
+@keyframes ambient-in { to { opacity: 1; } }
+
+/* no WebGL: the same three lights as static gradients */
+.ambient-fallback {
+  background:
+    radial-gradient(900px 620px at 8% 92%,  color-mix(in srgb, var(--color-accent) 18%, transparent), transparent 70%),
+    radial-gradient(820px 560px at 94% 6%,  color-mix(in srgb, var(--color-gold, #D4A54A) 14%, transparent), transparent 70%),
+    radial-gradient(700px 500px at 55% 50%, color-mix(in srgb, #5B70A0 8%, transparent), transparent 70%);
+}
+
+/* Page roots paint their own opaque ground; while the layer is live they go
+   translucent so the light shows through. Scoped to the html flag, so with
+   the layer off (home, light theme, unmounted) nothing changes anywhere. */
+html[data-ambient="on"] .bt-page,
+html[data-ambient="on"] .cmp-page,
+html[data-ambient="on"] .fut-page,
+html[data-ambient="on"] .bb-page,
+html[data-ambient="on"] .hsp-page,
+html[data-ambient="on"] .ins-page,
+html[data-ambient="on"] .pp-page,
+html[data-ambient="on"] .lb-page,
+html[data-ambient="on"] .mock-page,
+html[data-ambient="on"] .stars-page,
+html[data-ambient="on"] .signup-page,
+html[data-ambient="on"] .predict-page {
+  background-color: transparent;
+}
+/* the predict page keeps its yard lines but drops its CSS light washes —
+   the shader is the light now */
+html[data-ambient="on"] .predict-page { background-image: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient { animation: none; opacity: 1; }
+}
