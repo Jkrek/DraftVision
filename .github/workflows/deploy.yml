@@ -36,4 +36,5 @@ jobs:
       - name: Deploy to Fly.io
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: "$HOME/.fly/bin/flyctl" deploy --remote-only
+        run: |
+          "$HOME/.fly/bin/flyctl" deploy --remote-only
