@@ -1,65 +1,103 @@
-# DraftVision 🏈
+<div align="center">
 
-**A full-stack machine-learning web app that predicts NFL draft success for college and high-school football prospects.**
+# DraftVision
 
-Live demo: **[draft.jkrek.com](https://draft.jkrek.com)**  ·  Built by [Jared Krekeler](https://github.com/Jkrek)
+**A machine-learning draft board for college football — and a public record of how often it's right.**
 
-> Enter any college or high-school player and DraftVision returns a success probability, projected draft grade, and historical NFL comparisons — powered by a calibrated two-model ensemble trained on real 2010–2020 draft outcomes.
+[**draft.jkrek.com**](https://draft.jkrek.com) · built by [Jared Krekeler](https://github.com/Jkrek) · [JK Football on YouTube](https://www.youtube.com/@jkrek)
 
----
+[![Tests](https://github.com/Jkrek/DraftVision/actions/workflows/tests.yml/badge.svg)](https://github.com/Jkrek/DraftVision/actions/workflows/tests.yml)
+[![Weekly refresh](https://github.com/Jkrek/DraftVision/actions/workflows/refresh-board.yml/badge.svg)](https://github.com/Jkrek/DraftVision/actions/workflows/refresh-board.yml)
 
-## Highlights
+<img src="docs/images/home.jpg" alt="DraftVision home page" width="100%">
 
-- **9,000+ college prospects** ranked and gradeable; **10,000+ high-school recruits** (2020–2027 classes) from the CFBD 247Sports composite.
-- **2-model calibrated ensemble** — XGBoost + CatBoost, probabilities averaged then passed through a fitted calibrator; a rule-based scorer is the fallback when model inference is unavailable. Trained and evaluated on real 2010–2020 NFL draft outcomes (nflverse), holdout = 2019–2020 classes.
-- **13 engineered features** — a 0–100 position-percentile `production_score`, `games_played`, a position-normalized `combine_speed_score`, a 1–10 `conference_tier`, and 9 position one-hots.
-- **Per-player explanations** — `/predict` returns SHAP contributions (XGBoost TreeSHAP) for the individual player, not just global feature importances.
-- **Claude Vision mock-draft import** — drop in a PNG of a mock draft (e.g. PFF's image-only export) and `claude-haiku-4-5-20251001` extracts the picks into clean JSON — no brittle parsing.
-- **AI mock-draft generators** — college and HS mock drafts that mirror real draft-room logic (per-team positional needs, honored commitments, best-available fallback).
-- **Sub-100ms leaderboard** — an offline cache pipeline pre-computes every FBS roster so pages load with zero live API calls.
+</div>
 
-## Tech Stack
+## What it does
 
-| Layer | Tools |
-|------|------|
-| Frontend | React (SPA, React Router), Auth0, ag-grid |
-| Backend | Python, Flask (serves the built React app as a single artifact) |
-| ML | XGBoost, CatBoost, scikit-learn (calibration), Pandas / NumPy |
-| Data | ESPN API (live rosters/stats), College Football Data API, Claude Vision API |
-| Deploy | Docker → Fly.io |
+Type any FBS player and the model tells you the odds he becomes an NFL starter, where he'd go in the draft, what his career might be worth, and *why* — the features that moved the number and the real NFL players he most resembles.
+
+- **15,000+ college prospects** graded every Tuesday from live ESPN and College Football Data stats, plus the high-school recruiting classes.
+- **Five model heads, one report** — success probability, draft grade, projected pick with an honest range, career value, and a Generational / Top-5 / Round ladder.
+- **Model vs. market** — Kalshi's 2027 draft futures lined up against the model, every disagreement frozen on a paper ledger and scored on draft night. Read-only; no positions.
+- **Receipts** — a backtest page that scores the model on draft classes it never saw, against the consensus big board, with every row downloadable.
+
+<p align="center">
+  <img src="docs/images/predict.jpg" alt="Prediction report for Jeremiah Smith" width="49%">
+  <img src="docs/images/futures.jpg" alt="Model vs. market futures board" width="49%">
+</p>
+
+## How good is it
+
+Measured on the 2019–2020 draft classes, which were held out of training entirely, and re-checked across six rolling-origin folds (2015–2020) so one lucky holdout can't flatter it.
+
+| | Held-out 2019–20 | Six drafts (mean ± std) |
+|---|---|---|
+| Success AUC | 0.81 | 0.83 ± 0.03 |
+| Draft-grade accuracy (4 buckets) | 65% | 65% ± 1% |
+| Pick error, drafted players | 36 picks | 36 ± 2 |
+| First-rounders flagged by pick 45 | 84% | 90% ± 5% |
+
+The honest version: on the few hundred players the consensus big board ranks, the model roughly ties the scouts (0.82 vs 0.81 AUC). Its value is covering 15,000 players instead of 300, with calibrated probabilities and ranges — not out-scouting the scouts on the names everyone already knows. Every number above is served live at [`/api/model-info`](https://draft.jkrek.com/api/model-info) and shown on the [backtest page](https://draft.jkrek.com/backtest).
 
 ## How it works
 
-1. **Predict** (`/predict`) — a player name is fuzzy-matched against live ESPN rosters, features are engineered on the fly, and the ensemble returns a success probability + draft grade. Historical NFL comps (hits *and* busts) come from a weighted feature-distance similarity over production, athleticism, conference tier, and accolades — same-position-group only.
-2. **Leaderboard** (`/leaderboard`) — `build_prospect_cache.py` walks every FBS roster, scores each player, and bakes results into the Docker image, so the ranked grid of 9,033 prospects loads instantly.
-3. **Mock drafts** (`/mock-draft`, `/college-mock-draft`, `/hs-mock-draft`) — import a mock via Claude Vision, or generate one from a needs-based simulation over the real NFL draft order.
-
-Pre-trained models (`.cbm` / `.pkl` / `.json`) are baked into the image — no training at request time.
-
-## Run locally
-
-```bash
-# Backend (Flask API on :5001)
-pip install -r requirements.txt
-python -m src.app        # see "Run Instructions" / DEPLOY.md for the exact entrypoint
-
-# Frontend (React on :3000, proxies to :5001)
-npm install
-npm start
+```mermaid
+flowchart LR
+  A[ESPN + CFBD\nrosters & stats] --> B[31 engineered features]
+  B --> C[XGBoost + CatBoost\n5 heads, calibrated]
+  C --> D[Weekly board\n15k players]
+  D --> E[Site + API]
+  D --> F[Snapshot & paper ledger\nscored after the draft]
+  G[Kalshi public prices] --> E
 ```
 
-See `DEPLOY.md` for the Docker/Fly.io deployment and `DEMO_GUIDE.md` for a full feature walkthrough.
+- **Features** — production (final season and career), combine athleticism, recruiting pedigree, scout consensus rank, team strength, and an age proxy. In-season stats are shrunk toward the prior season so one big game doesn't move a player 9,000 spots.
+- **Models** — XGBoost and CatBoost members averaged, then calibrated on a separate year. A rule-based baseline has to lose on the holdout before the ensemble is allowed to serve.
+- **Pipeline** — a GitHub Action rebuilds the board every Tuesday: tests → boot the API → score every player → post-process → commit the snapshot → deploy. A broken test can't ship a board.
+- **Honesty guards** — leakage checks on every feature, a no-feature-only-on-seed-rows rule (that one bit us), and any model change must win across the six folds, not one.
 
-## About
+## Run it
 
-DraftVision was built as a Computer Science Senior Design project at the University of Cincinnati. It combines applied machine learning (feature engineering, model calibration, ensembling), live data integration, and full-stack web development in a single deployed product.
+```bash
+# 1. Python API (serves the built React app)
+pip install -r requirements.txt
+npm ci && npm run build
+python XGBOost.py            # → http://localhost:5001
 
-*Data from ESPN and the College Football Data API. Not affiliated with the NFL, NFLPA, or any team.*
+# 2. Optional: live keys in .env (the committed caches work without them)
+CFBD_API_KEY=...             # recruiting classes + enrichment
+```
 
-## Auth setup (optional)
+```bash
+# Retrain and re-evaluate (the models in the repo are the current production fit)
+python scripts/train_models.py       # train, evaluate on the holdout, gate, write metadata
+python scripts/rolling_cv.py         # six-fold rolling-origin check
+python scripts/generate_backtest.py  # regenerate the backtest page's receipts
+python tests/test_edge_parsing.py    # regression suite (also runs in CI)
+```
 
-1. Create an Auth0 **Single Page Application** in your Auth0 dashboard.
-2. Set Allowed Callback URLs, Allowed Logout URLs, and Allowed Web Origins to your site URL (e.g. `http://localhost:3000`).
-3. Set `REACT_APP_AUTH0_DOMAIN`, `REACT_APP_AUTH0_CLIENT_ID`, and (optional) `REACT_APP_AUTH0_AUDIENCE` — see `.env.example`.
-4. Optional: create an Auth0 API and set its identifier as the audience; the backend then verifies tokens via `AUTH0_DOMAIN` + `AUTH0_AUDIENCE`.
-5. With no Auth0 vars set, the app runs fully logged-out — the sign-in button simply hides.
+Deployment, secrets, and the weekly refresh are documented in [`DEPLOY.md`](DEPLOY.md).
+
+## Layout
+
+```
+XGBOost.py              Flask API + model serving
+dv_edge.py              Kalshi market board, paper ledger, scoring
+dv_features.py          feature definitions shared by training and serving
+scripts/                train_models, rolling_cv, generate_backtest, postprocess_board
+build_prospect_cache.py weekly board builder
+src/                    React app (Nocturne design system)
+training_data/          training CSV, weekly board, snapshots, ledger
+models/                 metadata, feature stats, experiment results
+tests/                  fixture-driven regression suite
+```
+
+## Built with
+
+React 18 · Flask · XGBoost · CatBoost · scikit-learn · Postgres · Docker · Fly.io · GitHub Actions
+Data from ESPN and [CollegeFootballData](https://collegefootballdata.com); market prices from Kalshi's public API.
+
+---
+
+<sub>Started as a Computer Science senior design project at the University of Cincinnati. Not affiliated with the NFL, any team, or Kalshi. Market data is analysis only — DraftVision takes no positions and is not investment advice.</sub>

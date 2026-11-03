@@ -1,126 +1,60 @@
-# DraftVision — Railway Deployment Guide
+# DraftVision — Deployment
 
-## Prerequisites
-- [Railway account](https://railway.app) (free tier works)
-- A domain name (e.g., from Namecheap, Google Domains, Porkbun)
-- Git repo pushed to GitHub
+Production runs on **Fly.io**: app `draftvision` in `ord`, built from the `Dockerfile`, served at **https://draft.jkrek.com** (Cloudflare DNS). A single-node Fly Postgres (`draftvision-db`) holds analytics and users; everything else ships inside the image.
 
-## Step 1 — Push to GitHub
+## Deploying
 
-```bash
-# One-time setup
-git remote add origin https://github.com/YOUR_USERNAME/draftvision.git
-git push -u origin main
-```
+Three ways, in order of preference:
 
-## Step 2 — Create Railway project
+1. **Automatic** — every push to `main` runs the [Tests](.github/workflows/tests.yml) workflow; when it passes, [Deploy](.github/workflows/deploy.yml) ships `main` with the repo's `FLY_API_TOKEN` secret. A failing test can't deploy.
+2. **On demand** — `gh workflow run deploy.yml` (same token, no local login needed).
+3. **Local** — `fly deploy --remote-only` (needs `fly auth login`; the token expires).
 
-1. Go to [railway.app](https://railway.app) → **New Project**
-2. Choose **Deploy from GitHub repo** → select your repo
-3. Railway auto-detects `railway.toml` and runs:
-   - Build: `pip install -r requirements.txt && npm ci && npm run build`
-   - Start: `gunicorn -w 2 -b 0.0.0.0:$PORT --timeout 120 XGBOost:app`
-
-## Step 3 — Add Postgres
-
-1. In your Railway project → **+ New** → **Database** → **PostgreSQL**
-2. Railway automatically injects `DATABASE_URL` into your service — no config needed
-
-## Step 4 — Set environment variables
-
-In Railway → your service → **Variables**, add:
-
-| Variable | Value |
-|----------|-------|
-| `SECRET_KEY` | a long random string (e.g., `openssl rand -hex 32`) |
-| `FLASK_ENV` | `production` |
-| `FRONTEND_ORIGIN` | `https://draft.jkrek.com` |
-| `CANONICAL_HOST` | `draft.jkrek.com` |
-| `FORCE_HTTPS` | `true` |
-| `AUTO_SYNC_COLLEGE_PROSPECTS` | `false` (set to `true` on first deploy to seed data) |
-
-`DATABASE_URL` and `PORT` are set automatically by Railway.
-
-### Optional — auth + analytics (dv_analytics.py)
-
-All three are optional; each feature stays dormant until its variable is set.
-
-| Variable | Value |
-|----------|-------|
-| `AUTH0_DOMAIN` | your Auth0 tenant domain, e.g. `dev-xyz123.us.auth0.com` (no `https://`) |
-| `AUTH0_AUDIENCE` | the API identifier configured in Auth0, e.g. `https://api.jkrek.com` |
-| `ANALYTICS_KEY` | a long random string (e.g., `openssl rand -hex 32`) |
-
-- **`AUTH0_DOMAIN` + `AUTH0_AUDIENCE`** (both required together): enables
-  verification of `Authorization: Bearer` tokens from the frontend's
-  Auth0Provider. Valid tokens upsert a `users` row (sub/email/name, tier
-  defaults to `free`) and tie usage events to the signed-in user. Unset =
-  everyone is anonymous; the app never 401s public routes either way. These
-  must match the frontend's `REACT_APP_AUTH0_*` values.
-- **`ANALYTICS_KEY`**: unlocks `GET /api/analytics/summary` (pass it as
-  `?key=...` or the `X-Analytics-Key` header) returning DAU/WAU/MAU,
-  returning visitors, signups, top routes, and a 30-day daily series. While
-  unset (or on a wrong key) the endpoint answers 404, so it is invisible in
-  prod until configured.
-
-No raw IPs or user agents are stored — visitors are counted by Auth0 `sub`
-or the browser's self-assigned `X-DV-Anon` uuid only.
-
-## Step 5 — Connect your domain
-
-1. Railway project → **Settings** → **Domains** → **Add Custom Domain**
-2. Add the domain:
-   - `draft.jkrek.com`  (the apex `jkrek.com` belongs to JKClips)
-3. Railway shows a CNAME target. In Cloudflare (jkrek.com's DNS), EDIT the
-   existing `draft` record — it currently points at a stale
-   `ghs.googlehosted.com` — to a CNAME of the Railway hostname. Set it to
-   "DNS only" (grey cloud) until the certificate is issued, then proxying
-   can be re-enabled if desired.
-4. In Railway variables, set:
-   - `FRONTEND_ORIGIN=https://draft.jkrek.com`
-   - `CANONICAL_HOST=draft.jkrek.com`
-   - `FORCE_HTTPS=true`
-5. Wait for DNS propagation and SSL issuance
-6. Verify:
-   - `http://draft.jkrek.com` → `https://draft.jkrek.com`
-
-## Step 6 — First deploy
-
-1. Merge any changes → push to `main` → Railway auto-deploys
-2. Watch build logs in Railway dashboard
-3. Hit `/health` on your domain to confirm the app is running:
-   ```
-   https://draft.jkrek.com/health
-   ```
-
-## Subsequent deploys
+Verify a deploy by the live bundle hash, not the "deployed" message:
 
 ```bash
-git add .
-git commit -m "your message"
-git push origin main   # Railway auto-deploys on every push to main
+curl -s https://draft.jkrek.com/ | grep -oE 'main\.[a-z0-9]+\.js'
+curl -s https://draft.jkrek.com/api/model-info | head -c 300
 ```
 
-## Syncing college prospects
+The Docker build compiles the React app (`npm ci && npm run build`) and starts
+`gunicorn -w 2 -b 0.0.0.0:$PORT --timeout 120 XGBOost:app`. Models, the weekly
+board, and all JSON caches are baked into the image.
 
-After first deploy, trigger a prospect sync via curl or the Railway shell:
+## Secrets and environment
 
-```bash
-curl -X POST https://yourdomain.com/sync/college-prospects \
-  -H "Content-Type: application/json" \
-  -d '{"max_teams": 250, "max_players": 4000}'
-```
+Set with `fly secrets set KEY=value -a draftvision`. `fly.toml` already sets
+`FLASK_ENV=production` and `AUTO_SYNC_COLLEGE_PROSPECTS=false`.
 
-Or set `AUTO_SYNC_COLLEGE_PROSPECTS=true` for the first boot, then flip it back to `false`.
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | injected by `fly postgres attach`; app switches from SQLite to Postgres when present |
+| `SECRET_KEY` | Flask session key (`openssl rand -hex 32`) |
+| `FRONTEND_ORIGIN` / `CANONICAL_HOST` / `FORCE_HTTPS` | `https://draft.jkrek.com` / `draft.jkrek.com` / `true` |
+| `CFBD_API_KEY` | College Football Data — recruiting classes, enrichment, strength of schedule. Optional; committed caches work without it |
+| `ANALYTICS_KEY` | unlocks `/api/analytics/summary` and the `/insights` page (404 until set) |
+| `AUTH0_DOMAIN` + `AUTH0_AUDIENCE` | optional sign-in; valid bearer tokens upsert `users` rows. Must match the frontend's `REACT_APP_AUTH0_*` |
+
+GitHub Actions secrets: `FLY_API_TOKEN` (deploy + weekly refresh) and
+`CFBD_API_KEY` (weekly enrichment).
+
+No raw IPs or user agents are stored — visitors are counted by Auth0 `sub` or
+the browser's self-assigned `X-DV-Anon` id only.
+
+## Domain
+
+`draft.jkrek.com` is a Cloudflare CNAME to the Fly app (the apex `jkrek.com`
+belongs to JKClips). Certificates are managed by Fly (`fly certs list -a
+draftvision`).
 
 ## Troubleshooting
 
 | Symptom | Fix |
-|---------|-----|
-| White screen | Check `/health` — if 200, clear browser cache; if 500, check build logs |
-| `players` table missing | Postgres migration runs automatically on startup via `initialize_player_database()` |
-| ESPN stats not loading | Stats are cached for 1 hour; check Railway logs for fetch errors |
-| Slow first load | Cold start on Railway free tier takes ~20s; paid tier eliminates this |
+|---|---|
+| White screen | `curl -I https://draft.jkrek.com/health`; if 200, hard-refresh; if 500, `fly logs -a draftvision` |
+| Stale data after a refresh | the board ships in the image — confirm the deploy workflow ran after the board-bot commit |
+| `/api/edge` shows "warming" | first discovery pass takes ~10 s after boot; it refreshes every 10 min on a background thread |
+| Local `fly` says "no access token" | `fly auth login`, or just use `gh workflow run deploy.yml` |
 
 ## Weekly board refresh (risers / fallers)
 
@@ -244,27 +178,16 @@ Read-only comparison of DraftVision model output vs public Kalshi prices
   file survives restarts but **resets on redeploy** to the committed copy —
   export and commit it to preserve the track record.
 
-## Fly.io Postgres (current production database)
-
-> Production now runs on Fly.io (app `draftvision`, https://draft.jkrek.com).
-> The Railway sections above are kept for historical reference.
-
-A durable Postgres cluster is attached to the app, so **analytics events,
-users, and anything written through the DB layer now survive restarts AND
-redeploys** (unlike the JSON-file caches, which still reset on deploy).
+## Fly Postgres
 
 | | |
 |---|---|
-| App name | `draftvision-db` (unmanaged Fly Postgres, postgres-flex 18) |
-| Region | `ord` (same as the app) |
-| Size | 1 node, `shared-cpu-1x`, 256MB RAM, 3GB volume |
-| Cost | ~$3-5/mo (cheapest single-node; no HA replica) |
-| Attached to | `draftvision` via `fly postgres attach` — injects the `DATABASE_URL` secret |
+| App | `draftvision-db` (unmanaged Fly Postgres, postgres-flex 18) |
+| Region / size | `ord`, 1 node, `shared-cpu-1x`, 256 MB, 3 GB volume (~$3–5/mo, no HA) |
+| Attached to | `draftvision` via `fly postgres attach` (injects `DATABASE_URL`) |
 
-`XGBOost.py` auto-detects `DATABASE_URL` at startup and switches from SQLite
-to Postgres (startup log prints `Using Postgres: ...`; `dv_analytics` logs
-`backend postgres`). No code or config changes are needed for this to work —
-if the secret is present, Postgres is used.
+Analytics events and users live here and survive redeploys; the JSON caches
+do not (they are rebuilt weekly and committed).
 
 ### Operations
 
