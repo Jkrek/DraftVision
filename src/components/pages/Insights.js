@@ -47,6 +47,8 @@ export default function Insights() {
       })
       .then((d) => {
         sessionStorage.setItem(KEY_STORE, key);
+        // This browser is the owner's: keep its visits out of the numbers.
+        try { localStorage.setItem('dv_owner', '1'); } catch (e) { /* ignore */ }
         setStoredKey(key);
         setData(d);
       })
@@ -122,9 +124,11 @@ export default function Insights() {
 
   /* ── Dashboard ── */
   const stats = [
-    { label: 'DAU', value: data.dau },
-    { label: 'WAU', value: data.wau },
-    { label: 'MAU', value: data.mau },
+    { label: 'Page views · 7d', value: data.page_views_7d },
+    { label: 'Page views · 30d', value: data.page_views_30d },
+    { label: 'Visitors today', value: data.dau },
+    { label: 'Visitors · 7d', value: data.wau },
+    { label: 'Visitors · 30d', value: data.mau },
     { label: 'Returning · 7d', value: data.returning_7d },
     { label: 'Signed-in WAU', value: data.signed_in_wau },
     { label: 'Signups · total', value: data.signups_total },
@@ -198,6 +202,43 @@ export default function Insights() {
             </>
           )}
         </section>
+
+        {/* Pages people opened + where they came from (humans only) */}
+        {[
+          { title: 'Top pages', rows: data.top_pages_30d, key: 'route', empty: 'No page views recorded yet.' },
+          { title: 'Referrers', rows: data.top_referrers_30d, key: 'referrer', empty: 'No external referrers yet — every visit so far was direct.' },
+        ].map((b) => (
+          <section className="ins-block ins-block-flush" aria-label={`${b.title}, last 30 days`} key={b.title}>
+            <div className="ins-block-head ins-block-head-pad">
+              <span className="ins-block-title">{b.title}</span>
+              <span className="ins-block-meta">people only · last 30 days</span>
+            </div>
+            <div className="ins-thead">
+              <span className="ins-c-route">{b.title === 'Referrers' ? 'Site' : 'Page'}</span>
+              <span className="ins-c-num">Views</span>
+              <span className="ins-c-num">Uniques</span>
+            </div>
+            {!Array.isArray(b.rows) || b.rows.length === 0 ? (
+              <p className="ins-empty ins-empty-pad">{b.empty}</p>
+            ) : (
+              b.rows.map((r) => (
+                <div className="ins-row" key={r[b.key]}>
+                  <span className="ins-c-route">{r[b.key]}</span>
+                  <span className="ins-c-num">{fmt(r.views)}</span>
+                  <span className="ins-c-num">{fmt(r.uniques)}</span>
+                </div>
+              ))
+            )}
+          </section>
+        ))}
+
+        {Array.isArray(data.hits_by_source_7d) && data.hits_by_source_7d.length > 0 && (
+          <p className="ins-empty">
+            Requests in the last 7 days:{' '}
+            {data.hits_by_source_7d.map((s) => `${fmt(s.hits)} ${s.source}`).join(' · ')}.
+            Only “human” counts toward the numbers above.
+          </p>
+        )}
 
         {/* Top routes */}
         <section className="ins-block ins-block-flush" aria-label="Top routes, last 7 days">

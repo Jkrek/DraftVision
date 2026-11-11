@@ -152,9 +152,10 @@ export default function PlayerPage() {
     return () => { cancelled = true; };
   }, [player]);
 
-  // Header chip — 'Gap −35 vs market' when the Top-5 row is ledger-eligible
-  // and ≥ 10 points apart; 'On the futures board' for a priced row inside the
-  // threshold. Same shared cache as MarketPanel, so this is one request.
+  // Header chip — 'Gap −35 vs market' when the Top-5 row is a disagreement
+  // (server flag: live two-sided book, model 10+ points outside it; the old
+  // |gap| rule only for payloads without the flag); 'On the futures board'
+  // for any other priced row. Same shared cache as MarketPanel, so this is one request.
   useEffect(() => {
     if (!player) return undefined;
     let cancelled = false;
@@ -163,7 +164,10 @@ export default function PlayerPage() {
       const rows = playerRows(d);
       const top5 = rows.find(({ row, q }) => q.kind === 'top_n' && q.n === 5 && isPriced(row));
       const top5Gap = top5 ? gapOf(top5.row) : null;
-      if (top5 && top5.row.ledger_eligible && top5Gap != null && Math.abs(top5Gap) >= 10) {
+      const disagrees = top5 && top5Gap != null && (top5.row.disagreement != null
+        ? Boolean(top5.row.disagreement)
+        : Boolean(top5.row.ledger_eligible) && Math.abs(top5Gap) >= 10);
+      if (disagrees) {
         setMarketChip(`Gap ${fmtGap(top5Gap)} vs market`);
       } else if (rows.some(({ row }) => isPriced(row))) {
         setMarketChip('On the futures board');

@@ -8,8 +8,8 @@ import './MarketPanel.css';
 /*
  * MarketPanel — "The market" section on a player profile.
  *
- * Public Kalshi quotes for this one player next to what the model's conformal
- * pick interval implies, one cell per market (Top-5 → #1 overall → Heisman,
+ * Public Kalshi quotes for this one player next to the model's rank-calibrated
+ * number for the same question, one cell per market (Top-5 → #1 overall → Heisman,
  * max 3). Read-only: DraftVision takes no positions.
  *
  * Renders NOTHING for state no_markets / warming / seasonal / error, and when
@@ -89,26 +89,22 @@ const fmtDate = (ymd) => {
 };
 
 const UNPRICED_REASON = {
-  pick_eq: 'exact pick isn’t identifiable from an interval',
+  pick_eq: 'the model doesn’t price an exact pick',
   heisman: 'an award, not a draft slot',
 };
 
-const PANEL_TIP = 'Public Kalshi quotes for this player, next to what the model’s '
-  + 'conformal pick interval implies. Read-only — DraftVision takes no positions.';
+const PANEL_TIP = 'Public Kalshi quotes for this player, next to the model’s number '
+  + 'for the same question. Read-only — DraftVision takes no positions.';
 
-function intervalCaption(row) {
-  const iv = row.model_interval;
-  if (!iv || iv.lo == null || iv.hi == null) return null;
-  const cov = iv.coverage != null ? `${Math.round(Number(iv.coverage) * 100)}% ` : '';
-  return `from the ${cov}interval, picks ${iv.lo}–${iv.hi}`;
-}
+/* The model number is a rank calibration; the full basis is in the InfoTip. */
+const rankCaption = (row) => (row.model_rank != null ? `model’s #${row.model_rank} in the class` : null);
 
 function MarketCell({ row, q, delay }) {
   const priced = isPriced(row);
   const market = row.yes_price_cents;
   const model = row.model_prob;
   const gap = gapOf(row);
-  const caption = intervalCaption(row);
+  const caption = rankCaption(row);
   return (
     <div className={`pp-grade-cell mp-cell mp-cell-${q.kind}`}>
       <div className="pp-cell-label">
@@ -153,16 +149,7 @@ function MarketCell({ row, q, delay }) {
 
       {priced ? (
         <>
-          {(caption || row.wide_interval) && (
-            <div className="mp-caption">
-              {caption}
-              {row.wide_interval && (
-                <span className="mp-caption-wide">
-                  {caption ? ' · ' : ''}wide interval — conservative by construction
-                </span>
-              )}
-            </div>
-          )}
+          {caption && <div className="mp-caption">{caption}</div>}
           <p className="mp-sentence">
             The market thinks {Math.round(market)}¢. The model says{' '}
             <span className="mp-sentence-model">{Math.round(model)}%</span>.

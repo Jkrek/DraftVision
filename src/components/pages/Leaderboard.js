@@ -172,8 +172,8 @@ export default function Leaderboard() {
     );
   }, [prospects, posTab, classTab, search, sortBy]);
 
-  // Draft classes present in the data (cache rows carry projected draft_class
-  // once built with class-year capture; hidden entirely on older caches).
+  // Draft classes present in the data (cache rows carry draft_class = the
+  // player's first eligible draft; hidden entirely on older caches without it).
   const classTabs = useMemo(() => {
     const years = [...new Set(
       prospects.map(p => p.draft_class).filter(y => Number.isFinite(Number(y)) && y)

@@ -3608,7 +3608,8 @@ def _edge_json(payload):
 @app.route("/api/edge")
 def api_edge():
     _maybe_reload_prospect_cache()
-    return _edge_json(dv_edge.edge_payload(_PROSPECT_CACHE))
+    # Read-only: the ledger is written by the weekly job, never by a GET.
+    return _edge_json(dv_edge.edge_payload(_PROSPECT_CACHE, dry_run=False))
 
 
 @app.route("/api/edge/ledger")

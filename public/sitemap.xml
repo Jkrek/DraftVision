@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://draft.jkrek.com/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://draft.jkrek.com/predict</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://draft.jkrek.com/leaderboard</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://draft.jkrek.com/big-board</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://draft.jkrek.com/mock-draft</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://draft.jkrek.com/futures</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://draft.jkrek.com/hs-prospects</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://draft.jkrek.com/compare</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://draft.jkrek.com/backtest</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://draft.jkrek.com/services</loc><changefreq>weekly</changefreq></url>
+</urlset>

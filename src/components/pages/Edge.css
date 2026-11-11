@@ -205,7 +205,6 @@
   color: var(--color-neutral-500);
   font-variant-numeric: tabular-nums;
 }
-.fut-wide { color: var(--color-neutral-500); }
 .fut-head-foot {
   margin-top: 8px;
   text-align: right;

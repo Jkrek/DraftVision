@@ -22,7 +22,7 @@ const NAV_LINKS = [
 const LIVE_LABEL = 'Futures — live disagreements on the board';
 
 // The live dot shows only when the market cache is healthy AND at least one
-// ledger-eligible disagreement clears the 10-point threshold. No badge count,
+// disagreement is on the board (the server's count). No badge count,
 // no dot while warming / seasonal / stale. One shared cache (edgeData): the
 // nav reads getSpotlight(3) — the same promise the home FuturesBand awaits —
 // so a home visit produces ONE /api/edge/spotlight request and the dot never

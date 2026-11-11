@@ -14,9 +14,10 @@ Wired from XGBOost.py via:
 Operator CLI (all GET-only):
 
     .venv/bin/python dv_edge.py --probe                 # discovery + match counts
-    .venv/bin/python dv_edge.py --sync-ledger https://draft.jkrek.com
-                                                        # pull prod paper ledger
-                                                        # into training_data/
+    .venv/bin/python dv_edge.py --record-ledger         # weekly job: freeze
+                                                        # this week's calls
+                                                        # (the ledger's only
+                                                        # writer)
     .venv/bin/python dv_edge.py --backfill-ledger       # fill identity/question
                                                         # fields on old entries
                                                         # (idempotent)
@@ -84,16 +85,17 @@ Draft-POSITION *threshold* questions are the only ones the model answers:
     "not priced: exact-pick probabilities are not identifiable from an
     interval" and are never ledgered.
 
-P(pick <= N) is derived from the player's conformal interval [lo, hi] by
-assuming the interval's nominal mass (its `confidence`, 0.80) is spread
-LOG-UNIFORMLY between lo and hi, with the remaining mass split equally into
-the two tails (also log-uniform, down to pick 1 and up to the undrafted
-ceiling). This is a *model-implied* number, not a persisted posterior — the
-pick head was trained on a point target and the interval is a coverage
-guarantee, not a distribution. Every priced row therefore carries a
-`model_basis` string that says exactly this, and the UI labels the column
-"model-implied". The older shortcut (P(top-5) ~ share of the nominal
-interval below 5, or success_probability as a bucket proxy) is NOT used.
+P(pick <= N) is a RANK CALIBRATION (since 2026-11-11): the player's class
+rank on the model's board is mapped through a logistic curve fit on six
+rolling-origin seasons of out-of-sample drafts — "how often did the model's
+K-th ranked player actually go in the top N" — see
+scripts/experiment_topn_calibration.py and models/topn_calibration.json.
+The earlier derivation (log-uniform mass inside the conformal interval)
+capped every top-5 number near 66% and ordered players by interval width;
+it survives only as _pick_cdf so the September ledger rows stay readable.
+Caveat stated on the page: the curve was measured on pre-draft boards, so a
+mid-season rank is read as if the draft were held on today's board. Every
+priced row carries a `model_basis` string that says so.
 
 Event coherence: the per-player numbers are marginals from independent
 intervals and nothing forces them to be jointly consistent, but within one
@@ -111,34 +113,26 @@ Questions the cache cannot answer stay listed with null model fields:
   * Any player whose cache row lacks pick_range.
 
 ── Paper ledger ───────────────────────────────────────────────────────────────
-When a matched market shows |edge| >= LEDGER_EDGE_THRESHOLD points on a REAL
-two-sided quote we append one row per (ticker, day) to
-training_data/edge_ledger.json. "Real" means: the price is a last trade or a
-bid/ask midpoint (never a one-sided ask) AND the book is tight (bid >=
-LEDGER_MIN_BID_CENTS and ask - bid <= LEDGER_MAX_SPREAD_CENTS) or the market
-has traded volume. A 1c-bid / 65c-ask book on zero volume is a placeholder,
-not an opinion: its midpoint stays on the board tagged `mid_wide` ("mid
-(wide)" in the UI) and is excluded from the ledger. No
-money moves — the ledger exists purely to build a verifiable public track
-record of the model's calls BEFORE anyone is asked to trust an edge. Atomic
-write (temp + os.replace) and mtime hot-reload, same pattern as the other
-training_data caches.
+training_data/edge_ledger.json is the public record of the model's calls. It
+has exactly ONE writer: `dv_edge.py --record-ledger`, run by the weekly
+refresh job against the board that run just built. No HTTP request writes it
+(GET /api/edge used to, so the record only grew when somebody loaded the
+page — nine weekly syncs in a row captured nothing — and a read-only audit's
+own requests put rows on it).
 
-Durability: the Fly container has no volume, so the ledger a production
-worker appends to dies on the next `fly deploy`, and the copy in git is what
-comes back. To keep the track record the weekly refresh job should, before
-its commit step, run
-
-    python dv_edge.py --sync-ledger https://draft.jkrek.com
-
-(a single GET of /api/edge/ledger, merged into training_data/edge_ledger.json
-deduped on (ticker, date)) and add `training_data/edge_ledger.json` to the
-`git add` list in .github/workflows/refresh-board.yml. The file already
-lives under training_data/ and is tracked, so the commit step needs no other
-change. This module deliberately does not edit the workflow itself.
+A call is frozen when (_is_disagreement) the market has a live two-sided book
+(bid >= LEDGER_MIN_BID_CENTS and an ask) and the model sits at least
+LEDGER_EDGE_THRESHOLD points OUTSIDE it. One call per (ticker, method): the
+first week the model disagreed is the call that gets scored on draft night.
+Rows without a `method` are the interval formula's (interval-v1) and are kept
+as they were frozen. Identity is pinned: once a ticker has a call, only the
+same espn_id can ever be matched to it again (_ledger_pins). No money moves.
+Atomic write (temp + os.replace) and mtime hot-reload, same pattern as the
+other training_data caches; the workflow commits the file.
 """
 
 import argparse
+import bisect
 import json
 import math
 import os
@@ -217,7 +211,6 @@ LEDGER_EDGE_THRESHOLD = 10.0  # points of |edge| before a paper-ledger entry
 # midpoint, on a book that is tight (bid >= 2c, spread <= 10c) or has traded.
 # A one-sided ask, or a 1c/65c placeholder book on zero volume, is not a
 # market opinion worth putting on the record.
-_LEDGER_PRICE_SOURCES = ("last", "mid")
 LEDGER_MIN_BID_CENTS = 2
 LEDGER_MAX_SPREAD_CENTS = 10
 
@@ -337,16 +330,19 @@ def _write_json_atomic(path: str, data: dict) -> None:
 
 
 def _merge_ledger_entries(candidates: list) -> int:
-    """Merge rows into the on-disk ledger, deduped on (ticker, date). Caller
+    """Merge rows into the on-disk ledger: ONE frozen call per (ticker,
+    method) — the first week the model disagreed is the call that gets
+    scored; later weeks never add a second row for the same question (the
+    old (ticker, date) key counted one question as several calls). Caller
     holds _ledger_lock. Returns the number of rows added."""
     global _LEDGER_MTIME
     _load_ledger()  # merge against whatever is on disk right now
-    seen = {(e.get("ticker"), e.get("date")) for e in _LEDGER["entries"]}
+    seen = {(e.get("ticker"), _method_of(e)) for e in _LEDGER["entries"]}
     added = 0
     for row in candidates:
         if not isinstance(row, dict) or not row.get("ticker") or not row.get("date"):
             continue
-        key = (row["ticker"], row["date"])
+        key = (row["ticker"], _method_of(row))
         if key in seen:
             continue
         _LEDGER["entries"].append(row)
@@ -358,19 +354,20 @@ def _merge_ledger_entries(candidates: list) -> int:
     return added
 
 
-def _record_ledger_entries(candidates: list) -> None:
-    """Append paper-ledger rows, deduped to one per (ticker, day).
+def _method_of(entry: dict) -> str:
+    """Which model produced a ledger row. Rows frozen before the rank
+    calibration carry no `method` and are the interval formula's."""
+    return str(entry.get("method") or LEDGER_METHOD_LEGACY)
 
-    Best-effort: a write failure is logged and swallowed — the board must
-    render regardless.
-    """
+
+def _record_ledger_entries(candidates: list) -> int:
+    """Append paper-ledger rows (one per ticker per method). Called ONLY by
+    the weekly job's `--record-ledger`; no HTTP request ever writes the
+    ledger. Returns rows added."""
     if not candidates:
-        return
+        return 0
     with _ledger_lock:
-        try:
-            _merge_ledger_entries(candidates)
-        except Exception as exc:
-            print(f"Edge ledger append failed: {exc}")
+        return _merge_ledger_entries(candidates)
 
 
 def sync_ledger_from(base_url: str, timeout: float = 60.0) -> int:
@@ -379,7 +376,7 @@ def sync_ledger_from(base_url: str, timeout: float = 60.0) -> int:
     weekly refresh runner so the track record survives `fly deploy`. Returns
     the number of rows added. Read-only against the remote."""
     url = base_url.rstrip("/") + "/api/edge/ledger"
-    resp = requests.get(url, timeout=timeout, headers={"Accept": "application/json"})
+    resp = requests.get(url, timeout=timeout, headers={"Accept": "application/json", "X-DV-Internal": "cron"})
     resp.raise_for_status()
     global _LEDGER_MTIME
     data = resp.json()
@@ -429,7 +426,8 @@ def _ledger_calls() -> dict:
     ledger row (the frozen call the record is scored on)."""
     out = {}
     for ticker, rows in _ledger_by_ticker().items():
-        first = rows[0]
+        current = [e for e in rows if _method_of(e) == LEDGER_METHOD]
+        first = (current or rows)[0]
         out[ticker] = {
             "first_date": first.get("date"),
             "price_at_call": first.get("market_price_cents"),
@@ -873,6 +871,7 @@ def sync_history_from(base_url: str, timeout: float = 60.0, tickers: list = None
     base = base_url.rstrip("/")
     session = requests.Session()
     session.headers["Accept"] = "application/json"
+    session.headers["X-DV-Internal"] = "cron"
     if tickers is None:
         # The first request may wake a scaled-to-zero machine, hence the long
         # timeout; the board GET is the source of "every ticker in the remote
@@ -1056,7 +1055,45 @@ def _class_before(row: dict, draft_year) -> bool:
         return False
 
 
-def _resolve_player(cands: list, index: dict, draft_year=None, team_hint: str = ""):
+# Identity guard. Kalshi lists a name and nothing else (no school, no
+# position), so a name hit is only evidence of identity when the row could
+# plausibly BE the subject of a draft-slot market. On 2026-09-15 South
+# Carolina's Dylan Stewart fell out of the weekly cache and the market
+# silently re-matched to a Delaware lineman projected ~1,700th — the board's
+# headline "gap" for two months was a different person. Two guards:
+#   1. _plausible_subject — a draft-slot market is not about a player who is
+#      BOTH far off the draft board and either at a bottom-tier program or
+#      without a single recorded stat. (Far off the board alone is not
+#      enough: the model ranks several real, listed Power-conference QBs
+#      outside the draft, and that is a disagreement, not a mismatch.)
+#   2. the ledger pin in _build_board — once a ticker has a call on the
+#      record, only that same espn_id may ever be matched to it again.
+# Unmatched is honest; mismatched is not.
+_MATCH_MAX_PROJECTED_PICK = 300
+_MATCH_MAX_OFFBOARD_TIER = 5
+_mismatch_logged: set = set()
+
+
+def _plausible_subject(row: dict) -> bool:
+    if _pick_sort_key(row) <= _MATCH_MAX_PROJECTED_PICK:
+        return True
+    tier = _num(row.get("conference_tier"))
+    no_stats = row.get("data_source") == "roster_hint"
+    return not (no_stats or (tier is not None and tier > _MATCH_MAX_OFFBOARD_TIER))
+
+
+def _ledger_pins() -> dict:
+    """ticker -> espn_id the ticker was first put on the record with."""
+    pins = {}
+    for e in sorted(_LEDGER["entries"], key=lambda e: str(e.get("date") or "")):
+        t, pid = e.get("ticker"), _str_or_none(e.get("espn_id"))
+        if t and pid and t not in pins:
+            pins[t] = pid
+    return pins
+
+
+def _resolve_player(cands: list, index: dict, draft_year=None, team_hint: str = "",
+                    require_prospect: bool = False):
     """First candidate name that hits the index wins. Rows whose draft_class
     is earlier than the market's draft year are excluded outright; otherwise
     draft_class is IGNORED — a true junior carries draft_class 2028 while
@@ -1073,6 +1110,15 @@ def _resolve_player(cands: list, index: dict, draft_year=None, team_hint: str = 
         if not rows:
             continue
         rows = [r for r in rows if not _class_before(r, draft_year)]
+        if require_prospect:
+            kept = [r for r in rows if _plausible_subject(r)]
+            if not kept and rows and key not in _mismatch_logged:
+                _mismatch_logged.add(key)
+                print(f"Edge identity guard: '{cand}' only matches off-board row(s) "
+                      + ", ".join(f"{r.get('team')} ({r.get('position')}, pick "
+                                  f"{r.get('projected_pick')})" for r in rows)
+                      + " — refusing the match (likely a different player)")
+            rows = kept
         if not rows:
             continue
         if len(rows) == 1:
@@ -1294,6 +1340,8 @@ def _p_pick_le(n: int, lo: float, hi: float, coverage: float) -> float:
 
 _NOT_PRICED_EXACT = "not priced: exact-pick probabilities are not identifiable from an interval"
 _PRICEABLE_KINDS = ("top_n", "after_n")
+# Markets whose subject must be a real draft prospect (see _plausible_subject).
+_DRAFT_SLOT_KINDS = ("top_n", "after_n", "pick_eq", "nth_position")
 
 
 def _player_interval(player: dict):
@@ -1308,19 +1356,81 @@ def _player_interval(player: dict):
     return lo, hi, cov
 
 
+# ── Rank calibration (the served top-N model) ────────────────────────────────
+# P(pick <= N) used to be read off the conformal interval under a log-uniform
+# assumption. That could not exceed ~66% for anyone and ranked players by
+# interval WIDTH, so the board's own #1 player showed 41% for a top-5 pick
+# (audit 2026-11-11). It is now measured instead: across six rolling-origin
+# seasons (2015-2020, each scored by a model that never saw that draft), how
+# often did the player the model ranked K-th in his class actually go in the
+# top N? scripts/experiment_topn_calibration.py fits one logistic curve per N
+# on log(rank) and writes models/topn_calibration.json; leave-one-year-out
+# Brier beats the base rate at every N >= 3. _pick_cdf above is kept only for
+# reading the September ledger rows that were frozen under the old formula.
+TOPN_CALIBRATION_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "models", "topn_calibration.json")
+LEDGER_METHOD = "rank-calibration-v2"
+LEDGER_METHOD_LEGACY = "interval-v1"
+# Six seasons is ~30 players per rank band at the top: never claim certainty.
+_TOPN_P_FLOOR, _TOPN_P_CEIL = 0.005, 0.95
+_TOPN_CURVES = None
+
+
+def _topn_curves() -> dict:
+    """{N: (a, b)} for P(pick <= N) = sigmoid(a + b*ln(rank)); {} if absent."""
+    global _TOPN_CURVES
+    if _TOPN_CURVES is None:
+        curves = {}
+        try:
+            with open(TOPN_CALIBRATION_PATH) as f:
+                raw = json.load(f).get("curves", {})
+            for k, v in raw.items():
+                a, b = _finite_num(v.get("a")), _finite_num(v.get("b"))
+                if a is not None and b is not None and b < 0:
+                    curves[int(k)] = (a, b)
+        except Exception as exc:
+            print(f"Edge top-N calibration unavailable ({exc}); top-N rows are not priced")
+        _TOPN_CURVES = curves
+    return _TOPN_CURVES
+
+
+def _p_top_n(n: int, rank: float):
+    """Calibrated P(pick <= n) for the model's class-rank-`rank` player, or
+    None when no curve was fit for that n (thresholds are not interpolated)."""
+    ab = _topn_curves().get(int(n))
+    if ab is None or rank is None or rank < 1:
+        return None
+    z = ab[0] + ab[1] * math.log(float(rank))
+    p = 1.0 / (1.0 + math.exp(-max(min(z, 50.0), -50.0)))
+    return min(max(p, _TOPN_P_FLOOR), _TOPN_P_CEIL)
+
+
+def _class_rank(player: dict, market_row: dict = None):
+    """The player's rank in the market's draft pool. `_market_rank` is set by
+    _build_board (the player's raw model pick ranked against every cache row
+    eligible for that draft year, so an underclassman bucketed a year late is
+    still ranked against the right pool); projected_pick — the same number
+    for a same-class player — is the fallback."""
+    r = _num((market_row or {}).get("_market_rank"))
+    if r is None:
+        # projected_pick is a rank within the player's OWN class: only valid
+        # for this market when that class is the market's draft year.
+        year, cls = (market_row or {}).get("draft_year"), _num(player.get("draft_class"))
+        if year and cls is not None and int(cls) != int(year):
+            return None
+        r = _num(player.get("projected_pick"))
+    return r if (r is not None and r >= 1) else None
+
+
 def _raw_p_le(market_row: dict, player: dict):
-    """The unscaled model-implied P(pick <= n) behind a priceable threshold
-    market, or None when the row cannot be priced (used for the per-event
-    coherence sum, which counts every matched player with an interval even
-    when the market itself has no quote)."""
+    """The unscaled model P(pick <= n) behind a priceable threshold market,
+    or None when the row cannot be priced (used for the per-event coherence
+    sum, which counts every matched player even when the market itself has
+    no quote)."""
     q = market_row.get("_question") or {}
     if q.get("kind") not in _PRICEABLE_KINDS or q.get("n") is None:
         return None
-    iv = _player_interval(player)
-    if iv is None:
-        return None
-    lo, hi, cov = iv
-    return _p_pick_le(int(q["n"]), lo, hi, cov)
+    return _p_top_n(int(q["n"]), _class_rank(player, market_row))
 
 
 def _event_scale_factors(matched: list) -> dict:
@@ -1366,21 +1476,24 @@ def _model_fields(market_row: dict, player: dict, scale: float = 1.0):
         return None, None, "not priced: positional draft order is not a persisted model output"
     if kind not in _PRICEABLE_KINDS:
         return None, None, "not priced: market question not recognised as a draft-position question"
-    iv = _player_interval(player)
-    if iv is None:
-        return None, None, "not priced: cache row has no conformal pick_range"
+    n = int(q["n"])
+    rank = _class_rank(player, market_row)
+    if rank is None:
+        return None, None, ("not priced: no rank for this player in the market's draft class "
+                            "(no projected pick, or he is bucketed in a different class)")
+    p_raw = _p_top_n(n, rank)
+    if p_raw is None:
+        return None, None, f"not priced: no calibration curve for a top-{n} question"
     price = market_row.get("yes_price_cents")
     if price is None:
         return None, None, "not priced: market has no quote"
-    lo, hi, cov = iv
-    n = int(q["n"])
     try:
         scale = float(scale)
     except (TypeError, ValueError):
         scale = 1.0
     if not (0.0 < scale <= 1.0) or not math.isfinite(scale):
         scale = 1.0
-    p_le = _p_pick_le(n, lo, hi, cov) * scale
+    p_le = p_raw * scale
     if kind == "top_n":
         p = p_le
         what = f"P(pick <= {n})"
@@ -1390,8 +1503,8 @@ def _model_fields(market_row: dict, player: dict, scale: float = 1.0):
     model_prob = round(100.0 * p, 1)
     edge = round(model_prob - float(price), 1)
     basis = (
-        f"model-implied {what} from the {int(round(cov * 100))}% conformal pick "
-        f"interval [{int(lo)}, {int(hi)}], log-uniform mass"
+        f"model {what} for its class-rank-{int(rank)} player: how often that rank "
+        f"went top {n} across six out-of-sample drafts (2015-2020), on today's board"
     )
     if scale < 1.0:
         basis += (f"; scaled x{scale:.3f} so the event's matched P(pick <= {n}) "
@@ -1463,10 +1576,15 @@ def _yes_price(m: dict):
     bid/ask midpoint, else whichever side is quoted. (None, None) when the
     book is empty — a 0.0000 bid with no last trade is "no price", not 0."""
     last = _price_field_cents(m, "last_price")
-    if last is not None and 0 < last < 100:
-        return last, "last"
     bid, ask = _price_field_cents(m, "yes_bid"), _price_field_cents(m, "yes_ask")
-    if bid is not None and ask is not None and 0 < bid <= ask < 100:
+    two_sided = bid is not None and ask is not None and 0 < bid <= ask < 100
+    if last is not None and 0 < last < 100:
+        # A last trade that now sits OUTSIDE a live two-sided book is a stale
+        # print (the audit found 5 of 19 top-5 rows quoting one), not the
+        # market's current opinion — the book's midpoint is.
+        if not (two_sided and not (bid <= last <= ask)):
+            return last, "last"
+    if two_sided:
         return int(round((bid + ask) / 2)), "mid"
     if ask is not None and 0 < ask < 100:
         return ask, "ask"
@@ -1483,11 +1601,10 @@ def _quote_quality(m: dict, price, source):
     """Classify the book behind a price for the paper ledger.
 
     Returns (source, spread_cents, volume, ledger_eligible). A midpoint on a
-    wide book (spread > LEDGER_MAX_SPREAD_CENTS) is re-tagged `mid_wide` —
-    it stays on the board, labelled, but is not a quote anyone traded.
-    ledger_eligible requires a two-sided source (last or mid) AND either a
-    tight book (bid >= LEDGER_MIN_BID_CENTS and spread <= LEDGER_MAX_SPREAD_
-    CENTS) or traded volume > 0 when the payload reports volume."""
+    wide book (spread > LEDGER_MAX_SPREAD_CENTS) is re-tagged `mid_wide`.
+    ledger_eligible means a live two-sided book right now: a bid of at least
+    LEDGER_MIN_BID_CENTS and an ask. Lifetime volume no longer qualifies a
+    row on its own."""
     bid, ask = _price_field_cents(m, "yes_bid"), _price_field_cents(m, "yes_ask")
     spread = (ask - bid) if (bid is not None and ask is not None and ask >= bid) else None
     volume = _volume(m)
@@ -1495,10 +1612,17 @@ def _quote_quality(m: dict, price, source):
         return source, spread, volume, False
     tight = (bid is not None and spread is not None
              and bid >= LEDGER_MIN_BID_CENTS and spread <= LEDGER_MAX_SPREAD_CENTS)
-    traded = volume is not None and volume > 0
+    two_sided = (bid is not None and ask is not None and spread is not None
+                 and bid >= LEDGER_MIN_BID_CENTS and ask < 100)
     if source == "mid" and not tight:
         source = "mid_wide"
-    eligible = source in _LEDGER_PRICE_SOURCES and (tight or traded)
+    # A lifetime trade count says nothing about today's book (the September
+    # ledger took rows on 62- and 71-cent spreads that way). Eligibility is
+    # now: somebody is bidding AND somebody is offering, right now. Whether
+    # the model actually disagrees with that book is decided per row by
+    # _is_disagreement (the model must sit outside bid/ask, not just far
+    # from a midpoint).
+    eligible = source in ("last", "mid", "mid_wide") and two_sided
     return source, spread, volume, eligible
 
 
@@ -1542,6 +1666,8 @@ def _market_row(m: dict, event_title: str, series: str, event_ticker: str) -> di
         "yes_price_cents": price,
         "yes_price_source": source,
         "spread_cents": spread,
+        "bid_cents": _price_field_cents(m, "yes_bid"),
+        "ask_cents": _price_field_cents(m, "yes_ask"),
         "volume": volume,
         "close_time": _str_or_none(m.get("close_time")),
         "ledger_eligible": bool(eligible),
@@ -1715,22 +1841,25 @@ def _discovery_status() -> dict:
 
 # ── Public payload ────────────────────────────────────────────────────────────
 _PAYLOAD_NOTE = (
-    "Read-only analysis of public Kalshi prices. Model numbers are "
-    "model-implied draft-position probabilities derived from each player's "
-    "conformal pick interval (log-uniform mass assumption), renormalized so "
-    "each event's top-N mass sums to at most N, and are shown only for "
-    "top-N / over-under questions; exact-pick (#K overall) markets and every "
-    "other relevant market are listed without a model number."
+    "Read-only analysis of public Kalshi prices. Model numbers are how often "
+    "a player the model ranked where it ranks this one went in the top N "
+    "across six out-of-sample drafts (2015-2020), read on today's board and "
+    "renormalized so each event's top-N mass sums to at most N. They are "
+    "shown only for top-N / over-under questions; exact-pick (#K overall) "
+    "markets and every other relevant market are listed without a model "
+    "number."
 )
 
 
-def edge_payload(prospects: list, dry_run: bool = False) -> dict:
+def edge_payload(prospects: list, dry_run: bool = True, record: bool = False) -> dict:
     """Payload for GET /api/edge. Always 200; empty book → note 'seasonal';
     before the first discovery pass → note 'warming'.
 
-    dry_run=True (operator --probe) never touches the git-tracked ledger:
-    the rows that WOULD have been appended are returned under
-    "ledger_dry_run" instead."""
+    READ-ONLY by default: serving a page never writes the ledger (it used to,
+    so the record only grew when somebody happened to load the page, and an
+    audit's own GETs put rows on it). record=True is the weekly job's
+    `--record-ledger`; dry_run=True (operator --probe) additionally returns
+    the rows that WOULD be appended under "ledger_dry_run"."""
     generated_at = datetime.now(timezone.utc).isoformat()
     markets = _get_markets_cached()
     status = _discovery_status()
@@ -1746,8 +1875,7 @@ def edge_payload(prospects: list, dry_run: bool = False) -> dict:
     ledger_candidates = [dict(c, date=today) for c in board["ledger_candidates"]]
     # Record BEFORE reading calls so the very first response already carries
     # call{} and on_ledger for the tickers it just put on the ledger.
-    if not dry_run:
-        _record_ledger_entries(ledger_candidates)
+    recorded = _record_ledger_entries(ledger_candidates) if record else 0
     _maybe_reload_ledger()
     calls = _ledger_calls()
     out = _attach_calls(board["rows"], calls)
@@ -1758,7 +1886,9 @@ def edge_payload(prospects: list, dry_run: bool = False) -> dict:
         "discovery": status,
         "summary": _summary(out, ledger_tickers=set(calls)),
     }
-    if dry_run:
+    if record:
+        payload["ledger_recorded"] = recorded
+    elif dry_run:
         payload["ledger_dry_run"] = ledger_candidates
     return payload
 
@@ -1778,13 +1908,17 @@ def _resolve_board(prospects: list, markets: list = None) -> dict:
     if markets is None:
         markets = _get_markets_cached()
     markets = markets or []
+    _maybe_reload_ledger()  # identity pins come from the ledger; reload BEFORE the memo check
     with _board_lock:
         memo = _BOARD_MEMO
-        if memo["board"] is not None and memo["markets"] is markets and memo["prospects"] is prospects:
+        if (memo["board"] is not None and memo["markets"] is markets
+                and memo["prospects"] is prospects and memo.get("ledger_mtime") == _LEDGER_MTIME):
             return memo["board"]
+    stamp = _LEDGER_MTIME
     board = _build_board(markets, prospects)
     with _board_lock:
-        _BOARD_MEMO.update({"markets": markets, "prospects": prospects, "board": board})
+        _BOARD_MEMO.update({"markets": markets, "prospects": prospects, "board": board,
+                            "ledger_mtime": stamp})
     return board
 
 
@@ -1793,12 +1927,35 @@ def _build_board(markets: list, prospects: list) -> dict:
     out, ledger_candidates = [], []
 
     # Pass 1: match. Pass 2: per-event coherence scale over the matched set.
+    _maybe_reload_ledger()
+    pins, pin_refused = _ledger_pins(), set()
     resolved = []
     for src in markets:
+        kind = (src.get("_question") or {}).get("kind")
         player, ambiguous = _resolve_player(
             src["_market_raw_names"], index,
-            draft_year=src.get("draft_year"), team_hint=src.get("_team_hint", ""))
+            draft_year=src.get("draft_year"), team_hint=src.get("_team_hint", ""),
+            require_prospect=kind in _DRAFT_SLOT_KINDS)
+        pinned = pins.get(src.get("ticker"))
+        if player and pinned and _str_or_none(player.get("espn_id")) not in (None, pinned):
+            pin_refused.add(src.get("ticker"))
+            player, ambiguous = None, False
         resolved.append((src, player, ambiguous))
+    # Rank each matched player against the pool of his MARKET's draft year.
+    pools: dict = {}
+    for src, player, _ in resolved:
+        src.pop("_market_rank", None)  # market dicts are cached across boards
+        year = src.get("draft_year")
+        if not player or not year or _num(player.get("model_pick")) is None:
+            continue
+        if year not in pools:
+            pools[year] = sorted(
+                float(r["model_pick"]) for r in (prospects or [])
+                if _num(r.get("model_pick")) is not None
+                and _num(r.get("draft_class")) is not None
+                and int(r["draft_class"]) == int(year))
+        if len(pools[year]) >= 100:
+            src["_market_rank"] = 1 + bisect.bisect_left(pools[year], float(player["model_pick"]))
     scales = _event_scale_factors([(s, p) for s, p, _ in resolved if p])
 
     for src, player, ambiguous in resolved:
@@ -1816,7 +1973,11 @@ def _build_board(markets: list, prospects: list) -> dict:
             "yes_price_cents": src["yes_price_cents"],
             "yes_price_source": src.get("yes_price_source"),
             "spread_cents": src.get("spread_cents"),
+            "bid_cents": src.get("bid_cents"),
+            "ask_cents": src.get("ask_cents"),
             "ledger_eligible": bool(src.get("ledger_eligible")),
+            "disagreement": False,
+            "model_rank": None,
             "matched_player": player.get("name") if player else None,
             # team enables the frontend's /player/<name-team> profile links
             "matched_team": player.get("team") if player else None,
@@ -1845,10 +2006,15 @@ def _build_board(markets: list, prospects: list) -> dict:
             row["model_prob"], row["edge"], row["model_basis"] = _model_fields(src, player, scale)
             if row["model_prob"] is not None:
                 row["event_scale"] = round(float(scale), 4)
-            if (row["edge"] is not None
-                    and abs(row["edge"]) >= LEDGER_EDGE_THRESHOLD
-                    and row["ledger_eligible"]):
+            row["model_rank"] = (int(_class_rank(player, src))
+                                 if row["model_prob"] is not None else None)
+            row["disagreement"] = _is_disagreement(row)
+            if row["disagreement"] and not ambiguous:
                 ledger_candidates.append({
+                    "method": LEDGER_METHOD,
+                    "bid_cents": row["bid_cents"],
+                    "ask_cents": row["ask_cents"],
+                    "model_rank": row["model_rank"],
                     "ticker": row["ticker"],
                     "title": row["title"],
                     "player": row["matched_player"],
@@ -1872,7 +2038,9 @@ def _build_board(markets: list, prospects: list) -> dict:
         else:
             q = (src.get("_question") or {}).get("kind")
             row["model_basis"] = (
-                "not priced: player not in the prospect cache" if q in ("top_n", "pick_eq", "after_n")
+                "not priced: the player this market was first matched to is no longer "
+                "on the board (a namesake was refused)" if row["ticker"] in pin_refused
+                else "not priced: player not in the prospect cache" if q in ("top_n", "pick_eq", "after_n")
                 else "not priced: no matched player")
         out.append(row)
 
@@ -1895,11 +2063,25 @@ def _build_board(markets: list, prospects: list) -> dict:
     return {"rows": out, "ledger_candidates": ledger_candidates, "index": lookup}
 
 
+def _is_disagreement(row: dict) -> bool:
+    """A recordable disagreement: a live two-sided book, and the model at
+    least LEDGER_EDGE_THRESHOLD points OUTSIDE it (above the ask or below the
+    bid). Distance from a midpoint is not enough — on a 20/43 book a model at
+    45 agrees with someone who is quoting."""
+    if not row.get("ledger_eligible") or row.get("model_prob") is None:
+        return False
+    bid, ask = row.get("bid_cents"), row.get("ask_cents")
+    if bid is None or ask is None:
+        return False
+    p = float(row["model_prob"])
+    return p >= ask + LEDGER_EDGE_THRESHOLD or p <= bid - LEDGER_EDGE_THRESHOLD
+
+
 def _summary(rows: list, ledger_tickers=None) -> dict:
     priced = [r for r in rows if r.get("yes_price_cents") is not None]
     matched = [r for r in rows if r.get("matched_player")]
     edged = [r for r in rows if r.get("edge") is not None]
-    eligible = [r for r in edged if abs(r["edge"]) >= LEDGER_EDGE_THRESHOLD and r.get("ledger_eligible")]
+    eligible = [r for r in edged if r.get("disagreement")]
     clean = [r for r in eligible if not r.get("match_ambiguous")]
     by_kind = {"top_n": 0, "pick_eq": 0, "heisman": 0, "other": 0}
     years: dict = {}
@@ -2037,6 +2219,9 @@ def _spotlight_row(r: dict) -> dict:
         "gap": r["edge"],
         "wide_interval": bool(r.get("wide_interval")),
         "ledger_eligible": bool(r.get("ledger_eligible")),
+        "disagreement": bool(r.get("disagreement")),
+        "bid": r.get("bid_cents"),
+        "ask": r.get("ask_cents"),
         "match_ambiguous": bool(r.get("match_ambiguous")),
         "url": r["url"],
     }
@@ -2090,7 +2275,7 @@ def spotlight_payload(prospects: list, n: int = 3) -> dict:
     calls = _ledger_calls()
     rows = board["rows"]
     modeled = [r for r in rows if r["model_prob"] is not None and not r["match_ambiguous"]]
-    primary = sorted((r for r in modeled if r["ledger_eligible"]),
+    primary = sorted((r for r in modeled if r.get("disagreement")),
                      key=lambda r: -abs(r["edge"]))
     chosen = primary[:n]
     if len(chosen) < n:
@@ -2121,6 +2306,10 @@ def _cli(argv=None) -> int:
                     help="run one discovery pass and print series/match/edge counts")
     ap.add_argument("--sync-ledger", metavar="BASE_URL",
                     help="GET <BASE_URL>/api/edge/ledger and merge into the local ledger")
+    ap.add_argument("--record-ledger", action="store_true",
+                    help="one discovery pass; freeze this week's disagreements into the "
+                         "local ledger (one call per ticker) and capture price history. "
+                         "The ONLY writer of the ledger — run by the weekly refresh job")
     ap.add_argument("--backfill-ledger", action="store_true",
                     help="fill identity/question/interval fields on existing ledger "
                          "entries from the current cache (idempotent; one discovery GET)")
@@ -2149,6 +2338,24 @@ def _cli(argv=None) -> int:
         total = len(_LEDGER["entries"])
         print(f"ledger backfill (discovery {status['state']}): {changed} of {total} "
               f"entr{'y' if total == 1 else 'ies'} enriched in {LEDGER_PATH}")
+    if args.record_ledger:
+        _refresh_markets_once()
+        status = _discovery_status()
+        markets = _peek_markets_cached() or []
+        if status["state"] != "ok" or not markets:
+            print(f"ledger record skipped: discovery {status['state']} "
+                  f"({status.get('error') or 'no open markets'}); {LEDGER_PATH} left unchanged")
+            return 2
+        try:
+            points = _capture_history(markets)
+        except Exception as exc:
+            points = 0
+            print(f"history capture failed: {exc}")
+        payload = edge_payload(_load_prospects(), record=True)
+        s = payload["summary"]
+        print(f"ledger record: {payload['ledger_recorded']} new call(s) frozen in {LEDGER_PATH} "
+              f"({s['eligible_over_threshold']} disagreement(s) on {s['modeled']} modeled "
+              f"market(s), {s['markets']} listed); {points} history point(s) captured")
     if args.sync_ledger:
         # Fly scales to zero; the first request can take ~20 s to wake the
         # machine, hence the generous timeout. A failed sync leaves the

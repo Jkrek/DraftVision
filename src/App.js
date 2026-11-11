@@ -4,6 +4,7 @@ import './App.css';
 import Navbar from './components/Navbar';
 import CommandPalette from './components/CommandPalette';
 import Ambient from './components/Ambient';
+import PageMeta from './components/PageMeta';
 import Ticker from './components/Ticker';
 import Footer from './components/Footer';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -28,6 +29,7 @@ function App() {
   return (
     <Router>
       <Auth0ProviderWithHistory>
+        <PageMeta />
         <Navbar />
         <CommandPalette />
         <Ambient />

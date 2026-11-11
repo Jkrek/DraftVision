@@ -10,7 +10,7 @@ import './BigBoard.css';
 // with the analytics key (same sessionStorage slot as /insights).
 
 const KEY_STORE = 'dv_analytics_key';
-const CLASSES = ['2027', '2028', '2029', '2030'];
+const CLASSES = ['2027', '2028', '2029'];
 const PAGE_SIZE = 100;
 
 const GRADE_ORDER = { 'A+': 0, 'A': 1, 'A-': 2, 'B+': 3, 'B': 4, 'B-': 5, 'C+': 6, 'C': 7, 'C-': 8, 'D': 9 };

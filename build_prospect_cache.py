@@ -46,17 +46,20 @@ def current_season_year(now=None):
 
 
 def projected_draft_class(class_abbr, season_year):
-    """Earliest realistic draft class from roster class standing.
+    """FIRST draft a player is eligible for, from roster class standing.
 
-    A season-N player's final possible college season is season_year + (4 - N),
-    and the draft follows the season by one calendar year. FR->+4, SO->+3,
-    JR->+2, SR/GR->+1. Redshirts and early declares shift this; it is a
-    projection, not a certainty.
+    The NFL takes players three years out of high school, so a junior is in
+    the same draft pool as the seniors: JR/SR/GR -> the draft after this
+    season, SO -> +2, FR -> +3. (This used to return the LAST possible class,
+    JR -> +2, which left every true junior — the top of most real drafts —
+    off the upcoming class's board, mock draft and simulator.) Juniors who
+    return to school simply reappear in next year's pool. ESPN rosters do not
+    mark redshirts, so a redshirt sophomore is bucketed one year late.
     """
-    years = {"FR": 1, "SO": 2, "JR": 3, "SR": 4, "GR": 4}.get((class_abbr or "").upper())
-    if years is None:
+    offset = {"FR": 3, "SO": 2, "JR": 1, "SR": 1, "GR": 1}.get((class_abbr or "").upper())
+    if offset is None:
         return None
-    return season_year + (4 - years) + 1
+    return season_year + offset
 
 OUTPUT_FILE  = "training_data/prospect_cache.json"
 HISTORY_DIR  = "training_data/board_history"

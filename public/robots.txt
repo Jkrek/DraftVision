@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /insights
+Disallow: /api/
+
+Sitemap: https://draft.jkrek.com/sitemap.xml

@@ -35,8 +35,23 @@ export function getAnonId() {
   }
 }
 
+// Set once /insights has been unlocked on this browser: the owner's own
+// visits are then tagged internal and kept out of the audience numbers.
+export const OWNER_KEY = 'dv_owner';
+
+function isOwner() {
+  try {
+    return localStorage.getItem(OWNER_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
 function buildHeaders(options, token) {
   const headers = new Headers(options.headers || {});
+  if (isOwner() && !headers.has('X-DV-Internal')) {
+    headers.set('X-DV-Internal', 'owner');
+  }
   const anonId = getAnonId();
   if (anonId && !headers.has('X-DV-Anon')) {
     headers.set('X-DV-Anon', anonId);
@@ -83,4 +98,25 @@ export function useApi() {
   );
 
   return apiFetch;
+}
+
+/**
+ * One page view: the path the app actually rendered plus the external
+ * referrer (first view of the visit only). Fire-and-forget; analytics must
+ * never surface an error to a visitor.
+ */
+let firstView = true;
+export function trackPageView(path) {
+  try {
+    const ref = firstView ? document.referrer || '' : '';
+    firstView = false;
+    anonFetch('/api/pv', {
+      method: 'POST',
+      keepalive: true,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, ref }),
+    }).catch(() => {});
+  } catch {
+    /* ignore */
+  }
 }

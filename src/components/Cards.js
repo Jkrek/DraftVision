@@ -10,15 +10,21 @@ import './Cards.css';
  *   2. CTA band over lamar.png
  */
 
-/* Static fallback so the grid never looks broken if the fetch fails. */
-const FALLBACK = [
-  { rank: '01', name: 'Caden Story', pos: 'DL', team: 'Clemson', grade: 'A+', prob: '90.5' },
-  { rank: '02', name: 'TJ Guy', pos: 'EDGE', team: 'Michigan', grade: 'A+', prob: '90.5' },
-  { rank: '03', name: 'Karson Kiesewetter', pos: 'S', team: 'Penn State', grade: 'A+', prob: '90.3' },
-  { rank: '04', name: 'Joshua Nichols', pos: 'DB', team: 'Michigan', grade: 'A+', prob: '89.5' },
-  { rank: '05', name: 'Max Heffner', pos: 'DB', team: 'Penn State', grade: 'A+', prob: '89.4' },
-  { rank: '06', name: 'Trajen Odom', pos: 'DL', team: 'Ohio State', grade: 'A+', prob: '89.3' },
-];
+/* Until the fetch resolves the grid shows six empty skeleton cells — no
+   names, no numbers (a static list goes stale, and it is what a crawler
+   reads). If the fetch fails or comes back empty the section is hidden. */
+const SKELETON_CELLS = [0, 1, 2, 3, 4, 5];
+
+function SkeletonCell() {
+  return (
+    <div className="board-cell board-cell-skeleton" aria-hidden="true">
+      <div className="pp-shimmer board-skel-rank" />
+      <div className="pp-shimmer board-skel-name" />
+      <div className="pp-shimmer board-skel-meta" />
+      <div className="pp-shimmer board-skel-prob" />
+    </div>
+  );
+}
 
 /* Map an /api/prospects row into the cell shape (defensive, same field
    fallbacks the Ticker and Leaderboard use). */
@@ -38,7 +44,8 @@ function toCell(p, i) {
 }
 
 function Cards() {
-  const [cells, setCells] = useState(FALLBACK);
+  const [cells, setCells] = useState(null); // null = loading
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,27 +60,30 @@ function Cards() {
             : [];
         const mapped = list.map(toCell).filter(Boolean).slice(0, 6);
         if (mapped.length) setCells(mapped);
+        else setFailed(true);
       })
-      .catch(() => { /* keep the static fallback */ });
+      .catch(() => { if (!cancelled) setFailed(true); });
     return () => { cancelled = true; };
   }, []);
 
   return (
     <>
       {/* ── Top of the board ── */}
-      <section className="board">
-        <div className="board-head" data-reveal="">
-          <h2 className="board-heading">Top of the board</h2>
-          <Link className="board-link" to="/leaderboard">
-            The full board →
-          </Link>
-        </div>
-        <div className="board-grid" data-reveal="2">
-          {cells.map((c) => (
-            <CardItem key={c.rank + c.name} {...c} />
-          ))}
-        </div>
-      </section>
+      {!failed && (
+        <section className="board">
+          <div className="board-head" data-reveal="">
+            <h2 className="board-heading">Top of the board</h2>
+            <Link className="board-link" to="/leaderboard">
+              The full board →
+            </Link>
+          </div>
+          <div className="board-grid" data-reveal="2" aria-busy={cells ? undefined : true}>
+            {cells
+              ? cells.map((c) => <CardItem key={c.rank + c.name} {...c} />)
+              : SKELETON_CELLS.map((i) => <SkeletonCell key={i} />)}
+          </div>
+        </section>
+      )}
 
       {/* ── CTA band ── */}
       <section className="ctaband">

@@ -30,9 +30,9 @@ import {
 const STORE_KEY = 'dv_mock_sim_v3';
 const SCHEMA_V = 3;
 
-/* Draft classes with proper eligibility bucketing: rows carry draft_class
-   (2027 = current seniors/juniors … 2030 = true freshmen). */
-const DRAFT_YEARS = [2027, 2028, 2029, 2030];
+/* Draft classes: rows carry draft_class = the player's FIRST eligible draft
+   (2027 = current seniors + juniors, 2028 = sophomores, 2029 = freshmen). */
+const DRAFT_YEARS = [2027, 2028, 2029];
 
 const HERO_IMG = process.env.PUBLIC_URL + '/images/CFB Content/lamar.png';
 
@@ -424,8 +424,8 @@ export default function MockDraft() {
           <p className="mock-sub">
             Run a {draftYear} NFL mock against the DraftVision board — CPU
             picks weigh success probability, grade, and positional need.
-            {draftYear >= 2029 &&
-              ' Pools for this class are projected eligibility — early declares shift classes.'}
+            {draftYear >= 2028 &&
+              ' Pools are by first eligible draft — players who stay in school move to a later class.'}
           </p>
           {boardPowered && (
             <span className="mock-board-badge">

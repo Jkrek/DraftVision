@@ -106,6 +106,14 @@
   color: var(--color-neutral-600);
 }
 
+/* Loading cells — same footprint as a real cell, shimmer bars (.pp-shimmer)
+   where the text will land. No hover lift: nothing to open yet. */
+.board-cell-skeleton { cursor: default; pointer-events: none; }
+.board-cell-skeleton .board-skel-rank { width: 22px; height: 11px; margin-bottom: 30px; }
+.board-cell-skeleton .board-skel-name { width: 62%; height: 20px; margin-bottom: 10px; }
+.board-cell-skeleton .board-skel-meta { width: 38%; height: 12px; margin-bottom: 26px; }
+.board-cell-skeleton .board-skel-prob { width: 84px; height: 28px; margin-bottom: 0; }
+
 /* ── CTA band over lamar.png ────────────────────────────────────────────── */
 .ctaband {
   position: relative;

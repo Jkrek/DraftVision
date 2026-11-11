@@ -11,7 +11,7 @@ import './FuturesBand.css';
  * 90¢. The model says 37%." — the lede naming the player, then the LADDER:
  * the three largest disagreements as a 1px-gapped board-grid of GapBars.
  * RIGHT (the scoreboard): the 2×2 hero-stats grid ('N priced' / 'N
- * disagreements ≥ 10' / 'N calls on paper' / '0 scored · settles May 2027'),
+ * disagreements' / 'N calls on paper' / '0 scored · settles May 2027'),
  * the ghost CTA to /futures, the quieter link to the record and the legend.
  * FOOTER strip: live/stale chip, "Kalshi public prices as of …", paper record.
  *
@@ -139,7 +139,7 @@ function homeCells(summary, record) {
   const r = record || {};
   return [
     { value: num(s.modeled) != null ? num(s.modeled) : '—', label: 'priced' },
-    { value: num(s.disagreements) != null ? num(s.disagreements) : '—', label: 'disagreements ≥ 10' },
+    { value: num(s.disagreements) != null ? num(s.disagreements) : '—', label: 'disagreements' },
     { value: num(r.calls) != null ? num(r.calls) : '—', label: 'calls on paper' },
     scoredCell(r),
   ];

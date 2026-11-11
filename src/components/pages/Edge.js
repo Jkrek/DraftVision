@@ -6,8 +6,9 @@ import { getEdge, getLedger, playerSlug } from '../../lib/edgeData';
 import './Edge.css';
 
 // Futures — "The Gap". Read-only board lining up Kalshi's public 2027 draft
-// futures against the model-implied probability from each player's conformal
-// pick interval. Nothing here asks anyone to do anything: the market thinks
+// futures against the model's rank-calibrated probability (how often a player
+// it ranked K-th in his class went top N across six out-of-sample drafts).
+// Nothing here asks anyone to do anything: the market thinks
 // X, the model says Y, and the paper ledger (#record) is the receipt, scored
 // on draft night. Page order: hero + scoreboard → method strip → the gap
 // board → listed-not-priced grids → the record → dense table fallback. Route: /futures (the component keeps its file name; the
@@ -18,7 +19,7 @@ import './Edge.css';
 //   note === 'warming'  — first discovery pass not finished; poll (4 s × 10).
 //   note === 'seasonal' — no relevant markets on the book.
 //   state === 'error'   — edgeData's never-reject fallback for a failed fetch.
-// Additive fields (question, matched_slug, espn ids, model_interval,
+// Additive fields (question, matched_slug, espn ids, model_rank, disagreement,
 // event_scale, by_kind, resolution…) are optional: everything below derives
 // a fallback from the fields that have always been there.
 
@@ -31,7 +32,7 @@ const UNPRICED_PREVIEW = 12;
 const SOURCE_LABEL = {
   last: 'last',
   mid: 'mid',
-  mid_wide: 'mid (wide)', // bid/ask midpoint on a wide, untraded book — shown, never recorded
+  mid_wide: 'mid (wide)', // midpoint of a wide bid/ask
   ask: 'ask only',
   bid: 'bid only',
 };
@@ -39,10 +40,11 @@ const SOURCE_LABEL = {
 // upstream failing since) | 'error' (no successful pass yet) | 'warming'.
 const DISCOVERY_LABEL = { ok: 'live', stale: 'stale', error: 'upstream error', warming: 'warming' };
 
-const LEDGER_TIP = 'Only two-sided, tight or traded quotes are recorded; a 1¢/65¢ placeholder book is shown but never scored.';
+const LEDGER_TIP = 'Calls are recorded once a week, by the Tuesday refresh.';
+const DISAGREE_TIP = 'The model sits 10+ points outside the quoted bid/ask.';
 const FLAG_TIP = 'Two prospects share this name; matched by the market’s team hint, then projected pick.';
 const UNPRICED_REASON = {
-  pick_eq: 'no model number — exact pick isn’t identifiable from an interval',
+  pick_eq: 'no model number — the model doesn’t price an exact pick',
   heisman: 'no model number — an award, not a draft slot',
 };
 
@@ -120,14 +122,8 @@ const chipText = (q) => {
   return String(q.label || q.kind || '').toUpperCase();
 };
 
-const BASIS_INTERVAL_RE = /(\d{1,3})%\s+(?:conformal\s+)?(?:pick\s+)?interval\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/i;
 const BASIS_SCALE_RE = /scaled\s+x\s*([\d.]+)/i;
 
-function intervalOf(m) {
-  if (m.model_interval && m.model_interval.lo != null) return m.model_interval;
-  const hit = BASIS_INTERVAL_RE.exec(m.model_basis || '');
-  return hit ? { lo: Number(hit[2]), hi: Number(hit[3]), coverage: Number(hit[1]) / 100 } : null;
-}
 function scaleOf(m) {
   if (m.event_scale != null) return Number(m.event_scale);
   const hit = BASIS_SCALE_RE.exec(m.model_basis || '');
@@ -141,34 +137,32 @@ function draftYearOf(m) {
 
 function enrich(m) {
   const q = questionOf(m);
-  const interval = intervalOf(m);
   const scale = scaleOf(m);
-  const wide = m.wide_interval != null ? Boolean(m.wide_interval) : Boolean(interval && interval.hi > 100);
   const slug = m.matched_slug || (m.matched_player && m.matched_team ? playerSlug(m.matched_player, m.matched_team) : null);
   const gap = m.edge != null ? Number(m.edge) : null;
   return {
     ...m,
     q,
-    interval,
     scale,
-    wide,
     slug,
     gap,
     year: draftYearOf(m),
     priced: m.model_prob != null && m.yes_price_cents != null,
-    big: gap != null && Math.abs(gap) >= THRESHOLD,
+    // A disagreement: live two-sided book AND the model 10+ points outside
+    // it. The server decides; the |gap| rule is only for payloads without it.
+    big: m.disagreement != null ? Boolean(m.disagreement) : gap != null && Math.abs(gap) >= THRESHOLD,
   };
 }
 
-// '72% ' (with trailing space) or '' — the coverage is read off the payload,
-// never assumed: the interval's nominal coverage is a model setting.
-const coverageWord = (cov) => (cov != null && Number.isFinite(Number(cov)) ? `${Math.round(Number(cov) * 100)}% ` : '');
 const scaleBit = (scale) => (scale != null && Math.abs(scale - 1) > 0.005);
 
+// The model number is a rank calibration: the caption names the class rank,
+// the full basis string lives in the row's InfoTip.
+const rankCaption = (row) => (row.model_rank != null ? `model’s #${row.model_rank} in the class` : null);
 const basisCaption = (row) => {
-  if (!row.interval) return null;
-  const scale = scaleBit(row.scale) ? ` · ×${row.scale.toFixed(2)} event scale` : '';
-  return `from ${coverageWord(row.interval.coverage)}interval, picks ${row.interval.lo}–${row.interval.hi}${scale}`;
+  const rank = rankCaption(row);
+  if (!rank) return null;
+  return scaleBit(row.scale) ? `${rank} · ×${row.scale.toFixed(2)} event scale` : rank;
 };
 
 /* ── small pieces ───────────────────────────────────────────────────────── */
@@ -352,7 +346,7 @@ function HeadlineCard({ row, seasonal, warming, errored, listedOnly, marketCount
       note = `${marketCount} market${marketCount === 1 ? '' : 's'} on the book; none maps onto a model output right now. The prices below are the market’s alone.`;
     } else {
       eyebrow = 'No headline gap today';
-      note = 'Every priced row sits on a wide or one-sided quote or an ambiguous name, so none qualifies as the headline. The board below still lines them up.';
+      note = 'Every priced row sits on a one-sided quote or an ambiguous name, so there is no headline today. The board below still lines them up.';
     }
     return (
       <div className="fut-hero-card">
@@ -392,11 +386,8 @@ function HeadlineCard({ row, seasonal, warming, errored, listedOnly, marketCount
         delay={250}
       />
       <div className="fut-head-basis">
-        {row.interval
-          ? `model-implied P(pick ≤ ${row.q.n ?? '?'}) from the ${coverageWord(row.interval.coverage)}interval [${row.interval.lo}, ${row.interval.hi}]`
-          : row.model_basis}
-        {row.wide && <span className="fut-wide"> · wide interval — conservative by construction</span>}
-        <InfoTip text={row.model_basis || 'Model-implied from the conformal pick interval.'} place="top-left" />
+        {rankCaption(row) || row.model_basis}
+        <InfoTip text={row.model_basis || 'How often the model’s rank for this player went that high in past drafts.'} place="top-left" />
       </div>
       <div className="fut-head-foot">
         <SourceLink url={row.url} />
@@ -447,7 +438,7 @@ function BoardRow({ row, rank, onLedger, delay }) {
       <span
         className={`fut-ledger-dot${onLedger ? ' fut-ledger-dot-on' : ''}`}
         role="img"
-        title={onLedger ? 'On the paper ledger — frozen the first day this disagreement was seen.' : 'Not on the paper ledger.'}
+        title={onLedger ? 'On the paper ledger.' : 'Not on the paper ledger.'}
         aria-label={onLedger ? 'On the paper ledger' : 'Not on the paper ledger'}
       />
       <SourceLink url={row.url} />
@@ -491,30 +482,27 @@ function UnpricedGrid({ title, rows, reason }) {
   );
 }
 
-function MethodSection({ coverage, scaleExample }) {
-  const covPct = coverage != null ? Math.round(coverage * 100) : null;
+function MethodSection({ scaleExample }) {
   const scaleWord = scaleExample != null ? `“×${scaleExample.toFixed(2)} event scale”` : '“event scale”';
   const cells = [
     {
       title: 'What is priced',
-      body: 'Only draft-position threshold questions — “top 5”, “before pick 10”. Each player’s conformal pick interval is read as log-uniform mass, and P(pick ≤ N) is the share of that mass below N.',
-      tip: covPct != null
-        ? `Model-implied P(pick ≤ N) from the ${covPct}% conformal pick interval, log-uniform mass; the ${100 - covPct}% outside the interval is split into the two tails.`
-        : 'Model-implied P(pick ≤ N) from the conformal pick interval, log-uniform mass; the mass outside the interval is split into the two tails.',
+      body: 'Only draft-slot threshold questions — “top 5”, “before pick 10”. The model number is how often a player it ranked in the same spot in his class went that high, across six out-of-sample drafts (2015–2020).',
+      tip: 'Model P(pick ≤ N) for the player’s class rank on today’s board: how often that rank went top N across six out-of-sample drafts (2015–2020).',
     },
     {
       title: 'What is not',
-      body: 'Exact-pick markets (“#1 overall”) and awards (Heisman) are listed with their price only. An exact pick isn’t identifiable from an interval, and an award isn’t a draft slot — so no model number is printed.',
-      tip: 'not priced: exact pick isn’t identifiable from an interval · not priced: an award, not a draft slot.',
+      body: 'Exact-pick markets (“#1 overall”) and awards (Heisman) are listed with their price only. The model doesn’t price an exact pick, and an award isn’t a draft slot.',
+      tip: 'not priced: the model doesn’t price an exact pick · not priced: an award, not a draft slot.',
     },
     {
       title: 'Why the model looks low at the top',
-      body: `Every top-5 book has five slots. When the matched players’ raw P(pick ≤ 5) sum past 5, each is scaled down so the event stays coherent — that is the ${scaleWord} under a rail. Wide intervals are conservative by construction.`,
+      body: `Every top-5 book has five slots. When the matched players’ raw P(pick ≤ 5) sum past 5, each is scaled down so the event stays coherent — that is the ${scaleWord} under a rail.`,
       tip: 'scaled so the event’s matched P(pick ≤ N) sums to N (raw marginals overshot). The scale is printed on every rail it touched.',
     },
     {
       title: 'How it gets scored',
-      body: 'A call is written the first day a 10-point disagreement is seen on a real two-sided quote — a last trade, or a midpoint on a tight or traded book. One-sided asks and placeholder books are shown, never recorded. On draft night each call gets a Brier score for the model and for the market.',
+      body: 'Calls are recorded once a week by the Tuesday refresh, one per market question, only when someone is both bidding and offering and the model is 10+ points outside that range. On draft night each call gets a Brier score for the model and for the market.',
       tip: 'Brier = (probability − outcome)². Lower is closer. model Brier vs. market Brier, per call and on average; void markets are excluded.',
     },
   ];
@@ -627,7 +615,7 @@ function RecordSection({ ledger, ledgerErrored, marketMap, boardBig, boardRecord
     <section className="fut-section fut-record" id="record" aria-labelledby="fut-record-title">
       <h2 className="fut-h2" id="fut-record-title">The record</h2>
       <p className="fut-sub">
-        Every 10-point disagreement on a real two-sided quote, frozen the day it first appears. No money moves. Scored on draft night against the settled market.
+        Recorded once a week by the Tuesday refresh, one call per market question. No money moves. Scored on draft night against the settled market.
       </p>
       <Scoreboard
         cells={recordCells}
@@ -647,7 +635,7 @@ function RecordSection({ ledger, ledgerErrored, marketMap, boardBig, boardRecord
         </p>
       ) : entries.length === 0 ? (
         <p className="fut-muted fut-empty">
-          No recorded calls yet — a call is written the first day a 10-point disagreement is seen on a real two-sided quote.
+          No recorded calls yet — the Tuesday refresh writes them.
         </p>
       ) : (
         groups.map(([date, rows]) => (
@@ -669,6 +657,9 @@ function RecordSection({ ledger, ledgerErrored, marketMap, boardBig, boardRecord
                       <span className="fut-who-line">
                         <PlayerName name={e.player} slug={e.slug} ambiguous={e.ambiguous} />
                         <QChip q={e.q} />
+                        {(!e.method || e.method === 'interval-v1') && (
+                          <span className="fut-src-tag" title="Recorded before the model number changed method.">earlier method</span>
+                        )}
                       </span>
                     </span>
                     <span className="fut-cell-rail">
@@ -693,7 +684,7 @@ function RecordSection({ ledger, ledgerErrored, marketMap, boardBig, boardRecord
                       gap={e.gap}
                     />
                     <span className="fut-cell-tip">
-                      <InfoTip text={e.model_basis || 'Model-implied from the conformal pick interval at the time of the call.'} place="top-left" />
+                      <InfoTip text={e.model_basis || 'Model number at the time of the call.'} place="top-left" />
                     </span>
                     <StatusChip resolution={e.resolution} settlesOn={settlesOn} />
                   </div>
@@ -705,7 +696,7 @@ function RecordSection({ ledger, ledgerErrored, marketMap, boardBig, boardRecord
       )}
 
       <p className="fut-foot">
-        {boardBig} disagreements on the board today · {boardRecorded} eligible and recorded · the rest sit on wide or one-sided quotes and are never recorded.
+        {boardBig} disagreements on the board today · {boardRecorded} on the record.
       </p>
     </section>
   );
@@ -784,7 +775,7 @@ export default function Edge() {
   const onLedgerCount = summary?.on_ledger ?? rows.filter((r) => ledgerTickers.has(r.ticker) || r.call).length;
   const draftYear = summary?.draft_year ?? (rows.find((r) => r.year)?.year ?? 2027);
 
-  // The headline: largest |gap| that is ledger-eligible and unambiguous.
+  // The headline: largest |gap| on a live two-sided book, unambiguous name.
   const headline = useMemo(() => {
     const top = summary?.top_gap_ticker ? modeled.find((r) => r.ticker === summary.top_gap_ticker) : null;
     return top || modeled.find((r) => r.ledger_eligible && !r.match_ambiguous) || null;
@@ -807,11 +798,7 @@ export default function Edge() {
     return list;
   }, [seg, bigOnly, query, segLists]);
 
-  // The interval's nominal coverage and a real event scale, read off the payload.
-  const coverage = useMemo(() => {
-    const hit = modeled.find((r) => r.interval && r.interval.coverage != null);
-    return hit ? Number(hit.interval.coverage) : null;
-  }, [modeled]);
+  // A real event scale, read off the payload.
   const scaleExample = useMemo(() => {
     const hit = modeled.find((r) => scaleBit(r.scale));
     return hit ? hit.scale : null;
@@ -843,7 +830,7 @@ export default function Edge() {
   const topCells = [
     { value: haveBoard ? summary.markets : '—', label: 'Markets' },
     { value: haveBoard ? summary.modeled : '—', label: 'Priced by the model' },
-    { value: haveBoard ? eligibleBig : '—', label: 'Disagreements ≥ 10 pts' },
+    { value: haveBoard ? eligibleBig : '—', label: 'Disagreements', tip: DISAGREE_TIP },
     { value: haveBoard ? onLedgerCount : '—', label: 'On the paper ledger', tip: LEDGER_TIP },
     { value: brierValue, label: 'Model Brier / Market Brier', sub: brierSub },
   ];
@@ -892,7 +879,7 @@ export default function Edge() {
             <p className="eyebrow">Model vs. Market · {draftYear} NFL Draft</p>
             <h1 className="fut-title">Where the model and the market disagree</h1>
             <p className="fut-lede">
-              Kalshi prices the {draftYear} draft in public. The model prices it too. This page lines the two up — read-only, no positions, every 10-point disagreement frozen on paper and scored on draft night.
+              Kalshi prices the {draftYear} draft in public. The model prices it too. This page lines the two up — read-only, no positions, disagreements recorded on paper and scored on draft night.
             </p>
             <p className="fut-legal">
               Not investment advice. Prediction markets are restricted to adults 18+. Source links open kalshi.com.
@@ -942,7 +929,7 @@ export default function Edge() {
         {listedOnly && unpricedSection}
 
         {/* ── (2) How the number is made — always visible, before the board ── */}
-        <MethodSection coverage={coverage} scaleExample={scaleExample} />
+        <MethodSection scaleExample={scaleExample} />
 
         {/* ── (3) Where they disagree ── */}
         {!seasonal && !errored && !listedOnly && (
@@ -950,7 +937,7 @@ export default function Edge() {
             <div className="fut-section-head">
               <div>
                 <h2 className="fut-h2" id="fut-board-title">Where they disagree</h2>
-                <p className="fut-sub">One row per market, largest gap first. Rows under 10 points sit back; they roughly agree.</p>
+                <p className="fut-sub">One row per market, largest gap first. Rows that aren’t disagreements sit back.</p>
               </div>
             </div>
             <div className="fut-controls">
@@ -968,7 +955,7 @@ export default function Edge() {
               <label className="radio fut-toggle">
                 <input type="checkbox" checked={bigOnly} onChange={(e) => setBigOnly(e.target.checked)} />
                 <span className="dot" aria-hidden="true" />
-                Disagreements only (≥ 10 pts)
+                Disagreements only
               </label>
               <input
                 className="input fut-search"

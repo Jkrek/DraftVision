@@ -91,9 +91,8 @@ const TIP = {
     + '(when measured), production, recruiting stars and competition level. '
     + 'Capped at 99%: no comp is a clone.',
   market:
-    'Public Kalshi price for this player being a top-5 pick, next to what the '
-    + 'model’s 72% pick interval implies. The model-implied number is '
-    + 'conservative at the top by construction. Analysis only — no positions.',
+    'Public Kalshi price for this player being a top-5 pick, next to how often '
+    + 'the model’s rank for him went top 5 in past drafts. Analysis only — no positions.',
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
