@@ -41,3 +41,6 @@ jobs:
         env:
           DV_EDGE_NO_WARMUP: "1"
         run: python tests/test_edge_parsing.py
+
+      - name: Draft-slot simulation
+        run: python tests/test_draft_order.py

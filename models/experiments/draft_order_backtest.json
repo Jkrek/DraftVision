@@ -1,0 +1,114 @@
+{
+  "generated_at": "2026-11-12T01:45:16.081983+00:00",
+  "seasons": "2020-2025",
+  "report": {
+    "rating_sd=0.0|week=6": {
+      "team_seasons": 192,
+      "mae_slots": 4.85,
+      "mae_frozen_standings": 5.4,
+      "coverage_p10_p90": 0.823,
+      "top5_brier": 0.0827,
+      "top5_brier_frozen_standings": 0.1667,
+      "top5_brier_base_rate": 0.1318
+    },
+    "rating_sd=0.0|week=10": {
+      "team_seasons": 192,
+      "mae_slots": 4.08,
+      "mae_frozen_standings": 4.33,
+      "coverage_p10_p90": 0.776,
+      "top5_brier": 0.0749,
+      "top5_brier_frozen_standings": 0.1146,
+      "top5_brier_base_rate": 0.1318
+    },
+    "rating_sd=0.0|week=14": {
+      "team_seasons": 192,
+      "mae_slots": 3.04,
+      "mae_frozen_standings": 3.48,
+      "coverage_p10_p90": 0.828,
+      "top5_brier": 0.0462,
+      "top5_brier_frozen_standings": 0.0833,
+      "top5_brier_base_rate": 0.1318
+    },
+    "rating_sd=1.0|week=6": {
+      "team_seasons": 192,
+      "mae_slots": 4.86,
+      "mae_frozen_standings": 5.4,
+      "coverage_p10_p90": 0.828,
+      "top5_brier": 0.0827,
+      "top5_brier_frozen_standings": 0.1667,
+      "top5_brier_base_rate": 0.1318
+    },
+    "rating_sd=1.0|week=10": {
+      "team_seasons": 192,
+      "mae_slots": 4.08,
+      "mae_frozen_standings": 4.33,
+      "coverage_p10_p90": 0.786,
+      "top5_brier": 0.0746,
+      "top5_brier_frozen_standings": 0.1146,
+      "top5_brier_base_rate": 0.1318
+    },
+    "rating_sd=1.0|week=14": {
+      "team_seasons": 192,
+      "mae_slots": 3.04,
+      "mae_frozen_standings": 3.48,
+      "coverage_p10_p90": 0.828,
+      "top5_brier": 0.0461,
+      "top5_brier_frozen_standings": 0.0833,
+      "top5_brier_base_rate": 0.1318
+    },
+    "rating_sd=2.0|week=6": {
+      "team_seasons": 192,
+      "mae_slots": 4.87,
+      "mae_frozen_standings": 5.4,
+      "coverage_p10_p90": 0.844,
+      "top5_brier": 0.0826,
+      "top5_brier_frozen_standings": 0.1667,
+      "top5_brier_base_rate": 0.1318
+    },
+    "rating_sd=2.0|week=10": {
+      "team_seasons": 192,
+      "mae_slots": 4.08,
+      "mae_frozen_standings": 4.33,
+      "coverage_p10_p90": 0.792,
+      "top5_brier": 0.0747,
+      "top5_brier_frozen_standings": 0.1146,
+      "top5_brier_base_rate": 0.1318
+    },
+    "rating_sd=2.0|week=14": {
+      "team_seasons": 192,
+      "mae_slots": 3.04,
+      "mae_frozen_standings": 3.48,
+      "coverage_p10_p90": 0.833,
+      "top5_brier": 0.0462,
+      "top5_brier_frozen_standings": 0.0833,
+      "top5_brier_base_rate": 0.1318
+    },
+    "rating_sd=3.0|week=6": {
+      "team_seasons": 192,
+      "mae_slots": 4.9,
+      "mae_frozen_standings": 5.4,
+      "coverage_p10_p90": 0.87,
+      "top5_brier": 0.0826,
+      "top5_brier_frozen_standings": 0.1667,
+      "top5_brier_base_rate": 0.1318
+    },
+    "rating_sd=3.0|week=10": {
+      "team_seasons": 192,
+      "mae_slots": 4.08,
+      "mae_frozen_standings": 4.33,
+      "coverage_p10_p90": 0.807,
+      "top5_brier": 0.0744,
+      "top5_brier_frozen_standings": 0.1146,
+      "top5_brier_base_rate": 0.1318
+    },
+    "rating_sd=3.0|week=14": {
+      "team_seasons": 192,
+      "mae_slots": 3.05,
+      "mae_frozen_standings": 3.48,
+      "coverage_p10_p90": 0.839,
+      "top5_brier": 0.046,
+      "top5_brier_frozen_standings": 0.0833,
+      "top5_brier_base_rate": 0.1318
+    }
+  }
+}
