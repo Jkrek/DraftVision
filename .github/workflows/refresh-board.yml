@@ -126,6 +126,17 @@ jobs:
           python dv_edge.py --score-ledger
           python dv_edge.py --sync-history https://draft.jkrek.com
 
+      # NFL side: projected draft slots, then depth charts + contract end
+      # years. Public nflverse release files only. Best-effort: on failure
+      # the committed files keep serving. pyarrow is needed only here (to read
+      # the parquet releases), so it is not in requirements.txt.
+      - name: Refresh draft order and team needs
+        continue-on-error: true
+        run: |
+          pip install "pyarrow==17.0.0"
+          python dv_draft_order.py
+          python dv_team_needs.py
+
       - name: Stop prediction server
         if: always()
         run: |
@@ -145,6 +156,8 @@ jobs:
                   training_data/enrichment.json \
                   training_data/edge_ledger.json \
                   training_data/edge_history.json \
+                  training_data/draft_order.json \
+                  training_data/team_needs.json \
                   content/recaps
           if git diff --cached --quiet; then
             echo "Board unchanged — nothing to commit."

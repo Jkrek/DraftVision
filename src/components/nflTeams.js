@@ -32,6 +32,7 @@ const TEAMS = [
   { abbr: 'sea', city: 'seattle',      nick: 'seahawks' },
   { abbr: 'sf',  city: 'san francisco', nick: '49ers' },
   { abbr: 'tb',  city: 'tampa bay',    nick: 'buccaneers' },
+  { abbr: 'ten', city: 'tennessee',    nick: 'titans' },
   { abbr: 'wsh', city: 'washington',   nick: 'commanders' },
 ];
 

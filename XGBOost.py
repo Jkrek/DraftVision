@@ -3645,6 +3645,30 @@ def api_edge_history():
     return _edge_json(dv_edge.history_payload(request.args.get("ticker") or ""))
 
 
+# ── Team Needs: depth charts + contract end years (read-only JSON) ───────────
+import dv_team_needs
+
+
+@app.get("/api/team-needs")
+def api_team_needs_index():
+    payload = dv_team_needs.index_payload()
+    if payload is None:
+        return jsonify({"error": "team needs not built yet"}), 503
+    resp = jsonify(payload)
+    resp.headers["Cache-Control"] = "public, max-age=600"
+    return resp
+
+
+@app.get("/api/team-needs/<abbr>")
+def api_team_needs_team(abbr):
+    payload = dv_team_needs.team_payload(abbr)
+    if payload is None:
+        return jsonify({"error": "unknown team"}), 404
+    resp = jsonify(payload)
+    resp.headers["Cache-Control"] = "public, max-age=600"
+    return resp
+
+
 @app.after_request
 def _edge_cache_control(resp):
     # Scoped by ENDPOINT (api_edge*), not by path prefix: an unknown path

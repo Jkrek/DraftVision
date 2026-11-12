@@ -7,6 +7,7 @@ import LogoMark from './Logo';
 const FOOTER_LINKS = [
   { label: 'Model Board',  to: '/leaderboard' },
   { label: 'Predict',      to: '/predict'     },
+  { label: 'Team Needs',   to: '/team-needs'  },
   { label: 'Mock Draft',   to: '/mock-draft'  },
   { label: 'Futures',      to: '/futures'     },
   { label: 'Track Record', to: '/backtest'    },

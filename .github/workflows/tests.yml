@@ -44,3 +44,6 @@ jobs:
 
       - name: Draft-slot simulation
         run: python tests/test_draft_order.py
+
+      - name: Team needs
+        run: python tests/test_team_needs.py

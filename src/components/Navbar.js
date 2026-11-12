@@ -27,8 +27,13 @@ const NAV = [
       { to: '/compare', label: 'Compare', hint: 'Two players side by side' },
     ],
   },
-  // Becomes a "Draft" menu when Team Needs ships.
-  { to: '/mock-draft', label: 'Mock Draft' },
+  {
+    label: 'Draft',
+    items: [
+      { to: '/team-needs', label: 'Team Needs', hint: 'Depth charts, contracts and draft slots' },
+      { to: '/mock-draft', label: 'Mock Draft', hint: 'Play out draft night' },
+    ],
+  },
   { to: '/futures',    label: 'Futures', live: true },
   {
     label: 'Track Record',
@@ -100,7 +105,8 @@ function NavGroup({ group, pathname }) {
   const ref = useRef(null);
   // A hash entry (/futures#record) is a section of a page that has its own
   // top-level link, so it never lights the group up.
-  const active = group.items.some((it) => !it.to.includes('#') && it.to === pathname);
+  const active = group.items.some((it) => !it.to.includes('#')
+    && (it.to === pathname || pathname.startsWith(`${it.to}/`)));
 
   useEffect(() => { setOpen(false); }, [pathname]);
 

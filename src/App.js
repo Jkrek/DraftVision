@@ -24,6 +24,7 @@ import PlayerPage from './components/pages/PlayerPage';
 import Compare from './components/pages/Compare';
 import Backtest from './components/pages/Backtest';
 import Edge from './components/pages/Edge';
+import TeamNeeds from './components/pages/TeamNeeds';
 
 function App() {
   return (
@@ -47,6 +48,8 @@ function App() {
           <Route path="/player/:slug" element={<PlayerPage />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/backtest" element={<Backtest />} />
+          <Route path="/team-needs" element={<TeamNeeds />} />
+          <Route path="/team-needs/:team" element={<TeamNeeds />} />
           <Route path="/futures" element={<Edge />} />
           {/* legacy path — the page moved to /futures; API paths (/api/edge*) are unchanged */}
           <Route path="/edge" element={<Navigate to="/futures" replace />} />

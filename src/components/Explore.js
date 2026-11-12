@@ -31,9 +31,13 @@ const DESTINATIONS = [
     ],
   },
   {
-    to: '/mock-draft',
-    title: 'Mock Draft',
-    pitch: 'Play out draft night against the model’s projections, pick by pick.',
+    to: '/team-needs',
+    title: 'Draft',
+    pitch: 'Every NFL depth chart coloured by contract end year, with the slot each team is heading for.',
+    more: [
+      { to: '/team-needs', label: 'Team Needs' },
+      { to: '/mock-draft', label: 'Mock Draft' },
+    ],
   },
   {
     to: '/futures',

@@ -28,6 +28,8 @@ const META = {
     'Two prospects head to head: probabilities, the factors behind them and historical comps.'],
   '/futures': ['2027 NFL Draft futures — model vs. market',
     'Kalshi’s 2027 draft markets lined up against the model, with every disagreement recorded and scored after the draft.'],
+  '/team-needs': ['NFL team needs — depth charts by contract year',
+    'Every NFL depth chart coloured by the year each contract ends, with the draft slot each team is projected to hold.'],
   '/backtest': ['Backtest — how the model did on drafts it never saw',
     'The model scored against the 2019–20 drafts and the consensus big board, every row downloadable.'],
 };
@@ -41,7 +43,7 @@ function PageMeta() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    const m = META[pathname];
+    const m = META[pathname] || (pathname.startsWith('/team-needs/') ? META['/team-needs'] : null);
     if (m) {
       document.title = pathname === '/' ? m[0] : `${m[0]} · ${SITE}`;
       setDescription(m[1]);

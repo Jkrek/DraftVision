@@ -35,6 +35,7 @@ const PAGES = [
   { to: '/hs-prospects', label: 'HS Prospects', hint: 'High-school recruits and star ratings' },
   { to: '/compare',      label: 'Compare',      hint: 'Two prospects, one screen' },
   { to: '/mock-draft',   label: 'Mock Draft',   hint: 'Build a round with the model' },
+  { to: '/team-needs',   label: 'Team Needs',   hint: 'NFL depth charts by contract year' },
   { to: '/backtest',     label: 'Backtest',     hint: 'How the model scored past classes' },
   { to: '/',             label: 'Home',         hint: 'Back to the front page' },
 ];
