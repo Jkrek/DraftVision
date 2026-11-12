@@ -873,3 +873,6 @@
 @media (prefers-reduced-motion: reduce) {
   .fut-row { transition: none; }
 }
+
+/* nav → Track Record → Futures record lands below the sticky bar */
+#record { scroll-margin-top: 78px; }

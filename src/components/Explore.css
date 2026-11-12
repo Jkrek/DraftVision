@@ -29,7 +29,8 @@
 /* 1px-gapped cell grid — same board language as "Top of the board" */
 .explore-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  /* five cards: two wide on top, three below — no orphan cell */
+  grid-template-columns: repeat(6, 1fr);
   gap: 1px;
   background: var(--color-divider);
   border: 1px solid var(--color-divider);
@@ -38,6 +39,8 @@
 }
 
 .explore-card {
+  grid-column: span 2;
+  position: relative;
   display: flex;
   gap: 18px;
   align-items: flex-start;
@@ -50,6 +53,26 @@
     transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
     box-shadow 0.35s;
 }
+.explore-card:nth-child(-n + 2) {
+  grid-column: span 3;
+}
+@media (max-width: 860px) {
+  .explore-card,
+  .explore-card:nth-child(-n + 2) {
+    grid-column: span 3;
+  }
+  .explore-card:last-child {
+    grid-column: span 6;
+  }
+}
+@media (max-width: 560px) {
+  .explore-card,
+  .explore-card:nth-child(-n + 2),
+  .explore-card:last-child {
+    grid-column: span 6;
+  }
+}
+
 .explore-card:hover {
   background: var(--color-neutral-900);
   transform: translateY(-5px);
@@ -79,6 +102,19 @@
   font-size: 17px;
   letter-spacing: -0.01em;
   color: var(--color-neutral-100);
+  text-decoration: none;
+}
+.explore-title::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.explore-title:focus-visible {
+  outline: none;
+}
+.explore-title:focus-visible::after {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
 }
 
 .explore-arrow {
@@ -97,6 +133,29 @@
   font-size: 13px;
   line-height: 1.6;
   color: var(--color-neutral-400);
+}
+
+/* The pages inside a group — sit above the stretched title link */
+.explore-more {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 4px;
+}
+.explore-more-link {
+  font-size: 12.5px;
+  color: var(--color-neutral-300);
+  text-decoration: underline;
+  text-decoration-color: var(--color-neutral-700);
+  text-underline-offset: 3px;
+  padding: 3px 0;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+.explore-more-link:hover {
+  color: var(--color-accent-300);
+  text-decoration-color: currentColor;
 }
 
 @media (max-width: 640px) {

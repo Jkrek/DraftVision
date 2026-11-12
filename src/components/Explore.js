@@ -3,36 +3,32 @@ import { Link } from 'react-router-dom';
 import './Explore.css';
 
 /*
- * Explore — home-page destination grid (Nocturne). The top nav lists the
- * pages; this section sells them. One card per destination with the
- * one-line pitch the nav has no room for.
+ * Explore — home-page destination grid (Nocturne). Mirrors the nav's five
+ * groups one for one: a card per thing a visitor might want to do, with the
+ * one-line pitch the nav has no room for and the pages inside the group.
+ * A new page joins a card; it does not add one.
  */
 
 const DESTINATIONS = [
   {
-    to: '/predict',
-    title: 'Predict',
-    pitch: 'Run the model on any FBS player — grade, draft projection, comps and the why behind the number.',
-  },
-  {
     to: '/leaderboard',
-    title: 'Model Board',
-    pitch: 'The model’s full board, untouched by human hands: every FBS player graded and ranked.',
+    title: 'Boards',
+    pitch: 'Who the model rates, from high-school recruits to this year’s draft class.',
+    more: [
+      { to: '/leaderboard',  label: 'Model Board' },
+      { to: '/big-board',    label: 'Big Board' },
+      { to: '/hs-prospects', label: 'HS Prospects' },
+      { to: '/services',     label: 'College Stars' },
+    ],
   },
   {
-    to: '/big-board',
-    title: 'Big Board',
-    pitch: 'Curated class-by-class draft boards — Jared’s rankings, the model’s, and one you build yourself.',
-  },
-  {
-    to: '/hs-prospects',
-    title: 'HS Prospects',
-    pitch: 'The recruiting pipeline: composite-ranked high-school classes with commitments as they land.',
-  },
-  {
-    to: '/compare',
-    title: 'Compare',
-    pitch: 'Two prospects head-to-head — probabilities, factor attributions and historical comps, aligned.',
+    to: '/predict',
+    title: 'Players',
+    pitch: 'Run the model on any FBS player: grade, projected pick, comps and the reasons behind the number.',
+    more: [
+      { to: '/predict', label: 'Predict' },
+      { to: '/compare', label: 'Compare two' },
+    ],
   },
   {
     to: '/mock-draft',
@@ -42,12 +38,16 @@ const DESTINATIONS = [
   {
     to: '/futures',
     title: 'Futures',
-    pitch: 'Kalshi’s 2027 draft futures — top-5, #1 overall, Heisman — lined up against the model, every disagreement frozen in public and scored on draft night.',
+    pitch: 'Kalshi’s 2027 draft markets lined up against the model, with every disagreement recorded in public.',
   },
   {
     to: '/backtest',
-    title: 'Backtest',
-    pitch: 'The receipts: what the model would have said in 2019–20 — hits and misses, side by side.',
+    title: 'Track Record',
+    pitch: 'What the model said about drafts it never saw, hits and misses side by side.',
+    more: [
+      { to: '/backtest',       label: 'Backtest' },
+      { to: '/futures#record', label: 'Futures record' },
+    ],
   },
 ];
 
@@ -56,20 +56,29 @@ function Explore() {
     <section className="explore" aria-label="Explore the site">
       <div className="explore-head" data-reveal="">
         <div className="explore-eyebrow">The toolkit</div>
-        <h2 className="explore-heading">Everything on the site</h2>
+        <h2 className="explore-heading">Where to go</h2>
       </div>
       <div className="explore-grid">
         {DESTINATIONS.map((d, i) => (
-          <Link className="explore-card" to={d.to} key={d.to} data-reveal={(i % 4) + 1}>
+          <div className="explore-card" key={d.to} data-reveal={(i % 4) + 1}>
             <span className="explore-num">{String(i + 1).padStart(2, '0')}</span>
             <span className="explore-body">
-              <span className="explore-title">
+              {/* The title link stretches over the whole card (::after), so
+                  the card is one target without nesting links inside a link. */}
+              <Link className="explore-title" to={d.to}>
                 {d.title}
                 <span className="explore-arrow" aria-hidden="true">→</span>
-              </span>
+              </Link>
               <span className="explore-pitch">{d.pitch}</span>
+              {d.more && (
+                <span className="explore-more">
+                  {d.more.map((m) => (
+                    <Link className="explore-more-link" to={m.to} key={m.to}>{m.label}</Link>
+                  ))}
+                </span>
+              )}
             </span>
-          </Link>
+          </div>
         ))}
       </div>
     </section>

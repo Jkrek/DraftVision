@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 import './Footer.css';
 import LogoMark from './Logo';
 
+// Same five groups as the nav, one link each.
 const FOOTER_LINKS = [
-  { label: 'Predict',     to: '/predict'     },
-  { label: 'Leaderboard', to: '/leaderboard' },
-  { label: 'Mock Draft',  to: '/mock-draft'  },
-  { label: 'Compare',     to: '/compare'     },
-  { label: 'Backtest',    to: '/backtest'    },
-  { label: 'Futures',     to: '/futures'     },
+  { label: 'Model Board',  to: '/leaderboard' },
+  { label: 'Predict',      to: '/predict'     },
+  { label: 'Mock Draft',   to: '/mock-draft'  },
+  { label: 'Futures',      to: '/futures'     },
+  { label: 'Track Record', to: '/backtest'    },
 ];
 
 function Footer() {

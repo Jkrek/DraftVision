@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import './Navbar.css';
 import AuthButton from './AuthButton';
@@ -7,16 +7,36 @@ import { getTheme, toggleTheme } from '../theme';
 import { getSpotlight } from '../lib/edgeData';
 import { PALETTE_OPEN_EVENT } from './CommandPalette';
 
-// Seven links, no more — the logo is the home link, and an eighth entry
-// wraps at the 1024px viewport with the YouTube pill + toggle + auth + CTA.
-const NAV_LINKS = [
-  { to: '/services',     label: 'College Stars'  },
-  { to: '/hs-prospects', label: 'HS Prospects'   },
-  { to: '/mock-draft',   label: 'Mock Draft'     },
-  { to: '/leaderboard',  label: 'Model Board'    },
-  { to: '/big-board',    label: 'Big Board'      },
-  { to: '/futures',      label: 'Futures',       live: true },
-  { to: '/predict',      label: 'Predict'        },
+// Five entries, grouped by what a visitor is trying to do. A new page joins
+// an existing group; it does not get a sixth top-level slot. An entry with
+// `items` is a disclosure menu; one with `to` is a plain link.
+const NAV = [
+  {
+    label: 'Boards',
+    items: [
+      { to: '/leaderboard',  label: 'Model Board',   hint: 'Every FBS player, ranked by the model' },
+      { to: '/big-board',    label: 'Big Board',     hint: 'Draft boards by class' },
+      { to: '/hs-prospects', label: 'HS Prospects',  hint: 'Recruiting classes' },
+      { to: '/services',     label: 'College Stars', hint: 'The model’s highest-rated players' },
+    ],
+  },
+  {
+    label: 'Players',
+    items: [
+      { to: '/predict', label: 'Predict', hint: 'Run the model on one player' },
+      { to: '/compare', label: 'Compare', hint: 'Two players side by side' },
+    ],
+  },
+  // Becomes a "Draft" menu when Team Needs ships.
+  { to: '/mock-draft', label: 'Mock Draft' },
+  { to: '/futures',    label: 'Futures', live: true },
+  {
+    label: 'Track Record',
+    items: [
+      { to: '/backtest',       label: 'Backtest',       hint: 'Past drafts the model never saw' },
+      { to: '/futures#record', label: 'Futures record', hint: 'Every recorded disagreement' },
+    ],
+  },
 ];
 
 const LIVE_LABEL = 'Futures — live disagreements on the board';
@@ -70,6 +90,69 @@ function ThemeToggle() {
     >
       <i className={dark ? 'fas fa-sun' : 'fas fa-moon'} aria-hidden="true" />
     </button>
+  );
+}
+
+// Disclosure menu: click or keyboard toggles it; Escape, an outside click, a
+// focus move elsewhere, or a route change closes it.
+function NavGroup({ group, pathname }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  // A hash entry (/futures#record) is a section of a page that has its own
+  // top-level link, so it never lights the group up.
+  const active = group.items.some((it) => !it.to.includes('#') && it.to === pathname);
+
+  useEffect(() => { setOpen(false); }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      setOpen(false);
+      const btn = ref.current && ref.current.querySelector('button');
+      if (btn) btn.focus();
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const onBlur = (e) => {
+    if (ref.current && !ref.current.contains(e.relatedTarget)) setOpen(false);
+  };
+
+  return (
+    <div className="nav-group" ref={ref} onBlur={onBlur}>
+      <button
+        type="button"
+        className={active ? 'nav-link nav-group-btn nav-link-active' : 'nav-link nav-group-btn'}
+        aria-expanded={open}
+        aria-haspopup="true"
+        onClick={() => setOpen((o) => !o)}
+      >
+        {group.label}
+        <span className="nav-caret" aria-hidden="true" />
+      </button>
+      {open && (
+        <div className="nav-drop">
+          {group.items.map((it) => (
+            <Link
+              key={it.to}
+              to={it.to}
+              className={it.to === pathname ? 'nav-drop-item nav-drop-item-active' : 'nav-drop-item'}
+              onClick={() => setOpen(false)}
+            >
+              <span className="nav-drop-label">{it.label}</span>
+              <span className="nav-drop-hint">{it.hint}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -145,18 +228,19 @@ function Navbar() {
 
         {/* Desktop links */}
         <div className="nav-menu-desktop">
-          {NAV_LINKS.map(({ to, label, end, live: isLive }) => (
+          {NAV.map((entry) => (entry.items ? (
+            <NavGroup key={entry.label} group={entry} pathname={location.pathname} />
+          ) : (
             <NavLink
-              key={to}
-              to={to}
-              end={end}
+              key={entry.to}
+              to={entry.to}
               className={linkClass}
-              aria-label={isLive && live ? LIVE_LABEL : undefined}
+              aria-label={entry.live && live ? LIVE_LABEL : undefined}
             >
-              {label}
-              {isLive && live && <span className="nav-live-dot" aria-hidden="true" />}
+              {entry.label}
+              {entry.live && live && <span className="nav-live-dot" aria-hidden="true" />}
             </NavLink>
-          ))}
+          )))}
         </div>
 
         {/* Right side */}
@@ -191,19 +275,32 @@ function Navbar() {
 
       {/* Mobile slide-down panel */}
       <div className={menuOpen ? 'nav-menu-mobile open' : 'nav-menu-mobile'}>
-        {NAV_LINKS.map(({ to, label, end, live: isLive }) => (
+        {NAV.map((entry) => (entry.items ? (
+          <div className="nav-mobile-group" key={entry.label}>
+            <div className="nav-mobile-heading">{entry.label}</div>
+            {entry.items.map((it) => (
+              <Link
+                key={it.to}
+                to={it.to}
+                className={it.to === location.pathname ? 'nav-link nav-link-active' : 'nav-link'}
+                onClick={close}
+              >
+                {it.label}
+              </Link>
+            ))}
+          </div>
+        ) : (
           <NavLink
-            key={to}
-            to={to}
-            end={end}
+            key={entry.to}
+            to={entry.to}
             className={linkClass}
             onClick={close}
-            aria-label={isLive && live ? LIVE_LABEL : undefined}
+            aria-label={entry.live && live ? LIVE_LABEL : undefined}
           >
-            {label}
-            {isLive && live && <span className="nav-live-dot" aria-hidden="true" />}
+            {entry.label}
+            {entry.live && live && <span className="nav-live-dot" aria-hidden="true" />}
           </NavLink>
-        ))}
+        )))}
         <div className="nav-menu-mobile-auth">
           <ThemeToggle />
           <AuthButton />

@@ -98,6 +98,78 @@
   background: color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
+/* ── Grouped entries (disclosure menus) ── */
+.nav-group {
+  position: relative;
+}
+
+/* .nav-right styles bare buttons; this one lives in .nav-menu-desktop, so it
+   needs its own reset to look like the links beside it. */
+.nav-group-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  font-family: var(--font-body);
+  line-height: inherit;
+  cursor: pointer;
+}
+
+.nav-caret {
+  width: 5px;
+  height: 5px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  opacity: 0.7;
+  transition: transform 0.15s ease;
+}
+.nav-group-btn[aria-expanded="true"] .nav-caret {
+  transform: translateY(1px) rotate(225deg);
+}
+
+.nav-drop {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 250px;
+  padding: 6px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 70;
+}
+
+.nav-drop-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+.nav-drop-item:hover,
+.nav-drop-item:focus-visible {
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+.nav-drop-label {
+  font-size: 13px;
+  color: var(--color-neutral-100);
+}
+.nav-drop-item-active .nav-drop-label {
+  color: var(--color-accent-300);
+}
+.nav-drop-hint {
+  font-size: 12px;
+  color: var(--color-neutral-500);
+}
+
 /* Live dot — "there is at least one disagreement on the futures board".
    6px accent, slow opacity pulse; static under reduced motion. */
 .nav-live-dot {
@@ -203,10 +275,8 @@
 }
 
 /* ── Tight laptop band (961–1180px) ── */
-/* Seven links + logo + YouTube + toggle + auth + CTA measure ~1109px in
-   Inter; the 1024px viewport offers 960. Compact the spacing (never the
-   count) in this band so nothing overflows the bar. Measured in headless
-   Chrome: 952px of 960 at 1024, 978 of 1116 at 1180. */
+/* Compact the spacing in this band so the bar keeps its breathing room next
+   to the YouTube link, search, toggle, auth and CTA. */
 @media (min-width: 961px) and (max-width: 1180px) {
   .navbar-container { gap: 14px; }
   .nav-menu-desktop { gap: 0; margin-left: 0; }
@@ -252,7 +322,8 @@
   }
 
   .nav-menu-mobile.open {
-    max-height: 100vh;
+    max-height: calc(100vh - 62px);
+    max-height: calc(100dvh - 62px);
     padding: 12px 24px 20px;
     border-bottom-color: var(--color-divider);
   }
@@ -260,6 +331,29 @@
   .nav-menu-mobile .nav-link {
     padding: 12px 12px;
     font-size: 14px;
+  }
+
+  .nav-mobile-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .nav-mobile-heading {
+    padding: 14px 12px 4px;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-neutral-600);
+  }
+
+  /* an ungrouped link after a group is not part of that group */
+  .nav-mobile-group + .nav-link {
+    margin-top: 10px;
+  }
+
+  .nav-menu-mobile.open {
+    overflow-y: auto;
   }
 
   .nav-menu-mobile-auth {

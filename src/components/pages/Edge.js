@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import GapBar, { gapWord } from '../GapBar';
 import InfoTip from '../InfoTip';
 import { getEdge, getLedger, playerSlug } from '../../lib/edgeData';
@@ -748,6 +748,16 @@ export default function Edge() {
       if (timer) clearTimeout(timer);
     };
   }, [polls]);
+
+  // /futures#record (nav → Track Record → Futures record). The router does
+  // not scroll to a hash, and the section only has its final height once the
+  // board and the ledger are both in.
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (hash !== '#record' || !data || !ledger) return;
+    const el = document.getElementById('record');
+    if (el) el.scrollIntoView({ block: 'start' });
+  }, [hash, data, ledger]);
 
   const errored = Boolean(data && data.state === 'error');
   const warming = !errored && Boolean(data && data.note === 'warming' && polls < WARMING_MAX_POLLS);
