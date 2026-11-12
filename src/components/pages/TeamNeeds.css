@@ -191,6 +191,10 @@ html[data-ambient="on"] .tn-page { background: transparent; }
   gap: 6px;
 }
 
+/* wide offence: nine columns so the slot sits in the gap outside the tight end */
+.tn-grid { display: grid; gap: 18px 6px; align-items: start; }
+.tn-grid .tn-spot { justify-self: center; width: 100%; }
+
 /* ── One position ── */
 .tn-spot {
   flex: 0 1 118px;
@@ -322,6 +326,66 @@ html[data-ambient="on"] .tn-page { background: transparent; }
   color: var(--color-accent-300);
   text-underline-offset: 3px;
 }
+
+/* ── Prospects in range ── */
+.tn-fits {
+  margin-top: 16px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px 18px;
+  background: var(--color-bg);
+}
+.tn-fits-lede {
+  margin: 8px 0 0;
+  max-width: 78ch;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--color-neutral-400);
+}
+.tn-fits-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px 28px;
+  margin-top: 16px;
+}
+.tn-fit-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-divider);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 500;
+}
+.tn-fit-head span { font-family: var(--font-body); font-size: 12px; font-weight: 400; color: var(--color-neutral-500); }
+.tn-fit-list { list-style: none; margin: 0; padding: 0; }
+.tn-fit-list li {
+  display: flex;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-divider) 60%, transparent);
+}
+.tn-fit-list li:last-child { border-bottom: 0; }
+.tn-fit-rank {
+  flex: none;
+  width: 26px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-400);
+  text-align: right;
+}
+.tn-fit-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tn-fit-body a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+  text-decoration: none;
+}
+.tn-fit-body a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.tn-fit-meta { font-size: 12px; color: var(--color-neutral-400); }
+.tn-fit-why { font-size: 12px; color: var(--color-neutral-500); }
+.tn-fit-none { margin: 10px 0 0; font-size: 12.5px; color: var(--color-neutral-500); }
 
 .tn-foot {
   margin: 22px 0 0;

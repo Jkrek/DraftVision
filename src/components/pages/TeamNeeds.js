@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { anonFetch } from '../../lib/api';
 import { nflLogoUrl } from '../nflTeams';
+import { playerSlug } from '../../lib/edgeData';
 import './TeamNeeds.css';
 
 /*
@@ -22,7 +23,9 @@ const STATUS_ORDER = ['expiring', 'next', 'signed', 'unknown'];
 
 // Rows are listed the way they sit on the field. Defence faces the offence,
 // so its rows read right-to-left (RCB lines up across from the left WR).
-// `edge` pushes a spot out to the sideline.
+// `edge` pushes a spot out to the sideline. The wide offence is a grid of
+// [position, column, row] so the slot receiver can stand off the line, in the
+// gap between the tight end and the outside receiver.
 const LAYOUT = {
   wide: {
     defense: {
@@ -37,11 +40,14 @@ const LAYOUT = {
         [{ k: 'RCB', edge: 'left' }, 'RDE', 'NT', 'LDE', { k: 'LCB', edge: 'right' }],
       ],
     },
-    offense: [
-      [{ k: 'WR-L', edge: 'left' }, 'LT', 'LG', 'C', 'RG', 'RT', 'TE', { k: 'WR-R', edge: 'right' }],
-      ['WR-S', 'QB'],
-      ['FB', 'RB'],
-    ],
+    offense: {
+      cols: 9,
+      cells: [
+        ['WR-L', 1, 1], ['LT', 2, 1], ['LG', 3, 1], ['C', 4, 1], ['RG', 5, 1], ['RT', 6, 1], ['TE', 7, 1], ['WR-R', 9, 1],
+        ['QB', 4, 2], ['WR-S', 8, 2],
+        ['FB', 3, 3], ['RB', 4, 3],
+      ],
+    },
   },
   narrow: {
     defense: {
@@ -58,7 +64,7 @@ const LAYOUT = {
     },
     offense: [
       ['LT', 'LG', 'C', 'RG', 'RT'],
-      ['WR-L', 'WR-S', 'TE', 'WR-R'],
+      ['WR-L', 'TE', 'WR-S', 'WR-R'],
       ['QB'],
       ['FB', 'RB'],
     ],
@@ -108,7 +114,7 @@ function indexSpots(spots) {
   return by;
 }
 
-function Spot({ k, spot, edge, narrow, season, selected, onSelect }) {
+function Spot({ k, spot, edge, style, narrow, season, selected, onSelect }) {
   if (!spot) return null;
   const [starter, ...rest] = spot.players;
   const backups = rest.slice(0, narrow ? 1 : 2);
@@ -116,7 +122,7 @@ function Spot({ k, spot, edge, narrow, season, selected, onSelect }) {
   const describe = (p) => `${p.name}, ${label}. ${STATUS_LABEL[p.contract.status](season)}.`;
   const isSel = (p) => selected && selected.name === p.name && selected.pos === label;
   return (
-    <div className={`tn-spot${edge ? ` tn-edge-${edge}` : ''}`}>
+    <div className={`tn-spot${edge ? ` tn-edge-${edge}` : ''}`} style={style}>
       <span className="tn-pos">{label}</span>
       <button
         type="button"
@@ -156,6 +162,99 @@ function Rows({ rows, by, ...rest }) {
       })}
     </div>
   ));
+}
+
+function Grid({ grid, by, ...rest }) {
+  return (
+    <div className="tn-grid" style={{ gridTemplateColumns: `repeat(${grid.cols}, minmax(0, 1fr))` }}>
+      {grid.cells.map(([k, col, row]) => (
+        <Spot key={k} k={k} spot={by[k]} style={{ gridColumn: col, gridRow: row }} {...rest} />
+      ))}
+    </div>
+  );
+}
+
+const nick = (name) => (name || '').split(' ').pop();
+const list = (xs) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
+
+// The first-round picks a team holds once trades are applied. Data built
+// before trades were tracked has no `picks`: fall back to the team's own slot.
+function picksOf(d) {
+  if (!d) return [];
+  return d.picks || [{ slot_p10: d.slot_p10, slot_p50: d.slot_p50, slot_p90: d.slot_p90, p_top5: d.p_top5, p_top10: d.p_top10, own: true }];
+}
+
+function PickStat({ d, names }) {
+  const picks = picksOf(d);
+  const name = (abbr) => nick(names[abbr]) || abbr;
+  const acquired = (d.acquired_from || []).map(name);
+  const sent = (d.sent_to || []).map((t) => (
+    t.mode === 'own' ? name(t.team) : `${name(t.team)} (the ${t.mode} of its two picks)`
+  ));
+  return (
+    <div className="tn-stat">
+      <div className="tn-stat-label">Projected first-round pick{picks.length > 1 ? 's' : ''}</div>
+      <div className="tn-stat-value">{picks.length ? `No. ${picks.map((p) => p.slot_p50).join(' · ')}` : 'None'}</div>
+      <div className="tn-stat-sub">
+        {picks.length === 1 && (
+          <>
+            likely between {picks[0].slot_p10} and {picks[0].slot_p90}
+            {picks[0].p_top10 >= 0.05 && ` · top 10: ${pct(picks[0].p_top10)}`}
+            {picks[0].p_top5 >= 0.05 && ` · top 5: ${pct(picks[0].p_top5)}`}
+          </>
+        )}
+        {picks.length > 1 && `likely ${picks.map((p) => `${p.slot_p10}–${p.slot_p90}`).join(', ')}`}
+        {!picks.length && `Its own pick projects at No. ${d.slot_p50}`}
+        {acquired.length > 0 && <div>Acquired from the {list(acquired)}</div>}
+        {sent.length > 0 && <div>Traded to the {list(sent)}</div>}
+      </div>
+    </div>
+  );
+}
+
+function reason(r, season) {
+  const n = r.expiring || r.next;
+  const year = r.expiring ? season : season + 1;
+  return `${n} of ${r.starters} ${r.group_label.toLowerCase()} starter${r.starters > 1 ? 's' : ''} signed only through ${year}`;
+}
+
+function Fits({ fits, season, draftYear }) {
+  if (!fits || !fits.length) return null;
+  return (
+    <section className="tn-fits" aria-label="Prospects in range">
+      <div className="tn-unit-label">Prospects in range</div>
+      <p className="tn-fits-lede">
+        {draftYear} prospects the model board projects inside each pick’s likely range, at positions
+        where a starter’s contract is running out. An overlap of two lists, not a predicted selection.
+      </p>
+      <div className="tn-fits-cols">
+        {fits.map((f, i) => (
+          <div className="tn-fit" key={i}>
+            <div className="tn-fit-head">
+              Pick No. {f.slot_p50}
+              <span>range {f.slot_p10}–{f.slot_p90}</span>
+            </div>
+            {f.prospects.length ? (
+              <ol className="tn-fit-list">
+                {f.prospects.map((r) => (
+                  <li key={`${r.name}-${r.college}`}>
+                    <span className="tn-fit-rank" title="Projected pick on the model board">{r.projected_pick}</span>
+                    <span className="tn-fit-body">
+                      <Link to={`/player/${playerSlug(r.name, r.college)}`}>{r.name}</Link>
+                      <span className="tn-fit-meta">{r.position} · {r.college}</span>
+                      <span className="tn-fit-why">{reason(r, season)}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="tn-fit-none">No prospect at a position of need projects in this range.</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function PlayerCard({ player, season }) {
@@ -226,6 +325,11 @@ export default function TeamNeeds() {
   const layout = narrow ? LAYOUT.narrow : LAYOUT.wide;
   const openings = team ? team.groups.filter((g) => g.expiring > 0) : [];
   const d = team && team.draft;
+  const names = useMemo(
+    () => Object.fromEntries(((index && index.teams) || []).map((t) => [t.team, t.name])),
+    [index],
+  );
+  const firstPick = (t) => { const p = picksOf(t.draft)[0]; return p ? p.slot_p50 : null; };
   const spotProps = { narrow, season, selected, onSelect: setSelected };
 
   return (
@@ -247,18 +351,18 @@ export default function TeamNeeds() {
         )}
 
         {index && (
-          <nav className="tn-picker" aria-label={`Teams, in projected ${index.draft_year} draft order`}>
-            <div className="tn-picker-label">Projected {index.draft_year} draft order</div>
+          <nav className="tn-picker" aria-label={`Teams, by first pick in the ${index.draft_year} draft`}>
+            <div className="tn-picker-label">Teams by projected first pick, {index.draft_year} draft</div>
             <div className="tn-picker-strip">
-              {index.teams.map((t, i) => (
+              {index.teams.map((t) => (
                 <Link
                   key={t.team}
                   to={`/team-needs/${t.team}`}
                   className={t.team === abbr ? 'tn-pick tn-pick-active' : 'tn-pick'}
                   aria-current={t.team === abbr ? 'page' : undefined}
-                  aria-label={`${t.name}, projected pick ${t.draft ? t.draft.slot_p50 : i + 1}`}
+                  aria-label={firstPick(t) ? `${t.name}, projected pick ${firstPick(t)}` : `${t.name}, no first-round pick`}
                 >
-                  <span className="tn-pick-no">{t.draft ? t.draft.slot_p50 : i + 1}</span>
+                  <span className="tn-pick-no">{firstPick(t) || '—'}</span>
                   <img src={nflLogoUrl(t.name)} alt="" loading="lazy" width="30" height="30" />
                   <span className="tn-pick-abbr">{t.team}</span>
                 </Link>
@@ -279,17 +383,7 @@ export default function TeamNeeds() {
                   {d && <div className="tn-team-sub">{d.record} · projected {d.projected_wins} wins</div>}
                 </div>
               </div>
-              {d && (
-                <div className="tn-stat">
-                  <div className="tn-stat-label">Projected first-round pick</div>
-                  <div className="tn-stat-value">No. {d.slot_p50}</div>
-                  <div className="tn-stat-sub">
-                    likely between {d.slot_p10} and {d.slot_p90}
-                    {d.p_top10 >= 0.05 && ` · top 10: ${pct(d.p_top10)}`}
-                    {d.p_top5 >= 0.05 && ` · top 5: ${pct(d.p_top5)}`}
-                  </div>
-                </div>
-              )}
+              {d && <PickStat d={d} names={names} />}
               <div className="tn-stat">
                 <div className="tn-stat-label">Starters with contracts ending after {season}</div>
                 <div className="tn-stat-value">{team.starters_expiring} of {team.starters}</div>
@@ -316,7 +410,9 @@ export default function TeamNeeds() {
               </div>
               <div className="tn-los" aria-hidden="true"><span>Line of scrimmage</span></div>
               <div className="tn-unit tn-unit-off">
-                <Rows rows={layout.offense} by={by} {...spotProps} />
+                {Array.isArray(layout.offense)
+                  ? <Rows rows={layout.offense} by={by} {...spotProps} />
+                  : <Grid grid={layout.offense} by={by} {...spotProps} />}
                 <div className="tn-unit-label">Offense</div>
               </div>
             </section>
@@ -331,11 +427,20 @@ export default function TeamNeeds() {
               <PlayerCard player={selected} season={season} />
             </div>
 
+            <Fits fits={detail.fits} season={season} draftYear={detail.draft_year} />
+
             <p className="tn-foot">
               “Ends after {season}” means {season} is the last season the current contract pays the player.
               It does not mean he will leave: team options, franchise tags and re-signings are not modelled.
-              The draft slot is where the team’s own pick lands across 20,000 simulated seasons
-              {detail.draft_through_week ? ` (through week ${detail.draft_through_week})` : ''}; traded picks are not applied.
+              Draft slots come from 20,000 simulated seasons
+              {detail.draft_through_week ? ` (through week ${detail.draft_through_week})` : ''}.
+              {detail.trades_source ? (
+                <>
+                  {' '}First-round trades are applied as listed on{' '}
+                  <a href={detail.trades_source} target="_blank" rel="noreferrer">Wikipedia</a>
+                  {detail.trades_as_of ? ` on ${detail.trades_as_of}` : ''}; pick protections are not.
+                </>
+              ) : ' Traded picks are not applied.'}{' '}
               Depth chart updated {team.chart_updated}. Depth charts from ESPN and contracts from{' '}
               <a href="https://overthecap.com" target="_blank" rel="noreferrer">OverTheCap</a>, both via{' '}
               <a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noreferrer">nflverse</a> (CC-BY 4.0).

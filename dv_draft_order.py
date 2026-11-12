@@ -3,8 +3,15 @@
 
 For every team: where its OWN first-round pick is likely to land next April,
 as a distribution (10th / 50th / 90th percentile slot, P(top 5), P(top 10),
-P(#1)). Traded picks are not modelled here: the output is the slot a team's
-record earns, whoever ends up holding it.
+P(#1)), plus the first-round picks the team actually HOLDS once trades are
+applied (`picks`). The slot_* fields stay the slot the team's own record
+earns, whoever ends up holding it.
+
+Trades: the "Round 1" list on Wikipedia's "<year> NFL draft" page, read
+through the MediaWiki API and kept in training_data/pick_trades.json. Only
+who-sent-a-first-to-whom is stored. Two conditions are understood: "whichever
+is earlier" and "whichever is later" of the sender's picks. Protections and
+other conditions are flagged, not modelled.
 
 Method
   1. Team ratings (points, vs. an average team) are fit from the point
@@ -36,6 +43,7 @@ import datetime
 import io
 import json
 import os
+import re
 import sys
 
 import numpy as np
@@ -45,6 +53,8 @@ REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 GAMES_URL = "https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv"
 OUT_PATH = os.path.join(REPO_ROOT, "training_data", "draft_order.json")
 BACKTEST_PATH = os.path.join(REPO_ROOT, "models", "experiments", "draft_order_backtest.json")
+TRADES_PATH = os.path.join(REPO_ROOT, "training_data", "pick_trades.json")
+WIKI_API = "https://en.wikipedia.org/w/api.php"
 
 GAME_SD = 13.2        # sd of an NFL final margin around the closing spread
 RATING_SD = 2.0       # per-simulation team rating shift (chosen in --backtest)
@@ -241,6 +251,172 @@ def simulate(games, season, upto_week, n_sims=N_SIMS, rating_sd=RATING_SD, seed=
             "hfa": hfa, "base": base, "opp": opp}
 
 
+# ── First-round pick trades ──────────────────────────────────────────────────
+WIKI_TEAM = {
+    "arizona": "ARI", "atlanta": "ATL", "baltimore": "BAL", "buffalo": "BUF", "carolina": "CAR",
+    "chicago": "CHI", "cincinnati": "CIN", "cleveland": "CLE", "dallas": "DAL", "denver": "DEN",
+    "detroit": "DET", "green bay": "GB", "houston": "HOU", "indianapolis": "IND",
+    "jacksonville": "JAX", "kansas city": "KC", "las vegas": "LV", "la chargers": "LAC",
+    "los angeles chargers": "LAC", "la rams": "LA", "los angeles rams": "LA", "miami": "MIA",
+    "minnesota": "MIN", "new england": "NE", "new orleans": "NO", "ny giants": "NYG",
+    "new york giants": "NYG", "ny jets": "NYJ", "new york jets": "NYJ", "philadelphia": "PHI",
+    "pittsburgh": "PIT", "san francisco": "SF", "seattle": "SEA", "tampa bay": "TB",
+    "tennessee": "TEN", "washington": "WAS",
+}
+_BULLET = re.compile(r"'''\s*(.+?)\s*(?:→|->|&rarr;)\s*(.+?)\s*\((P?D)\)\.?\s*'''")
+_MONTHS = {m: i + 1 for i, m in enumerate(
+    "january february march april may june july august september october november december".split())}
+
+
+def _wiki_date(text):
+    m = re.search(r"\|\s*date\s*=\s*([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})", text)
+    if not m or m.group(1).lower() not in _MONTHS:
+        return None
+    return f"{int(m.group(3)):04d}-{_MONTHS[m.group(1).lower()]:02d}-{int(m.group(2)):02d}"
+
+
+def parse_trades(wikitext):
+    """Round-1 bullets of a Wikipedia '<year> NFL draft' page -> trade list.
+
+    Raises ValueError on a bullet whose teams cannot be read, so a changed
+    page format fails loudly instead of silently dropping a trade.
+    """
+    m = re.search(r"===\s*Round 1\s*===(.*?)(?:\n==|\Z)", wikitext, re.S)
+    if not m:
+        return []
+    out = []
+    for line in m.group(1).splitlines():
+        if not line.startswith("*"):
+            continue
+        line = re.sub(r"\{\{\s*Anchor\s*\|[^}]*\}\}", "", line, flags=re.I)
+        b = _BULLET.search(line)
+        if not b:
+            raise ValueError(f"unreadable trade bullet: {line[:80]!r}")
+        frm, to = (WIKI_TEAM.get(x.strip().lower()) for x in b.group(1, 2))
+        if not frm or not to:
+            raise ValueError(f"unknown team in trade bullet: {b.group(0)!r}")
+        body = re.sub(r"<ref.*?(</ref>|/>)", "", line[b.end():], flags=re.S)
+        body = re.sub(r"\[\[(?:[^\]|]*\|)?([^\]]*)\]\]", r"\1", body).strip()
+        low = body.lower()
+        mode = ("earlier" if "whichever is earlier" in low or "the earlier of" in low else
+                "later" if "whichever is later" in low or "the later of" in low else "own")
+        # "traded a first-round selection it acquired from X": X's pick moves on
+        via = None
+        v = re.match(r"[^.]*?traded (?:a|its|their) first-round selection,? (?:\(?(?:which )?(?:it|they) |\(?)?"
+                     r"(?:originally |previously )?(?:acquired |received )?from ([A-Z][A-Za-z ]+?)[,.) ]", body)
+        if mode == "own" and v:
+            via = WIKI_TEAM.get(v.group(1).strip().lower())
+        out.append({
+            "from": frm, "to": to, "mode": mode, "via": via,
+            "during_draft": b.group(3) == "D",
+            "date": _wiki_date(line),
+            "unmodelled_condition": mode == "own" and bool(re.search(r"conditional|protected", low)),
+            "summary": body[:400],
+        })
+    # the page lists them in order; a stable sort on date only fixes a misplaced one
+    return sorted(out, key=lambda t: t["date"] or "9999")
+
+
+def fetch_trades(draft_year):
+    import requests
+    r = requests.get(WIKI_API, timeout=60, headers={"User-Agent": "DraftVision/1.0 (draft.jkrek.com)"},
+                     params={"action": "parse", "page": f"{draft_year}_NFL_draft", "prop": "wikitext",
+                             "format": "json", "formatversion": 2})
+    r.raise_for_status()
+    d = r.json()
+    if "error" in d:
+        raise ValueError(d["error"].get("info", "wikipedia error"))
+    return parse_trades(d["parse"]["wikitext"])
+
+
+def load_trades(draft_year, refresh=True, path=TRADES_PATH):
+    """Committed trade list for `draft_year`, refreshed from Wikipedia when
+    possible. A refresh that fails, or that lists fewer trades than the file
+    already holds (a trade cannot be undone), keeps the file."""
+    old = None
+    if os.path.exists(path):
+        with open(path) as fh:
+            old = json.load(fh)
+        if old.get("draft_year") != draft_year:
+            old = None
+    if refresh:
+        try:
+            trades = fetch_trades(draft_year)
+            if old and len(trades) < len(old["trades"]):
+                raise ValueError(f"page lists {len(trades)} trades, file has {len(old['trades'])}")
+            if not old or old["trades"] != trades:
+                old = {
+                    "draft_year": draft_year,
+                    "as_of": datetime.date.today().isoformat(),
+                    "source": f"https://en.wikipedia.org/wiki/{draft_year}_NFL_draft",
+                    "license": "facts from Wikipedia (text CC BY-SA 4.0)",
+                    "trades": trades,
+                }
+                with open(path, "w") as fh:
+                    json.dump(old, fh, indent=2, ensure_ascii=False)
+                    fh.write("\n")
+        except Exception as exc:                      # noqa: BLE001 - best effort
+            print(f"pick trades not refreshed ({exc}); using the committed file", file=sys.stderr)
+    return old
+
+
+def apply_trades(slots, trades):
+    """owner[sim, pick] = index of the team holding the pick that began as
+    team `pick`'s own.
+
+    Trades are applied in order. 'own' moves the sender's original pick (or
+    the pick named by `via`); 'earlier' / 'later' move whichever of the
+    sender's picks lands earlier / later in that simulation.
+    """
+    n = slots.shape[0]
+    rows = np.arange(n)
+    owner = np.tile(np.arange(32), (n, 1))
+    for t in trades or []:
+        a, b = IDX[t["from"]], IDX[t["to"]]
+        held = owner == a
+        if t.get("mode") in ("earlier", "later"):
+            sign = 1 if t["mode"] == "earlier" else -1
+            j = np.argmin(np.where(held, sign * slots, np.inf), axis=1)
+        else:
+            j = np.full(n, IDX[t["via"]] if t.get("via") else a)
+        ok = held[rows, j]                # the sender must still hold it
+        owner[rows[ok], j[ok]] = b
+    return owner
+
+
+def _slot_stats(s):
+    return {
+        "slot_mean": round(float(s.mean()), 1),
+        "slot_p10": int(np.percentile(s, 10)),
+        "slot_p50": int(np.percentile(s, 50)),
+        "slot_p90": int(np.percentile(s, 90)),
+        "p_first": round(float((s == 1).mean()), 3),
+        "p_top5": round(float((s <= 5).mean()), 3),
+        "p_top10": round(float((s <= 10).mean()), 3),
+    }
+
+
+def held_picks(slots, owner, team_idx):
+    """The first-round picks a team holds, earliest first, each with its slot
+    distribution and the team whose record most often produces it."""
+    held = owner == team_idx
+    k = int(held[0].sum())               # trades move one pick per sim: constant
+    if k == 0:
+        return []
+    s = np.where(held, slots, 99)
+    order = np.argsort(s, axis=1)[:, :k]
+    picks = []
+    for r in range(k):
+        src = order[:, r]
+        origin = int(np.bincount(src, minlength=32).argmax())
+        picks.append(_slot_stats(np.take_along_axis(s, order[:, r:r + 1], axis=1)[:, 0]) | {
+            "from": TEAMS[origin],
+            "own": origin == team_idx,
+            "from_share": round(float((src == origin).mean()), 3),
+        })
+    return picks
+
+
 def actual_slots(games, season):
     """The order the real results produced, by the same ordering rule."""
     g = games[games.season == season]
@@ -272,27 +448,28 @@ def actual_slots(games, season):
     return reps.mean(axis=0)
 
 
-def summarise(sim):
+def summarise(sim, trades=None):
     slots, wins, ex, base = sim["slots"], sim["wins"], sim["exit_round"], sim["base"]
+    owner = apply_trades(slots, trades)
     out = []
     for t in TEAMS:
         i = IDX[t]
-        s = slots[:, i]
         w, gpd = base[0, i], base[1, i]
         losses = gpd - np.floor(w) - (1 if w % 1 else 0)
+        holder = int(np.bincount(owner[:, i], minlength=32).argmax())
         out.append({
             "team": t,
             "record": f"{int(w)}-{int(losses)}" + ("-1" if w % 1 else ""),
             "rating": round(float(sim["ratings"][i]), 1),
             "projected_wins": round(float(wins[:, i].mean()), 1),
             "playoff_prob": round(float((ex[:, i] > 0).mean()), 3),
-            "slot_mean": round(float(s.mean()), 1),
-            "slot_p10": int(np.percentile(s, 10)),
-            "slot_p50": int(np.percentile(s, 50)),
-            "slot_p90": int(np.percentile(s, 90)),
-            "p_first": round(float((s == 1).mean()), 3),
-            "p_top5": round(float((s <= 5).mean()), 3),
-            "p_top10": round(float((s <= 10).mean()), 3),
+            **_slot_stats(slots[:, i]),
+            # who holds the pick this team's record earns, and what it holds
+            "own_pick_holder": TEAMS[holder],
+            "own_pick_holder_share": round(float((owner[:, i] == holder).mean()), 3),
+            "picks": held_picks(slots, owner, i),
+            "acquired_from": [x["from"] for x in trades or [] if x["to"] == t],
+            "sent_to": [{"team": x["to"], "mode": x["mode"]} for x in trades or [] if x["from"] == t],
         })
     out.sort(key=lambda d: d["slot_mean"])
     return out
@@ -345,6 +522,8 @@ def main() -> int:
     ap.add_argument("--games", help="local games.csv (default: download from nflverse)")
     ap.add_argument("--season", type=int)
     ap.add_argument("--backtest", action="store_true")
+    ap.add_argument("--no-trade-refresh", action="store_true",
+                    help="use the committed pick_trades.json without asking Wikipedia")
     ap.add_argument("--out", default=OUT_PATH)
     args = ap.parse_args()
     games = load_games(args.games)
@@ -369,6 +548,8 @@ def main() -> int:
     complete = [w for w, ok in by_week.items() if ok]
     upto = max(complete) if complete else int(done.week.max())
     sim = simulate(games, season, upto)
+    traded = load_trades(season + 1, refresh=not args.no_trade_refresh)
+    trades = (traded or {}).get("trades", [])
     payload = {
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "season": season,
@@ -378,16 +559,22 @@ def main() -> int:
         "games_total": int(len(reg)),
         "n_sims": N_SIMS,
         "method": "spread-implied ratings, simulated remainder + playoffs, NFL ordering rule",
-        "caveats": ["own-pick slot only; traded picks are not applied",
+        "caveats": ["first-round trades applied; pick protections and conditions other than "
+                    "'earlier/later of two picks' are not",
                     "seeding tie-breakers simplified to division/conference record, then coin flip"],
         "source": "nflverse games.csv (CC-BY 4.0)",
-        "teams": summarise(sim),
+        "trades_as_of": (traded or {}).get("as_of"),
+        "trades_source": (traded or {}).get("source"),
+        "trades": [{k: t[k] for k in ("from", "to", "mode", "via", "date", "unmodelled_condition")}
+                   for t in trades],
+        "teams": summarise(sim, trades),
     }
     json.dump(payload, open(args.out, "w"), indent=2)
     print(f"{season} through week {upto}: wrote {args.out}")
     for t in payload["teams"]:
         print(f"{t['team']:<4}{t['record']:>7}  rating {t['rating']:>5}  slot {t['slot_p10']:>2}-{t['slot_p50']:>2}-{t['slot_p90']:>2}"
-              f"  #1 {t['p_first']:.0%}  top5 {t['p_top5']:.0%}  top10 {t['p_top10']:.0%}  playoffs {t['playoff_prob']:.0%}")
+              f"  #1 {t['p_first']:.0%}  top5 {t['p_top5']:.0%}  top10 {t['p_top10']:.0%}  playoffs {t['playoff_prob']:.0%}"
+              f"  holds {', '.join(str(p['slot_p50']) + ('' if p['own'] else '<' + p['from']) for p in t['picks']) or 'none'}")
     return 0
 
 

@@ -46,6 +46,30 @@ def test_committed_file_is_complete_and_strict_json():
     assert len(tn.index_payload()["teams"]) == 32
 
 
+def test_prospect_fits_match_need_positions_inside_the_pick_range():
+    team = {
+        "groups": [{"group": "CB", "label": "Cornerback", "starters": 2, "expiring": 1, "next": 0},
+                   {"group": "IOL", "label": "Interior line", "starters": 3, "expiring": 0, "next": 1},
+                   {"group": "QB", "label": "Quarterback", "starters": 1, "expiring": 0, "next": 0}],
+        "draft": {"picks": [{"slot_p10": 3, "slot_p50": 5, "slot_p90": 8, "from": "TEN", "own": True}]},
+    }
+    board = [
+        {"name": "Q", "team": "A", "position": "QB", "draft_class": 2027, "projected_pick": 4},   # no need
+        {"name": "G", "team": "A", "position": "OL", "draft_class": 2027, "projected_pick": 5},   # generic OL -> IOL
+        {"name": "C", "team": "A", "position": "DB", "draft_class": 2027, "projected_pick": 7},   # generic DB -> CB
+        {"name": "L", "team": "A", "position": "CB", "draft_class": 2027, "projected_pick": 9},   # outside range
+        {"name": "Y", "team": "A", "position": "CB", "draft_class": 2028, "projected_pick": 5},   # wrong class
+    ]
+    fits = tn.prospect_fits(team, board, 2027)
+    assert [(r["name"], r["group"]) for r in fits[0]["prospects"]] == [("C", "CB"), ("G", "IOL")]
+    assert tn.prospect_fits({"groups": [], "draft": {"picks": []}}, board, 2027) == []
+
+
+def test_edge_rushers_follow_the_front():
+    assert tn.GROUP_OF["LDE"] == "EDGE" and tn.GROUP_OF["WLB"] == "LB"
+    assert tn.GROUP_OF_34["LDE"] == "DT" and tn.GROUP_OF_34["WLB"] == "EDGE"
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):

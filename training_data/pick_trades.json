@@ -1,0 +1,68 @@
+{
+  "draft_year": 2027,
+  "as_of": "2026-11-12",
+  "source": "https://en.wikipedia.org/wiki/2027_NFL_draft",
+  "license": "facts from Wikipedia (text CC BY-SA 4.0)",
+  "trades": [
+    {
+      "from": "GB",
+      "to": "DAL",
+      "mode": "own",
+      "via": null,
+      "during_draft": false,
+      "date": "2025-08-28",
+      "unmodelled_condition": false,
+      "summary": "Green Bay traded a first-round selection, a 2026 first-round selection and DT Kenny Clark to Dallas in exchange for DE Micah Parsons."
+    },
+    {
+      "from": "IND",
+      "to": "NYJ",
+      "mode": "own",
+      "via": null,
+      "during_draft": false,
+      "date": "2025-11-04",
+      "unmodelled_condition": false,
+      "summary": "Indianapolis traded a first-round selection, a 2026 first-round selection and WR Adonai Mitchell to the NY Jets in exchange for CB Sauce Gardner."
+    },
+    {
+      "from": "DAL",
+      "to": "NYJ",
+      "mode": "earlier",
+      "via": null,
+      "during_draft": false,
+      "date": "2025-11-04",
+      "unmodelled_condition": false,
+      "summary": "Dallas traded a first-round selection, a 2026 second-round selection and DT Mazi Smith to the NY Jets in exchange for DT Quinnen Williams. New York will receive whichever is earlier of Dallas' original selection or the selection they acquired from Green Bay."
+    },
+    {
+      "from": "LA",
+      "to": "CLE",
+      "mode": "own",
+      "via": null,
+      "during_draft": false,
+      "date": "2026-06-01",
+      "unmodelled_condition": false,
+      "summary": "LA Rams traded a first-round selection, a 2028 second-round selection, a 2029 third-round selection, and OLB Jared Verse to Cleveland in exchange for DE Myles Garrett."
+    },
+    {
+      "from": "CHI",
+      "to": "TEN",
+      "mode": "own",
+      "via": null,
+      "during_draft": false,
+      "date": "2026-10-29",
+      "unmodelled_condition": false,
+      "summary": "Chicago traded a first-, fourth-round selection, and a 2028 first-round selection to Tennessee in exchange for a 2028 fifth-round selection and DT Jeffery Simmons."
+    },
+    {
+      "from": "JAX",
+      "to": "PHI",
+      "mode": "own",
+      "via": null,
+      "during_draft": false,
+      "date": "2026-11-09",
+      "unmodelled_condition": false,
+      "summary": "Jacksonville traded a first-round selection and a 2029 second-round selection to Philadelphia in exchange for DT Jordan Davis."
+    }
+  ]
+}

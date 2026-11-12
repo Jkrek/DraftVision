@@ -44,16 +44,28 @@ TEAM_NAMES = {
 }
 
 # Position groups a draft board talks in. Depth-chart position -> group.
+# The front decides who the edge rushers are: the ends in a 4-3, the outside
+# linebackers in a 3-4 (whose "ends" are interior linemen).
 GROUP_OF = {
     "QB": "QB", "RB": "RB", "FB": "RB", "WR": "WR", "TE": "TE",
     "LT": "OT", "RT": "OT", "LG": "IOL", "C": "IOL", "RG": "IOL",
-    "LDE": "DL", "RDE": "DL", "LDT": "DL", "RDT": "DL", "NT": "DL",
+    "LDE": "EDGE", "RDE": "EDGE", "LDT": "DT", "RDT": "DT", "NT": "DT",
     "WLB": "LB", "MLB": "LB", "SLB": "LB", "LILB": "LB", "RILB": "LB",
     "LCB": "CB", "RCB": "CB", "NB": "CB", "FS": "S", "SS": "S",
 }
+GROUP_OF_34 = GROUP_OF | {"LDE": "DT", "RDE": "DT", "WLB": "EDGE", "SLB": "EDGE"}
 GROUP_LABEL = {"QB": "Quarterback", "RB": "Running back", "WR": "Wide receiver", "TE": "Tight end",
-               "OT": "Offensive tackle", "IOL": "Interior line", "DL": "Defensive line",
-               "LB": "Linebacker", "CB": "Cornerback", "S": "Safety"}
+               "OT": "Offensive tackle", "IOL": "Interior line", "EDGE": "Edge rusher",
+               "DT": "Defensive tackle", "LB": "Linebacker", "CB": "Cornerback", "S": "Safety"}
+# College position label -> the groups it can fill. The board's generic
+# labels (OL, DL, DB) could be either; they match whichever the team needs more.
+PROSPECT_GROUPS = {
+    "QB": ("QB",), "RB": ("RB",), "FB": ("RB",), "WR": ("WR",), "TE": ("TE",),
+    "OT": ("OT",), "T": ("OT",), "G": ("IOL",), "OG": ("IOL",), "C": ("IOL",), "IOL": ("IOL",),
+    "OL": ("OT", "IOL"), "EDGE": ("EDGE",), "DE": ("EDGE",), "OLB": ("EDGE",),
+    "DT": ("DT",), "NT": ("DT",), "DL": ("EDGE", "DT"), "LB": ("LB",), "ILB": ("LB",),
+    "CB": ("CB",), "S": ("S",), "FS": ("S",), "SS": ("S",), "DB": ("CB", "S"),
+}
 # FB and NB are on the chart but are not every-down starters.
 NON_STARTER_SPOTS = {"FB", "NB"}
 
@@ -142,10 +154,9 @@ def build(depth, contracts, draft_order, season):
         if abbr not in TEAM_NAMES:
             continue
         spots = []
-        front = "4-3"
+        front = "3-4" if tdf.pos_grp.str.startswith("Base 3-4").any() else "4-3"
+        group_of = GROUP_OF_34 if front == "3-4" else GROUP_OF
         for (grp, pos, slot), sdf in tdf.groupby(["pos_grp", "pos_abb", "pos_slot"], sort=False):
-            if grp.startswith("Base 3-4"):
-                front = "3-4"
             unit = "offense" if grp == "3WR 1TE" else "special" if grp == "Special Teams" else "defense"
             players = []
             for r in sdf.sort_values("pos_rank").head(MAX_DEPTH).itertuples(index=False):
@@ -163,7 +174,7 @@ def build(depth, contracts, draft_order, season):
         # Group summary: every-down starters whose deal ends this season.
         groups = {}
         for s in spots:
-            g = GROUP_OF.get(s["pos"])
+            g = group_of.get(s["pos"])
             if s["unit"] == "special" or not g or s["pos"] in NON_STARTER_SPOTS or not s["players"]:
                 continue
             st = s["players"][0]
@@ -176,12 +187,13 @@ def build(depth, contracts, draft_order, season):
             elif st["contract"]["status"] == "next":
                 d["next"] += 1
         ordered = sorted(groups.values(), key=lambda d: (-d["expiring"] / d["starters"], -d["expiring"], -d["next"]))
+        draft = slots.get(abbr)
         teams[abbr] = {
             "team": abbr,
             "name": TEAM_NAMES[abbr],
             "front": front,
             "chart_updated": str(tdf.dt.max())[:10],
-            "draft": slots.get(abbr),
+            "draft": draft,
             "starters": sum(d["starters"] for d in groups.values()),
             "starters_expiring": sum(d["expiring"] for d in groups.values()),
             "groups": ordered,
@@ -192,6 +204,8 @@ def build(depth, contracts, draft_order, season):
         "season": season,
         "draft_year": season + 1,
         "draft_through_week": (draft_order or {}).get("through_week"),
+        "trades_as_of": (draft_order or {}).get("trades_as_of"),
+        "trades_source": (draft_order or {}).get("trades_source"),
         "source": "nflverse-data (CC-BY 4.0): depth charts via ESPN, contracts via OverTheCap",
         "teams": teams,
     }
@@ -213,8 +227,18 @@ def _load():
     return _CACHE["data"]
 
 
+_META = ("generated_at", "season", "draft_year", "draft_through_week", "trades_as_of", "trades_source", "source")
+
+
+def _first_pick(t):
+    picks = (t.get("draft") or {}).get("picks")
+    if picks is None:                       # file built before trades were applied
+        return (t.get("draft") or {}).get("slot_mean", 99)
+    return picks[0]["slot_mean"] if picks else 99
+
+
 def index_payload():
-    """Light list for the team picker: slot range and expiring-starter count."""
+    """Light list for the team picker, ordered by each team's first pick."""
     d = _load()
     if not d:
         return None
@@ -222,18 +246,59 @@ def index_payload():
               "starters": t["starters"], "starters_expiring": t["starters_expiring"],
               "top_group": (t["groups"][0]["group"] if t["groups"] and t["groups"][0]["expiring"] else None)}
              for t in d["teams"].values()]
-    teams.sort(key=lambda t: (t["draft"] or {}).get("slot_mean", 99))
-    return {k: d[k] for k in ("generated_at", "season", "draft_year", "draft_through_week", "source")} | {"teams": teams}
+    teams.sort(key=lambda t: (_first_pick(t), (t["draft"] or {}).get("slot_mean", 99)))
+    return {k: d.get(k) for k in _META} | {"teams": teams}
 
 
-def team_payload(abbr):
+def prospect_fits(team, prospects, draft_year, per_pick=4, max_picks=3):
+    """For each first-round pick the team holds: prospects the board projects
+    inside that pick's likely range who play a position where a starter's
+    contract is running out.
+
+    Need weight per position group = 2 x starters whose deal ends after this
+    season + 1 x starters whose deal ends a year later. Within a pick the list
+    is ordered by that weight, then by projected pick. Nothing here predicts a
+    selection: it is the overlap of two lists.
+    """
+    need = {g["group"]: g for g in team.get("groups", []) if g["expiring"] or g["next"]}
+    weight = {k: 2 * g["expiring"] + g["next"] for k, g in need.items()}
+    pool = sorted((p for p in prospects or []
+                   if p.get("draft_class") == draft_year and p.get("projected_pick")
+                   and any(g in weight for g in PROSPECT_GROUPS.get((p.get("position") or "").upper(), ()))),
+                  key=lambda p: p["projected_pick"])
+    out, used = [], set()
+    for pick in ((team.get("draft") or {}).get("picks") or [])[:max_picks]:
+        rows = []
+        for p in pool:
+            if not pick["slot_p10"] <= p["projected_pick"] <= pick["slot_p90"]:
+                continue
+            key = (p.get("name"), p.get("team"))
+            if key in used:
+                continue
+            g = max((g for g in PROSPECT_GROUPS[(p["position"] or "").upper()] if g in weight), key=weight.get)
+            rows.append({"name": p.get("name"), "position": p.get("position"), "college": p.get("team"),
+                         "projected_pick": p["projected_pick"], "grade": p.get("grade"),
+                         "group": g, "group_label": GROUP_LABEL[g], "weight": weight[g],
+                         "expiring": need[g]["expiring"], "next": need[g]["next"],
+                         "starters": need[g]["starters"]})
+        rows.sort(key=lambda r: (-r["weight"], r["projected_pick"]))
+        rows = rows[:per_pick]
+        used.update((r["name"], r["college"]) for r in rows)
+        out.append({k: pick[k] for k in ("slot_p10", "slot_p50", "slot_p90", "from", "own")} | {"prospects": rows})
+    return out
+
+
+def team_payload(abbr, prospects=None):
     d = _load()
     if not d:
         return None
     t = d["teams"].get((abbr or "").upper())
     if not t:
         return None
-    return {k: d[k] for k in ("generated_at", "season", "draft_year", "draft_through_week", "source")} | {"team": t}
+    out = {k: d.get(k) for k in _META} | {"team": t}
+    if prospects is not None:
+        out["fits"] = prospect_fits(t, prospects, d["draft_year"])
+    return out
 
 
 def main() -> int:

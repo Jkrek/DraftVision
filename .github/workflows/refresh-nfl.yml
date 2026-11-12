@@ -1,0 +1,88 @@
+name: Refresh NFL team data (off-season)
+
+# August through January the weekly board refresh (refresh-board.yml) also
+# rebuilds the NFL side. That job does not run February through July, which is
+# exactly when contracts change (free agency opens in March) and the draft
+# happens. This job covers those months and touches only the NFL files:
+# draft order + first-round trades, depth charts, contract end years.
+#
+# Public files only: nflverse releases, nflverse games.csv, the Wikipedia API.
+# No secrets needed except the optional FLY_API_TOKEN for the deploy.
+
+on:
+  schedule:
+    # Tuesdays 09:30 UTC, February through July
+    - cron: "30 9 * 2-7 2"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-board
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        # pyarrow reads the parquet releases; it is needed only by this build,
+        # so it is not in requirements.txt.
+        run: |
+          pip install -r requirements.txt
+          pip install "pyarrow==17.0.0"
+
+      - name: Rebuild draft order and team needs
+        run: |
+          python dv_draft_order.py
+          python dv_team_needs.py
+
+      - name: Check the rebuilt files
+        run: |
+          python tests/test_draft_order.py
+          python tests/test_team_needs.py
+
+      - name: Commit
+        id: commit
+        run: |
+          git config user.name  "draftvision-board-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add training_data/draft_order.json \
+                  training_data/pick_trades.json \
+                  training_data/team_needs.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore(nfl): weekly team needs refresh [board-bot]"
+            git push origin main
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy to Fly.io (optional — needs FLY_API_TOKEN secret)
+        # A push made with the workflow token does not start the Tests/Deploy
+        # workflows, so this job deploys its own commit.
+        if: steps.commit.outputs.changed == 'true'
+        continue-on-error: true
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -z "${FLY_API_TOKEN}" ]; then
+            echo "FLY_API_TOKEN secret not configured — skipping deploy."
+            exit 0
+          fi
+          curl -L https://fly.io/install.sh | sh
+          "$HOME/.fly/bin/flyctl" deploy --remote-only

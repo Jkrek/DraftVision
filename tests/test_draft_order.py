@@ -61,6 +61,48 @@ def test_order_breaks_record_ties_by_weaker_schedule():
     assert slots[0, 1] == 1 and slots[0, 0] == 2
 
 
+WIKI = """==Trades involving draft picks==
+===Round 1===
+*'''Green Bay → Dallas (PD).''' Green Bay traded a first-round selection and DT [[Kenny Clark (defensive tackle)|Kenny Clark]] to Dallas in exchange for DE [[Micah Parsons]].<ref group=Trade>{{Cite web|title=x|date=August 28, 2025}}</ref>
+*{{Anchor|X}}'''Dallas → NY Jets (PD).''' Dallas traded a first-round selection to the NY Jets. New York will receive whichever is earlier of Dallas' original selection or the selection they acquired from Green Bay.<ref group=Trade>{{cite news|date=November 4, 2025}}</ref>
+
+===Round 2===
+*'''Houston → Arizona (PD).''' Houston traded a second-round selection.
+"""
+
+
+def test_trade_bullets_are_read_from_round_one_only():
+    trades = dvo.parse_trades(WIKI)
+    assert [(t["from"], t["to"], t["mode"], t["date"]) for t in trades] == [
+        ("GB", "DAL", "own", "2025-08-28"), ("DAL", "NYJ", "earlier", "2025-11-04")]
+    assert "Kenny Clark" in trades[0]["summary"] and "[[" not in trades[0]["summary"]
+
+
+def test_unreadable_trade_bullet_fails_loudly():
+    try:
+        dvo.parse_trades("===Round 1===\n*'''Gotham → Dallas (PD).''' x\n")
+    except ValueError:
+        return
+    raise AssertionError("expected ValueError")
+
+
+def test_earlier_of_two_picks_goes_to_the_buyer_in_every_simulation():
+    sim = dvo.simulate(_season(), 2099, 1, n_sims=400, seed=3)
+    slots = sim["slots"]
+    owner = dvo.apply_trades(slots, dvo.parse_trades(WIKI))
+    gb, dal, nyj = (dvo.IDX[t] for t in ("GB", "DAL", "NYJ"))
+    assert (owner == gb).sum() == 0
+    assert ((owner == dal).sum(axis=1) == 1).all() and ((owner == nyj).sum(axis=1) == 2).all()
+    earlier = np.minimum(slots[:, gb], slots[:, dal])
+    got = np.where(owner[:, gb] == nyj, slots[:, gb], slots[:, dal])
+    assert (got == earlier).all()
+    # every pick still has exactly one holder, and summaries agree
+    teams = {t["team"]: t for t in dvo.summarise(sim, dvo.parse_trades(WIKI))}
+    assert sum(len(t["picks"]) for t in teams.values()) == 32
+    assert teams["GB"]["picks"] == [] and len(teams["NYJ"]["picks"]) == 3 - 1
+    assert teams["DAL"]["acquired_from"] == ["GB"] and teams["DAL"]["sent_to"] == [{"team": "NYJ", "mode": "earlier"}]
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):

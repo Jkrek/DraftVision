@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-12T01:45:21.681189+00:00",
+  "generated_at": "2026-11-12T20:22:46.515550+00:00",
   "season": 2026,
   "draft_year": 2027,
   "through_week": 9,
@@ -8,10 +8,62 @@
   "n_sims": 20000,
   "method": "spread-implied ratings, simulated remainder + playoffs, NFL ordering rule",
   "caveats": [
-    "own-pick slot only; traded picks are not applied",
+    "first-round trades applied; pick protections and conditions other than 'earlier/later of two picks' are not",
     "seeding tie-breakers simplified to division/conference record, then coin flip"
   ],
   "source": "nflverse games.csv (CC-BY 4.0)",
+  "trades_as_of": "2026-11-12",
+  "trades_source": "https://en.wikipedia.org/wiki/2027_NFL_draft",
+  "trades": [
+    {
+      "from": "GB",
+      "to": "DAL",
+      "mode": "own",
+      "via": null,
+      "date": "2025-08-28",
+      "unmodelled_condition": false
+    },
+    {
+      "from": "IND",
+      "to": "NYJ",
+      "mode": "own",
+      "via": null,
+      "date": "2025-11-04",
+      "unmodelled_condition": false
+    },
+    {
+      "from": "DAL",
+      "to": "NYJ",
+      "mode": "earlier",
+      "via": null,
+      "date": "2025-11-04",
+      "unmodelled_condition": false
+    },
+    {
+      "from": "LA",
+      "to": "CLE",
+      "mode": "own",
+      "via": null,
+      "date": "2026-06-01",
+      "unmodelled_condition": false
+    },
+    {
+      "from": "CHI",
+      "to": "TEN",
+      "mode": "own",
+      "via": null,
+      "date": "2026-10-29",
+      "unmodelled_condition": false
+    },
+    {
+      "from": "JAX",
+      "to": "PHI",
+      "mode": "own",
+      "via": null,
+      "date": "2026-11-09",
+      "unmodelled_condition": false
+    }
+  ],
   "teams": [
     {
       "team": "TEN",
@@ -25,7 +77,39 @@
       "slot_p90": 5,
       "p_first": 0.424,
       "p_top5": 0.906,
-      "p_top10": 0.989
+      "p_top10": 0.989,
+      "own_pick_holder": "TEN",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 2.6,
+          "slot_p10": 1,
+          "slot_p50": 2,
+          "slot_p90": 5,
+          "p_first": 0.424,
+          "p_top5": 0.906,
+          "p_top10": 0.989,
+          "from": "TEN",
+          "own": true,
+          "from_share": 1.0
+        },
+        {
+          "slot_mean": 24.3,
+          "slot_p10": 18,
+          "slot_p50": 24,
+          "slot_p90": 31,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.001,
+          "from": "CHI",
+          "own": false,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [
+        "CHI"
+      ],
+      "sent_to": []
     },
     {
       "team": "MIA",
@@ -39,7 +123,25 @@
       "slot_p90": 8,
       "p_first": 0.183,
       "p_top5": 0.74,
-      "p_top10": 0.957
+      "p_top10": 0.957,
+      "own_pick_holder": "MIA",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 4.1,
+          "slot_p10": 1,
+          "slot_p50": 3,
+          "slot_p90": 8,
+          "p_first": 0.183,
+          "p_top5": 0.74,
+          "p_top10": 0.957,
+          "from": "MIA",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "LAC",
@@ -53,7 +155,25 @@
       "slot_p90": 9,
       "p_first": 0.192,
       "p_top5": 0.73,
-      "p_top10": 0.95
+      "p_top10": 0.95,
+      "own_pick_holder": "LAC",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 4.2,
+          "slot_p10": 1,
+          "slot_p50": 3,
+          "slot_p90": 9,
+          "p_first": 0.192,
+          "p_top5": 0.73,
+          "p_top10": 0.95,
+          "from": "LAC",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "NYJ",
@@ -67,7 +187,52 @@
       "slot_p90": 11,
       "p_first": 0.063,
       "p_top5": 0.561,
-      "p_top10": 0.899
+      "p_top10": 0.899,
+      "own_pick_holder": "NYJ",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 3.9,
+          "slot_p10": 1,
+          "slot_p50": 4,
+          "slot_p90": 7,
+          "p_first": 0.105,
+          "p_top5": 0.785,
+          "p_top10": 0.992,
+          "from": "NYJ",
+          "own": true,
+          "from_share": 0.557
+        },
+        {
+          "slot_mean": 7.9,
+          "slot_p10": 4,
+          "slot_p50": 8,
+          "slot_p90": 12,
+          "p_first": 0.0,
+          "p_top5": 0.222,
+          "p_top10": 0.81,
+          "from": "IND",
+          "own": false,
+          "from_share": 0.48
+        },
+        {
+          "slot_mean": 15.0,
+          "slot_p10": 10,
+          "slot_p50": 14,
+          "slot_p90": 21,
+          "p_first": 0.0,
+          "p_top5": 0.004,
+          "p_top10": 0.162,
+          "from": "DAL",
+          "own": false,
+          "from_share": 0.556
+        }
+      ],
+      "acquired_from": [
+        "IND",
+        "DAL"
+      ],
+      "sent_to": []
     },
     {
       "team": "PHI",
@@ -81,7 +246,39 @@
       "slot_p90": 11,
       "p_first": 0.06,
       "p_top5": 0.541,
-      "p_top10": 0.885
+      "p_top10": 0.885,
+      "own_pick_holder": "PHI",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 5.9,
+          "slot_p10": 2,
+          "slot_p50": 5,
+          "slot_p90": 11,
+          "p_first": 0.06,
+          "p_top5": 0.541,
+          "p_top10": 0.885,
+          "from": "PHI",
+          "own": true,
+          "from_share": 0.998
+        },
+        {
+          "slot_mean": 26.7,
+          "slot_p10": 21,
+          "slot_p50": 27,
+          "slot_p90": 32,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.001,
+          "from": "JAX",
+          "own": false,
+          "from_share": 0.998
+        }
+      ],
+      "acquired_from": [
+        "JAX"
+      ],
+      "sent_to": []
     },
     {
       "team": "IND",
@@ -95,7 +292,17 @@
       "slot_p90": 12,
       "p_first": 0.041,
       "p_top5": 0.42,
-      "p_top10": 0.828
+      "p_top10": 0.828,
+      "own_pick_holder": "NYJ",
+      "own_pick_holder_share": 1.0,
+      "picks": [],
+      "acquired_from": [],
+      "sent_to": [
+        {
+          "team": "NYJ",
+          "mode": "own"
+        }
+      ]
     },
     {
       "team": "ARI",
@@ -109,7 +316,25 @@
       "slot_p90": 15,
       "p_first": 0.007,
       "p_top5": 0.2,
-      "p_top10": 0.615
+      "p_top10": 0.615,
+      "own_pick_holder": "ARI",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 9.3,
+          "slot_p10": 4,
+          "slot_p50": 9,
+          "slot_p90": 15,
+          "p_first": 0.007,
+          "p_top5": 0.2,
+          "p_top10": 0.615,
+          "from": "ARI",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "WAS",
@@ -123,7 +348,25 @@
       "slot_p90": 16,
       "p_first": 0.013,
       "p_top5": 0.241,
-      "p_top10": 0.649
+      "p_top10": 0.649,
+      "own_pick_holder": "WAS",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 9.4,
+          "slot_p10": 4,
+          "slot_p50": 9,
+          "slot_p90": 16,
+          "p_first": 0.013,
+          "p_top5": 0.241,
+          "p_top10": 0.649,
+          "from": "WAS",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "TB",
@@ -137,7 +380,25 @@
       "slot_p90": 20,
       "p_first": 0.006,
       "p_top5": 0.198,
-      "p_top10": 0.595
+      "p_top10": 0.595,
+      "own_pick_holder": "TB",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 11.1,
+          "slot_p10": 4,
+          "slot_p50": 9,
+          "slot_p90": 20,
+          "p_first": 0.006,
+          "p_top5": 0.198,
+          "p_top10": 0.595,
+          "from": "TB",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "LV",
@@ -151,7 +412,25 @@
       "slot_p90": 19,
       "p_first": 0.001,
       "p_top5": 0.074,
-      "p_top10": 0.4
+      "p_top10": 0.4,
+      "own_pick_holder": "LV",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 12.1,
+          "slot_p10": 6,
+          "slot_p50": 12,
+          "slot_p90": 19,
+          "p_first": 0.001,
+          "p_top5": 0.074,
+          "p_top10": 0.4,
+          "from": "LV",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "ATL",
@@ -165,7 +444,25 @@
       "slot_p90": 21,
       "p_first": 0.002,
       "p_top5": 0.102,
-      "p_top10": 0.438
+      "p_top10": 0.438,
+      "own_pick_holder": "ATL",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 12.5,
+          "slot_p10": 5,
+          "slot_p50": 11,
+          "slot_p90": 21,
+          "p_first": 0.002,
+          "p_top5": 0.102,
+          "p_top10": 0.438,
+          "from": "ATL",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "NO",
@@ -179,7 +476,25 @@
       "slot_p90": 25,
       "p_first": 0.002,
       "p_top5": 0.091,
-      "p_top10": 0.396
+      "p_top10": 0.396,
+      "own_pick_holder": "NO",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 13.8,
+          "slot_p10": 6,
+          "slot_p50": 12,
+          "slot_p90": 25,
+          "p_first": 0.002,
+          "p_top5": 0.091,
+          "p_top10": 0.396,
+          "from": "NO",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "CAR",
@@ -193,7 +508,25 @@
       "slot_p90": 25,
       "p_first": 0.002,
       "p_top5": 0.086,
-      "p_top10": 0.388
+      "p_top10": 0.388,
+      "own_pick_holder": "CAR",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 13.9,
+          "slot_p10": 6,
+          "slot_p50": 12,
+          "slot_p90": 25,
+          "p_first": 0.002,
+          "p_top5": 0.086,
+          "p_top10": 0.388,
+          "from": "CAR",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "CLE",
@@ -207,7 +540,39 @@
       "slot_p90": 22,
       "p_first": 0.0,
       "p_top5": 0.022,
-      "p_top10": 0.215
+      "p_top10": 0.215,
+      "own_pick_holder": "CLE",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 13.7,
+          "slot_p10": 8,
+          "slot_p50": 14,
+          "slot_p90": 19,
+          "p_first": 0.0,
+          "p_top5": 0.022,
+          "p_top10": 0.232,
+          "from": "CLE",
+          "own": true,
+          "from_share": 0.805
+        },
+        {
+          "slot_mean": 22.3,
+          "slot_p10": 16,
+          "slot_p50": 22,
+          "slot_p90": 31,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.003,
+          "from": "LA",
+          "own": false,
+          "from_share": 0.805
+        }
+      ],
+      "acquired_from": [
+        "LA"
+      ],
+      "sent_to": []
     },
     {
       "team": "BAL",
@@ -221,7 +586,25 @@
       "slot_p90": 23,
       "p_first": 0.0,
       "p_top5": 0.025,
-      "p_top10": 0.199
+      "p_top10": 0.199,
+      "own_pick_holder": "BAL",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 15.1,
+          "slot_p10": 8,
+          "slot_p50": 15,
+          "slot_p90": 23,
+          "p_first": 0.0,
+          "p_top5": 0.025,
+          "p_top10": 0.199,
+          "from": "BAL",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "DAL",
@@ -235,7 +618,32 @@
       "slot_p90": 26,
       "p_first": 0.0,
       "p_top5": 0.03,
-      "p_top10": 0.23
+      "p_top10": 0.23,
+      "own_pick_holder": "NYJ",
+      "own_pick_holder_share": 0.723,
+      "picks": [
+        {
+          "slot_mean": 22.9,
+          "slot_p10": 17,
+          "slot_p50": 23,
+          "slot_p90": 30,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.001,
+          "from": "GB",
+          "own": false,
+          "from_share": 0.723
+        }
+      ],
+      "acquired_from": [
+        "GB"
+      ],
+      "sent_to": [
+        {
+          "team": "NYJ",
+          "mode": "earlier"
+        }
+      ]
     },
     {
       "team": "HOU",
@@ -249,7 +657,25 @@
       "slot_p90": 26,
       "p_first": 0.001,
       "p_top5": 0.028,
-      "p_top10": 0.19
+      "p_top10": 0.19,
+      "own_pick_holder": "HOU",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 16.5,
+          "slot_p10": 8,
+          "slot_p50": 15,
+          "slot_p90": 26,
+          "p_first": 0.001,
+          "p_top5": 0.028,
+          "p_top10": 0.19,
+          "from": "HOU",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "NYG",
@@ -263,7 +689,25 @@
       "slot_p90": 29,
       "p_first": 0.0,
       "p_top5": 0.003,
-      "p_top10": 0.065
+      "p_top10": 0.065,
+      "own_pick_holder": "NYG",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 19.8,
+          "slot_p10": 12,
+          "slot_p50": 20,
+          "slot_p90": 29,
+          "p_first": 0.0,
+          "p_top5": 0.003,
+          "p_top10": 0.065,
+          "from": "NYG",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "NE",
@@ -277,7 +721,25 @@
       "slot_p90": 29,
       "p_first": 0.0,
       "p_top5": 0.001,
-      "p_top10": 0.033
+      "p_top10": 0.033,
+      "own_pick_holder": "NE",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 20.2,
+          "slot_p10": 13,
+          "slot_p50": 20,
+          "slot_p90": 29,
+          "p_first": 0.0,
+          "p_top5": 0.001,
+          "p_top10": 0.033,
+          "from": "NE",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "SEA",
@@ -291,7 +753,25 @@
       "slot_p90": 30,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.021
+      "p_top10": 0.021,
+      "own_pick_holder": "SEA",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 20.5,
+          "slot_p10": 14,
+          "slot_p50": 18,
+          "slot_p90": 30,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.021,
+          "from": "SEA",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "GB",
@@ -305,7 +785,17 @@
       "slot_p90": 29,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.007
+      "p_top10": 0.007,
+      "own_pick_holder": "DAL",
+      "own_pick_holder_share": 0.723,
+      "picks": [],
+      "acquired_from": [],
+      "sent_to": [
+        {
+          "team": "DAL",
+          "mode": "own"
+        }
+      ]
     },
     {
       "team": "LA",
@@ -319,7 +809,17 @@
       "slot_p90": 31,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.019
+      "p_top10": 0.019,
+      "own_pick_holder": "CLE",
+      "own_pick_holder_share": 1.0,
+      "picks": [],
+      "acquired_from": [],
+      "sent_to": [
+        {
+          "team": "CLE",
+          "mode": "own"
+        }
+      ]
     },
     {
       "team": "PIT",
@@ -333,7 +833,25 @@
       "slot_p90": 29,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.012
+      "p_top10": 0.012,
+      "own_pick_holder": "PIT",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 21.9,
+          "slot_p10": 15,
+          "slot_p50": 22,
+          "slot_p90": 29,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.012,
+          "from": "PIT",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "MIN",
@@ -347,7 +865,25 @@
       "slot_p90": 30,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.005
+      "p_top10": 0.005,
+      "own_pick_holder": "MIN",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 23.3,
+          "slot_p10": 17,
+          "slot_p50": 23,
+          "slot_p90": 30,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.005,
+          "from": "MIN",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "CHI",
@@ -361,7 +897,17 @@
       "slot_p90": 31,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.001
+      "p_top10": 0.001,
+      "own_pick_holder": "TEN",
+      "own_pick_holder_share": 1.0,
+      "picks": [],
+      "acquired_from": [],
+      "sent_to": [
+        {
+          "team": "TEN",
+          "mode": "own"
+        }
+      ]
     },
     {
       "team": "KC",
@@ -375,7 +921,25 @@
       "slot_p90": 31,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.005
+      "p_top10": 0.005,
+      "own_pick_holder": "KC",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 24.6,
+          "slot_p10": 19,
+          "slot_p50": 25,
+          "slot_p90": 31,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.005,
+          "from": "KC",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "CIN",
@@ -389,7 +953,25 @@
       "slot_p90": 31,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.003
+      "p_top10": 0.003,
+      "own_pick_holder": "CIN",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 25.1,
+          "slot_p10": 19,
+          "slot_p50": 26,
+          "slot_p90": 31,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.003,
+          "from": "CIN",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "DET",
@@ -403,7 +985,25 @@
       "slot_p90": 31,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.002
+      "p_top10": 0.002,
+      "own_pick_holder": "DET",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 25.2,
+          "slot_p10": 18,
+          "slot_p50": 26,
+          "slot_p90": 31,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.002,
+          "from": "DET",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "DEN",
@@ -417,7 +1017,25 @@
       "slot_p90": 31,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.0
+      "p_top10": 0.0,
+      "own_pick_holder": "DEN",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 25.9,
+          "slot_p10": 21,
+          "slot_p50": 26,
+          "slot_p90": 31,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.0,
+          "from": "DEN",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "JAX",
@@ -431,7 +1049,17 @@
       "slot_p90": 32,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.001
+      "p_top10": 0.001,
+      "own_pick_holder": "PHI",
+      "own_pick_holder_share": 1.0,
+      "picks": [],
+      "acquired_from": [],
+      "sent_to": [
+        {
+          "team": "PHI",
+          "mode": "own"
+        }
+      ]
     },
     {
       "team": "SF",
@@ -445,7 +1073,25 @@
       "slot_p90": 32,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.0
+      "p_top10": 0.0,
+      "own_pick_holder": "SF",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 26.9,
+          "slot_p10": 21,
+          "slot_p50": 28,
+          "slot_p90": 32,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.0,
+          "from": "SF",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     },
     {
       "team": "BUF",
@@ -459,7 +1105,25 @@
       "slot_p90": 32,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.0
+      "p_top10": 0.0,
+      "own_pick_holder": "BUF",
+      "own_pick_holder_share": 1.0,
+      "picks": [
+        {
+          "slot_mean": 27.6,
+          "slot_p10": 23,
+          "slot_p50": 28,
+          "slot_p90": 32,
+          "p_first": 0.0,
+          "p_top5": 0.0,
+          "p_top10": 0.0,
+          "from": "BUF",
+          "own": true,
+          "from_share": 1.0
+        }
+      ],
+      "acquired_from": [],
+      "sent_to": []
     }
   ]
 }

@@ -157,6 +157,7 @@ jobs:
                   training_data/edge_ledger.json \
                   training_data/edge_history.json \
                   training_data/draft_order.json \
+                  training_data/pick_trades.json \
                   training_data/team_needs.json \
                   content/recaps
           if git diff --cached --quiet; then

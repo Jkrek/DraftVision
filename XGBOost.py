@@ -3661,7 +3661,8 @@ def api_team_needs_index():
 
 @app.get("/api/team-needs/<abbr>")
 def api_team_needs_team(abbr):
-    payload = dv_team_needs.team_payload(abbr)
+    _maybe_reload_prospect_cache()
+    payload = dv_team_needs.team_payload(abbr, prospects=_PROSPECT_CACHE)
     if payload is None:
         return jsonify({"error": "unknown team"}), 404
     resp = jsonify(payload)
