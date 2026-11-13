@@ -3659,6 +3659,16 @@ def api_team_needs_index():
     return resp
 
 
+@app.get("/api/draft-order")
+def api_draft_order():
+    payload = dv_team_needs.draft_order_payload()
+    if payload is None:
+        return jsonify({"error": "draft order not built yet"}), 503
+    resp = jsonify(payload)
+    resp.headers["Cache-Control"] = "public, max-age=600"
+    return resp
+
+
 @app.get("/api/team-needs/<abbr>")
 def api_team_needs_team(abbr):
     _maybe_reload_prospect_cache()

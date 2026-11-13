@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-11-12T20:22:46.515550+00:00",
+  "generated_at": "2026-11-13T22:11:27.269315+00:00",
   "season": 2026,
   "draft_year": 2027,
   "through_week": 9,
-  "games_played": 136,
+  "games_played": 137,
   "games_total": 272,
   "n_sims": 20000,
   "method": "spread-implied ratings, simulated remainder + playoffs, NFL ordering rule",
@@ -71,24 +71,24 @@
       "rating": -6.5,
       "projected_wins": 3.6,
       "playoff_prob": 0.0,
-      "slot_mean": 2.6,
+      "slot_mean": 2.5,
       "slot_p10": 1,
       "slot_p50": 2,
       "slot_p90": 5,
-      "p_first": 0.424,
-      "p_top5": 0.906,
-      "p_top10": 0.989,
+      "p_first": 0.426,
+      "p_top5": 0.908,
+      "p_top10": 0.99,
       "own_pick_holder": "TEN",
       "own_pick_holder_share": 1.0,
       "picks": [
         {
-          "slot_mean": 2.6,
+          "slot_mean": 2.5,
           "slot_p10": 1,
           "slot_p50": 2,
           "slot_p90": 5,
-          "p_first": 0.424,
-          "p_top5": 0.906,
-          "p_top10": 0.989,
+          "p_first": 0.426,
+          "p_top5": 0.908,
+          "p_top10": 0.99,
           "from": "TEN",
           "own": true,
           "from_share": 1.0
@@ -123,7 +123,7 @@
       "slot_p90": 8,
       "p_first": 0.183,
       "p_top5": 0.74,
-      "p_top10": 0.957,
+      "p_top10": 0.958,
       "own_pick_holder": "MIA",
       "own_pick_holder_share": 1.0,
       "picks": [
@@ -134,7 +134,7 @@
           "slot_p90": 8,
           "p_first": 0.183,
           "p_top5": 0.74,
-          "p_top10": 0.957,
+          "p_top10": 0.958,
           "from": "MIA",
           "own": true,
           "from_share": 1.0
@@ -153,8 +153,8 @@
       "slot_p10": 1,
       "slot_p50": 3,
       "slot_p90": 9,
-      "p_first": 0.192,
-      "p_top5": 0.73,
+      "p_first": 0.193,
+      "p_top5": 0.731,
       "p_top10": 0.95,
       "own_pick_holder": "LAC",
       "own_pick_holder_share": 1.0,
@@ -164,8 +164,8 @@
           "slot_p10": 1,
           "slot_p50": 3,
           "slot_p90": 9,
-          "p_first": 0.192,
-          "p_top5": 0.73,
+          "p_first": 0.193,
+          "p_top5": 0.731,
           "p_top10": 0.95,
           "from": "LAC",
           "own": true,
@@ -186,7 +186,7 @@
       "slot_p50": 5,
       "slot_p90": 11,
       "p_first": 0.063,
-      "p_top5": 0.561,
+      "p_top5": 0.563,
       "p_top10": 0.899,
       "own_pick_holder": "NYJ",
       "own_pick_holder_share": 1.0,
@@ -197,11 +197,11 @@
           "slot_p50": 4,
           "slot_p90": 7,
           "p_first": 0.105,
-          "p_top5": 0.785,
+          "p_top5": 0.787,
           "p_top10": 0.992,
           "from": "NYJ",
           "own": true,
-          "from_share": 0.557
+          "from_share": 0.558
         },
         {
           "slot_mean": 7.9,
@@ -209,8 +209,8 @@
           "slot_p50": 8,
           "slot_p90": 12,
           "p_first": 0.0,
-          "p_top5": 0.222,
-          "p_top10": 0.81,
+          "p_top5": 0.223,
+          "p_top10": 0.809,
           "from": "IND",
           "own": false,
           "from_share": 0.48
@@ -222,10 +222,10 @@
           "slot_p90": 21,
           "p_first": 0.0,
           "p_top5": 0.004,
-          "p_top10": 0.162,
+          "p_top10": 0.161,
           "from": "DAL",
           "own": false,
-          "from_share": 0.556
+          "from_share": 0.552
         }
       ],
       "acquired_from": [
@@ -238,15 +238,15 @@
       "team": "PHI",
       "record": "2-7",
       "rating": -2.7,
-      "projected_wins": 5.2,
+      "projected_wins": 5.3,
       "playoff_prob": 0.01,
       "slot_mean": 5.9,
       "slot_p10": 2,
       "slot_p50": 5,
       "slot_p90": 11,
       "p_first": 0.06,
-      "p_top5": 0.541,
-      "p_top10": 0.885,
+      "p_top5": 0.54,
+      "p_top10": 0.884,
       "own_pick_holder": "PHI",
       "own_pick_holder_share": 1.0,
       "picks": [
@@ -256,8 +256,8 @@
           "slot_p50": 5,
           "slot_p90": 11,
           "p_first": 0.06,
-          "p_top5": 0.541,
-          "p_top10": 0.885,
+          "p_top5": 0.54,
+          "p_top10": 0.884,
           "from": "PHI",
           "own": true,
           "from_share": 0.998
@@ -285,14 +285,14 @@
       "record": "2-7",
       "rating": -2.3,
       "projected_wins": 5.8,
-      "playoff_prob": 0.01,
+      "playoff_prob": 0.011,
       "slot_mean": 6.9,
       "slot_p10": 2,
       "slot_p50": 6,
       "slot_p90": 12,
       "p_first": 0.041,
       "p_top5": 0.42,
-      "p_top10": 0.828,
+      "p_top10": 0.827,
       "own_pick_holder": "NYJ",
       "own_pick_holder_share": 1.0,
       "picks": [],
@@ -315,8 +315,8 @@
       "slot_p50": 9,
       "slot_p90": 15,
       "p_first": 0.007,
-      "p_top5": 0.2,
-      "p_top10": 0.615,
+      "p_top5": 0.202,
+      "p_top10": 0.616,
       "own_pick_holder": "ARI",
       "own_pick_holder_share": 1.0,
       "picks": [
@@ -326,8 +326,8 @@
           "slot_p50": 9,
           "slot_p90": 15,
           "p_first": 0.007,
-          "p_top5": 0.2,
-          "p_top10": 0.615,
+          "p_top5": 0.202,
+          "p_top10": 0.616,
           "from": "ARI",
           "own": true,
           "from_share": 1.0
@@ -339,27 +339,27 @@
     {
       "team": "WAS",
       "record": "2-5-1",
-      "rating": -2.4,
-      "projected_wins": 6.3,
-      "playoff_prob": 0.06,
-      "slot_mean": 9.4,
+      "rating": -2.2,
+      "projected_wins": 6.4,
+      "playoff_prob": 0.065,
+      "slot_mean": 9.6,
       "slot_p10": 4,
       "slot_p50": 9,
       "slot_p90": 16,
-      "p_first": 0.013,
-      "p_top5": 0.241,
-      "p_top10": 0.649,
+      "p_first": 0.012,
+      "p_top5": 0.23,
+      "p_top10": 0.634,
       "own_pick_holder": "WAS",
       "own_pick_holder_share": 1.0,
       "picks": [
         {
-          "slot_mean": 9.4,
+          "slot_mean": 9.6,
           "slot_p10": 4,
           "slot_p50": 9,
           "slot_p90": 16,
-          "p_first": 0.013,
-          "p_top5": 0.241,
-          "p_top10": 0.649,
+          "p_first": 0.012,
+          "p_top5": 0.23,
+          "p_top10": 0.634,
           "from": "WAS",
           "own": true,
           "from_share": 1.0
@@ -378,9 +378,9 @@
       "slot_p10": 4,
       "slot_p50": 9,
       "slot_p90": 20,
-      "p_first": 0.006,
-      "p_top5": 0.198,
-      "p_top10": 0.595,
+      "p_first": 0.007,
+      "p_top5": 0.199,
+      "p_top10": 0.596,
       "own_pick_holder": "TB",
       "own_pick_holder_share": 1.0,
       "picks": [
@@ -389,9 +389,9 @@
           "slot_p10": 4,
           "slot_p50": 9,
           "slot_p90": 20,
-          "p_first": 0.006,
-          "p_top5": 0.198,
-          "p_top10": 0.595,
+          "p_first": 0.007,
+          "p_top5": 0.199,
+          "p_top10": 0.596,
           "from": "TB",
           "own": true,
           "from_share": 1.0
@@ -405,14 +405,14 @@
       "record": "4-5",
       "rating": -2.8,
       "projected_wins": 7.4,
-      "playoff_prob": 0.116,
+      "playoff_prob": 0.117,
       "slot_mean": 12.1,
       "slot_p10": 6,
       "slot_p50": 12,
       "slot_p90": 19,
       "p_first": 0.001,
       "p_top5": 0.074,
-      "p_top10": 0.4,
+      "p_top10": 0.401,
       "own_pick_holder": "LV",
       "own_pick_holder_share": 1.0,
       "picks": [
@@ -423,7 +423,7 @@
           "slot_p90": 19,
           "p_first": 0.001,
           "p_top5": 0.074,
-          "p_top10": 0.4,
+          "p_top10": 0.401,
           "from": "LV",
           "own": true,
           "from_share": 1.0
@@ -443,8 +443,8 @@
       "slot_p50": 11,
       "slot_p90": 21,
       "p_first": 0.002,
-      "p_top5": 0.102,
-      "p_top10": 0.438,
+      "p_top5": 0.103,
+      "p_top10": 0.44,
       "own_pick_holder": "ATL",
       "own_pick_holder_share": 1.0,
       "picks": [
@@ -454,8 +454,8 @@
           "slot_p50": 11,
           "slot_p90": 21,
           "p_first": 0.002,
-          "p_top5": 0.102,
-          "p_top10": 0.438,
+          "p_top5": 0.103,
+          "p_top10": 0.44,
           "from": "ATL",
           "own": true,
           "from_share": 1.0
@@ -469,25 +469,25 @@
       "record": "3-5",
       "rating": -1.4,
       "projected_wins": 7.3,
-      "playoff_prob": 0.303,
-      "slot_mean": 13.8,
+      "playoff_prob": 0.304,
+      "slot_mean": 13.7,
       "slot_p10": 6,
       "slot_p50": 12,
       "slot_p90": 25,
       "p_first": 0.002,
-      "p_top5": 0.091,
-      "p_top10": 0.396,
+      "p_top5": 0.092,
+      "p_top10": 0.397,
       "own_pick_holder": "NO",
       "own_pick_holder_share": 1.0,
       "picks": [
         {
-          "slot_mean": 13.8,
+          "slot_mean": 13.7,
           "slot_p10": 6,
           "slot_p50": 12,
           "slot_p90": 25,
           "p_first": 0.002,
-          "p_top5": 0.091,
-          "p_top10": 0.396,
+          "p_top5": 0.092,
+          "p_top10": 0.397,
           "from": "NO",
           "own": true,
           "from_share": 1.0
@@ -501,14 +501,14 @@
       "record": "3-5",
       "rating": -0.9,
       "projected_wins": 7.2,
-      "playoff_prob": 0.301,
+      "playoff_prob": 0.302,
       "slot_mean": 13.9,
       "slot_p10": 6,
       "slot_p50": 12,
       "slot_p90": 25,
       "p_first": 0.002,
       "p_top5": 0.086,
-      "p_top10": 0.388,
+      "p_top10": 0.389,
       "own_pick_holder": "CAR",
       "own_pick_holder_share": 1.0,
       "picks": [
@@ -519,7 +519,7 @@
           "slot_p90": 25,
           "p_first": 0.002,
           "p_top5": 0.086,
-          "p_top10": 0.388,
+          "p_top10": 0.389,
           "from": "CAR",
           "own": true,
           "from_share": 1.0
@@ -533,14 +533,14 @@
       "record": "5-4",
       "rating": -3.6,
       "projected_wins": 8.3,
-      "playoff_prob": 0.222,
+      "playoff_prob": 0.224,
       "slot_mean": 14.7,
       "slot_p10": 8,
       "slot_p50": 14,
       "slot_p90": 22,
       "p_first": 0.0,
       "p_top5": 0.022,
-      "p_top10": 0.215,
+      "p_top10": 0.216,
       "own_pick_holder": "CLE",
       "own_pick_holder_share": 1.0,
       "picks": [
@@ -551,7 +551,7 @@
           "slot_p90": 19,
           "p_first": 0.0,
           "p_top5": 0.022,
-          "p_top10": 0.232,
+          "p_top10": 0.233,
           "from": "CLE",
           "own": true,
           "from_share": 0.805
@@ -579,7 +579,7 @@
       "record": "4-5",
       "rating": 0.6,
       "projected_wins": 8.2,
-      "playoff_prob": 0.216,
+      "playoff_prob": 0.218,
       "slot_mean": 15.1,
       "slot_p10": 8,
       "slot_p50": 15,
@@ -611,16 +611,16 @@
       "record": "4-5",
       "rating": 1.7,
       "projected_wins": 8.3,
-      "playoff_prob": 0.347,
-      "slot_mean": 16.0,
+      "playoff_prob": 0.354,
+      "slot_mean": 16.1,
       "slot_p10": 8,
-      "slot_p50": 14,
+      "slot_p50": 15,
       "slot_p90": 26,
       "p_first": 0.0,
       "p_top5": 0.03,
       "p_top10": 0.23,
       "own_pick_holder": "NYJ",
-      "own_pick_holder_share": 0.723,
+      "own_pick_holder_share": 0.719,
       "picks": [
         {
           "slot_mean": 22.9,
@@ -632,7 +632,7 @@
           "p_top10": 0.001,
           "from": "GB",
           "own": false,
-          "from_share": 0.723
+          "from_share": 0.719
         }
       ],
       "acquired_from": [
@@ -651,24 +651,24 @@
       "rating": 3.0,
       "projected_wins": 8.5,
       "playoff_prob": 0.369,
-      "slot_mean": 16.5,
+      "slot_mean": 16.4,
       "slot_p10": 8,
       "slot_p50": 15,
       "slot_p90": 26,
       "p_first": 0.001,
       "p_top5": 0.028,
-      "p_top10": 0.19,
+      "p_top10": 0.192,
       "own_pick_holder": "HOU",
       "own_pick_holder_share": 1.0,
       "picks": [
         {
-          "slot_mean": 16.5,
+          "slot_mean": 16.4,
           "slot_p10": 8,
           "slot_p50": 15,
           "slot_p90": 26,
           "p_first": 0.001,
           "p_top5": 0.028,
-          "p_top10": 0.19,
+          "p_top10": 0.192,
           "from": "HOU",
           "own": true,
           "from_share": 1.0
@@ -680,27 +680,27 @@
     {
       "team": "NYG",
       "record": "5-2-1",
-      "rating": -2.8,
+      "rating": -2.9,
       "projected_wins": 9.2,
-      "playoff_prob": 0.64,
-      "slot_mean": 19.8,
-      "slot_p10": 12,
+      "playoff_prob": 0.626,
+      "slot_mean": 19.6,
+      "slot_p10": 11,
       "slot_p50": 20,
-      "slot_p90": 29,
+      "slot_p90": 28,
       "p_first": 0.0,
       "p_top5": 0.003,
-      "p_top10": 0.065,
+      "p_top10": 0.071,
       "own_pick_holder": "NYG",
       "own_pick_holder_share": 1.0,
       "picks": [
         {
-          "slot_mean": 19.8,
-          "slot_p10": 12,
+          "slot_mean": 19.6,
+          "slot_p10": 11,
           "slot_p50": 20,
-          "slot_p90": 29,
+          "slot_p90": 28,
           "p_first": 0.0,
           "p_top5": 0.003,
-          "p_top10": 0.065,
+          "p_top10": 0.071,
           "from": "NYG",
           "own": true,
           "from_share": 1.0
@@ -712,27 +712,27 @@
     {
       "team": "NE",
       "record": "5-4",
-      "rating": 1.3,
+      "rating": 1.2,
       "projected_wins": 9.2,
-      "playoff_prob": 0.606,
-      "slot_mean": 20.2,
+      "playoff_prob": 0.6,
+      "slot_mean": 20.1,
       "slot_p10": 13,
       "slot_p50": 20,
       "slot_p90": 29,
       "p_first": 0.0,
       "p_top5": 0.001,
-      "p_top10": 0.033,
+      "p_top10": 0.034,
       "own_pick_holder": "NE",
       "own_pick_holder_share": 1.0,
       "picks": [
         {
-          "slot_mean": 20.2,
+          "slot_mean": 20.1,
           "slot_p10": 13,
           "slot_p50": 20,
           "slot_p90": 29,
           "p_first": 0.0,
           "p_top5": 0.001,
-          "p_top10": 0.033,
+          "p_top10": 0.034,
           "from": "NE",
           "own": true,
           "from_share": 1.0
@@ -746,7 +746,7 @@
       "record": "5-4",
       "rating": 4.1,
       "projected_wins": 9.7,
-      "playoff_prob": 0.457,
+      "playoff_prob": 0.458,
       "slot_mean": 20.5,
       "slot_p10": 14,
       "slot_p50": 18,
@@ -779,7 +779,7 @@
       "rating": 0.7,
       "projected_wins": 10.0,
       "playoff_prob": 0.538,
-      "slot_mean": 21.2,
+      "slot_mean": 21.1,
       "slot_p10": 15,
       "slot_p50": 20,
       "slot_p90": 29,
@@ -787,7 +787,7 @@
       "p_top5": 0.0,
       "p_top10": 0.007,
       "own_pick_holder": "DAL",
-      "own_pick_holder_share": 0.723,
+      "own_pick_holder_share": 0.719,
       "picks": [],
       "acquired_from": [],
       "sent_to": [
@@ -826,14 +826,14 @@
       "record": "6-2",
       "rating": 0.3,
       "projected_wins": 10.4,
-      "playoff_prob": 0.721,
+      "playoff_prob": 0.722,
       "slot_mean": 21.9,
       "slot_p10": 15,
       "slot_p50": 22,
       "slot_p90": 29,
       "p_first": 0.0,
       "p_top5": 0.0,
-      "p_top10": 0.012,
+      "p_top10": 0.013,
       "own_pick_holder": "PIT",
       "own_pick_holder_share": 1.0,
       "picks": [
@@ -844,7 +844,7 @@
           "slot_p90": 29,
           "p_first": 0.0,
           "p_top5": 0.0,
-          "p_top10": 0.012,
+          "p_top10": 0.013,
           "from": "PIT",
           "own": true,
           "from_share": 1.0
@@ -858,7 +858,7 @@
       "record": "6-2",
       "rating": 0.8,
       "projected_wins": 10.7,
-      "playoff_prob": 0.748,
+      "playoff_prob": 0.746,
       "slot_mean": 23.3,
       "slot_p10": 17,
       "slot_p50": 23,
@@ -888,9 +888,9 @@
     {
       "team": "CHI",
       "record": "7-2",
-      "rating": 1.5,
+      "rating": 1.4,
       "projected_wins": 11.1,
-      "playoff_prob": 0.818,
+      "playoff_prob": 0.817,
       "slot_mean": 24.3,
       "slot_p10": 18,
       "slot_p50": 24,
@@ -914,7 +914,7 @@
       "record": "6-2",
       "rating": 3.3,
       "projected_wins": 11.1,
-      "playoff_prob": 0.909,
+      "playoff_prob": 0.91,
       "slot_mean": 24.6,
       "slot_p10": 19,
       "slot_p50": 25,
@@ -976,10 +976,10 @@
     {
       "team": "DET",
       "record": "6-2",
-      "rating": 2.7,
-      "projected_wins": 11.4,
-      "playoff_prob": 0.863,
-      "slot_mean": 25.2,
+      "rating": 2.8,
+      "projected_wins": 11.5,
+      "playoff_prob": 0.867,
+      "slot_mean": 25.3,
       "slot_p10": 18,
       "slot_p50": 26,
       "slot_p90": 31,
@@ -990,7 +990,7 @@
       "own_pick_holder_share": 1.0,
       "picks": [
         {
-          "slot_mean": 25.2,
+          "slot_mean": 25.3,
           "slot_p10": 18,
           "slot_p50": 26,
           "slot_p90": 31,
@@ -1042,7 +1042,7 @@
       "record": "6-2",
       "rating": 5.0,
       "projected_wins": 12.0,
-      "playoff_prob": 0.972,
+      "playoff_prob": 0.973,
       "slot_mean": 26.7,
       "slot_p10": 21,
       "slot_p50": 27,
@@ -1065,8 +1065,8 @@
       "team": "SF",
       "record": "7-1",
       "rating": 3.6,
-      "projected_wins": 12.3,
-      "playoff_prob": 0.939,
+      "projected_wins": 12.4,
+      "playoff_prob": 0.94,
       "slot_mean": 26.9,
       "slot_p10": 21,
       "slot_p50": 28,
@@ -1124,6 +1124,168 @@
       ],
       "acquired_from": [],
       "sent_to": []
+    }
+  ],
+  "first_round": [
+    {
+      "pick": 1,
+      "team": "TEN",
+      "from": "TEN"
+    },
+    {
+      "pick": 2,
+      "team": "MIA",
+      "from": "MIA"
+    },
+    {
+      "pick": 3,
+      "team": "LAC",
+      "from": "LAC"
+    },
+    {
+      "pick": 4,
+      "team": "NYJ",
+      "from": "NYJ"
+    },
+    {
+      "pick": 5,
+      "team": "PHI",
+      "from": "PHI"
+    },
+    {
+      "pick": 6,
+      "team": "NYJ",
+      "from": "IND"
+    },
+    {
+      "pick": 7,
+      "team": "ARI",
+      "from": "ARI"
+    },
+    {
+      "pick": 8,
+      "team": "WAS",
+      "from": "WAS"
+    },
+    {
+      "pick": 9,
+      "team": "TB",
+      "from": "TB"
+    },
+    {
+      "pick": 10,
+      "team": "LV",
+      "from": "LV"
+    },
+    {
+      "pick": 11,
+      "team": "ATL",
+      "from": "ATL"
+    },
+    {
+      "pick": 12,
+      "team": "NO",
+      "from": "NO"
+    },
+    {
+      "pick": 13,
+      "team": "CAR",
+      "from": "CAR"
+    },
+    {
+      "pick": 14,
+      "team": "CLE",
+      "from": "CLE"
+    },
+    {
+      "pick": 15,
+      "team": "BAL",
+      "from": "BAL"
+    },
+    {
+      "pick": 16,
+      "team": "NYJ",
+      "from": "DAL"
+    },
+    {
+      "pick": 17,
+      "team": "HOU",
+      "from": "HOU"
+    },
+    {
+      "pick": 18,
+      "team": "NYG",
+      "from": "NYG"
+    },
+    {
+      "pick": 19,
+      "team": "NE",
+      "from": "NE"
+    },
+    {
+      "pick": 20,
+      "team": "SEA",
+      "from": "SEA"
+    },
+    {
+      "pick": 21,
+      "team": "DAL",
+      "from": "GB"
+    },
+    {
+      "pick": 22,
+      "team": "CLE",
+      "from": "LA"
+    },
+    {
+      "pick": 23,
+      "team": "PIT",
+      "from": "PIT"
+    },
+    {
+      "pick": 24,
+      "team": "MIN",
+      "from": "MIN"
+    },
+    {
+      "pick": 25,
+      "team": "TEN",
+      "from": "CHI"
+    },
+    {
+      "pick": 26,
+      "team": "KC",
+      "from": "KC"
+    },
+    {
+      "pick": 27,
+      "team": "CIN",
+      "from": "CIN"
+    },
+    {
+      "pick": 28,
+      "team": "DET",
+      "from": "DET"
+    },
+    {
+      "pick": 29,
+      "team": "DEN",
+      "from": "DEN"
+    },
+    {
+      "pick": 30,
+      "team": "PHI",
+      "from": "JAX"
+    },
+    {
+      "pick": 31,
+      "team": "SF",
+      "from": "SF"
+    },
+    {
+      "pick": 32,
+      "team": "BUF",
+      "from": "BUF"
     }
   ]
 }

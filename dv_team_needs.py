@@ -301,6 +301,28 @@ def team_payload(abbr, prospects=None):
     return out
 
 
+_ORDER_CACHE = {"mtime": None, "data": None}
+
+
+def draft_order_payload():
+    """Round-one order for the mock draft: 32 picks, each with the team that
+    holds it and the team whose record earned it."""
+    try:
+        mtime = os.path.getmtime(DRAFT_ORDER_PATH)
+    except OSError:
+        return None
+    if _ORDER_CACHE["mtime"] != mtime:
+        with open(DRAFT_ORDER_PATH) as fh:
+            _ORDER_CACHE["data"] = json.load(fh)
+        _ORDER_CACHE["mtime"] = mtime
+    d = _ORDER_CACHE["data"]
+    if not d.get("first_round"):
+        return None
+    return {k: d.get(k) for k in ("generated_at", "season", "draft_year", "through_week", "trades_as_of")} | {
+        "first_round": [{"pick": p["pick"], "team": TEAM_NAMES[p["team"]], "from": TEAM_NAMES[p["from"]]}
+                        for p in d["first_round"]]}
+
+
 def main() -> int:
     import argparse
     import pandas as pd

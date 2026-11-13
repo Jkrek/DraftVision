@@ -384,6 +384,19 @@ def apply_trades(slots, trades):
     return owner
 
 
+def first_round(teams, trades):
+    """One concrete round-one order: original picks by average simulated
+    slot, then the trades applied to that order. For anything that needs a
+    single list (the mock draft), not a distribution."""
+    by_slot = sorted(teams, key=lambda t: t["slot_mean"])
+    slots = np.zeros((1, 32))
+    for n, t in enumerate(by_slot):
+        slots[0, IDX[t["team"]]] = n + 1
+    owner = apply_trades(slots, trades)[0]
+    return [{"pick": n + 1, "team": TEAMS[owner[IDX[t["team"]]]], "from": t["team"]}
+            for n, t in enumerate(by_slot)]
+
+
 def _slot_stats(s):
     return {
         "slot_mean": round(float(s.mean()), 1),
@@ -569,6 +582,7 @@ def main() -> int:
                    for t in trades],
         "teams": summarise(sim, trades),
     }
+    payload["first_round"] = first_round(payload["teams"], trades)
     json.dump(payload, open(args.out, "w"), indent=2)
     print(f"{season} through week {upto}: wrote {args.out}")
     for t in payload["teams"]:

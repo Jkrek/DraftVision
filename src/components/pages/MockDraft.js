@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { anonFetch } from '../../lib/api';
 import '../../App.css';
 import './MockDraft.css';
@@ -7,6 +7,7 @@ import MockRow from './simulator/MockRow';
 import ImportMock from './simulator/ImportMock';
 import {
   DRAFT_ORDER_2027,
+  tradedSlots,
   CONTROL_ALL,
   POS_TABS,
   posGroup,
@@ -159,6 +160,27 @@ export default function MockDraft() {
   const [userTeam, setUserTeam]     = useState(null);
   const [controlAll, setControlAll] = useState(false);
   const [order, setOrder]           = useState(() => DRAFT_ORDER_2027.slice());
+  // Simulated round-one order + picks already traded (null until loaded, or
+  // if the endpoint is unavailable: the built-in order is used instead).
+  const [projected, setProjected]   = useState(null);
+  const orderTouched = useRef(false);
+
+  useEffect(() => {
+    let alive = true;
+    anonFetch('/api/draft-order')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!alive || !d || !Array.isArray(d.first_round) || d.first_round.length !== 32) return;
+        const holders = {};
+        d.first_round.forEach((p) => { if (p.team !== p.from) holders[p.from] = p.team; });
+        setProjected({ order: d.first_round.map((p) => p.from), holders, year: d.draft_year, week: d.through_week });
+        if (!orderTouched.current) setOrder(d.first_round.map((p) => p.from));
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  // Traded picks belong to one draft: apply them only to that class.
+  const holders = projected && projected.year === draftYear ? projected.holders : null;
 
   // live sim
   const [sim, setSim]         = useState(null);
@@ -208,12 +230,14 @@ export default function MockDraft() {
   const startDraft = useCallback((cfg) => {
     if (!poolRows || poolRows.length === 0) return;
     const team = cfg.userTeam;
+    const ord = cfg.order || DRAFT_ORDER_2027;
     const s = createDraft({
-      order: cfg.order || DRAFT_ORDER_2027,
+      order: ord,
       rounds: cfg.rounds,
       userTeam: team,
       pool: poolRows,
       seed: newSeed(),
+      ...tradedSlots(ord, holders),
     });
     setSim(s);
     setView(null);
@@ -223,7 +247,7 @@ export default function MockDraft() {
     // CPU teams run until the user is on the clock; in control-every-pick
     // mode the user is on the clock immediately.
     setSimming(team === CONTROL_ALL ? null : 'user');
-  }, [poolRows]);
+  }, [poolRows, holders]);
 
   /* ── Sim loop: one CPU pick per tick while "simming" ── */
   useEffect(() => {
@@ -365,6 +389,7 @@ export default function MockDraft() {
   );
 
   const moveTeam = useCallback((i, dir) => {
+    orderTouched.current = true;
     setOrder((o) => {
       const j = i + dir;
       if (j < 0 || j >= o.length) return o;
@@ -540,14 +565,21 @@ export default function MockDraft() {
             <details className="sim-order">
               <summary className="sim-order-summary">
                 <span className="mock-import-chev">›</span>
-                Draft order — projected order, use the arrows to reorder
+                {projected
+                  ? `Draft order — simulated from the season so far${projected.week ? ` (through week ${projected.week})` : ''}, use the arrows to reorder`
+                  : 'Draft order — projected order, use the arrows to reorder'}
               </summary>
               <div className="sim-order-list">
                 {order.map((t, i) => (
                   <div key={t} className="sim-order-row">
                     <span className="sim-order-num">{i + 1}</span>
                     <img className="sim-order-logo" src={nflLogoUrl(t, 500)} alt="" loading="lazy" />
-                    <span className="sim-order-name">{t}</span>
+                    <span className="sim-order-name">
+                      {t}
+                      {holders && holders[t] && (
+                        <span className="sim-order-traded"> · round 1 pick held by the {nick(holders[t])}</span>
+                      )}
+                    </span>
                     <span className="sim-order-arrows">
                       <button
                         className="sim-arrow"
@@ -571,7 +603,10 @@ export default function MockDraft() {
               </div>
               <button
                 className="sim-btn sim-order-reset"
-                onClick={() => setOrder(DRAFT_ORDER_2027.slice())}
+                onClick={() => {
+                  orderTouched.current = false;
+                  setOrder((projected ? projected.order : DRAFT_ORDER_2027).slice());
+                }}
               >
                 Reset order
               </button>

@@ -5,8 +5,8 @@
 
 export const ROUND_PICKS = 32;
 
-/* Placeholder 2027 first-round order — reverse of a plausible 2026
-   standings guess. Labeled "projected" in the UI; the user can reorder. */
+/* Fallback first-round order, used only until /api/draft-order answers (or
+   if it cannot): the page normally runs on the simulated order instead. */
 export const DRAFT_ORDER_2027 = [
   'New Orleans Saints',
   'Cleveland Browns',
@@ -204,7 +204,23 @@ export function cpuSelect(pool, posCounts, pickNumber, seed) {
 
 /* ── Sim state (immutable transitions) ───────────────────────────────── */
 
-export function createDraft({ order, rounds, userTeam, pool, seed }) {
+/* Round-one picks that already belong to another team. `holders` maps the
+   team whose record earned a pick to the team that holds it; the result is
+   the slots/via pair createDraft takes. Later rounds are untouched. */
+export function tradedSlots(order, holders) {
+  const slots = {};
+  const via = {};
+  (order || []).forEach((team, i) => {
+    const holder = holders && holders[team];
+    if (holder && holder !== team) {
+      slots[i + 1] = holder;
+      via[i + 1] = team;
+    }
+  });
+  return { slots, via };
+}
+
+export function createDraft({ order, rounds, userTeam, pool, seed, slots, via }) {
   const ord = order && order.length ? order : DRAFT_ORDER_2027;
   return {
     order: ord.slice(),
@@ -214,8 +230,8 @@ export function createDraft({ order, rounds, userTeam, pool, seed }) {
     pool: pool.slice(),
     picks: [],
     posCounts: {},
-    slots: {},    // pickNo → team (trade overrides of the base order)
-    via: {},      // pickNo → counterparty team ("via trade with X")
+    slots: Object.assign({}, slots), // pickNo → team (trade overrides of the base order)
+    via: Object.assign({}, via),     // pickNo → counterparty team ("via trade with X")
     tradeLog: [], // accepted trades, in order
     totalPicks: Math.min(rounds * ord.length, pool.length),
   };

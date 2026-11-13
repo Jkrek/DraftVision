@@ -100,6 +100,12 @@ def test_earlier_of_two_picks_goes_to_the_buyer_in_every_simulation():
     teams = {t["team"]: t for t in dvo.summarise(sim, dvo.parse_trades(WIKI))}
     assert sum(len(t["picks"]) for t in teams.values()) == 32
     assert teams["GB"]["picks"] == [] and len(teams["NYJ"]["picks"]) == 3 - 1
+    order = dvo.first_round(list(teams.values()), dvo.parse_trades(WIKI))
+    assert [p["pick"] for p in order] == list(range(1, 33))
+    assert sorted(p["from"] for p in order) == dvo.TEAMS
+    moved = {p["from"]: p["team"] for p in order if p["team"] != p["from"]}
+    first, second = sorted(("GB", "DAL"), key=lambda t: teams[t]["slot_mean"])
+    assert moved == ({"GB": "NYJ"} if first == "GB" else {"DAL": "NYJ", "GB": "DAL"})
     assert teams["DAL"]["acquired_from"] == ["GB"] and teams["DAL"]["sent_to"] == [{"team": "NYJ", "mode": "earlier"}]
 
 
