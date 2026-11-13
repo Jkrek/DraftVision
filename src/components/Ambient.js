@@ -66,8 +66,10 @@ const FS = [
   '  float cx = (u_res.x / u_res.y) * 0.5;',
   '  float edge = smoothstep(0.18, 0.62, abs(p.x - cx));',
   '  vec3 c = (red * r * 0.40 + gold * g * 0.34) * (0.35 + 0.65 * edge) + ink * b * 0.16;',
-  // grain kills banding on the long gradients
-  '  c += (hash(gl_FragCoord.xy + u_time) - 0.5) * 0.02;',
+  // Dither against banding: one 8-bit step, fixed in place. (It used to be
+  // five times stronger and re-rolled every frame; drawn at half resolution
+  // that read as television static over the whole page.)
+  '  c = max(c + (hash(gl_FragCoord.xy) - 0.5) * (1.0 / 255.0) / u_gain, 0.0);',
   '  float a = clamp(max(max(c.r, c.g), c.b), 0.0, 1.0) * u_gain;',
   '  gl_FragColor = vec4(c * u_gain, a);',
   '}',
