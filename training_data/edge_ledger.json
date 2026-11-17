@@ -395,6 +395,126 @@
       "team": "Texas Longhorns",
       "ticker": "KXNFLDRAFTTOP-27-5-AMAN",
       "title": "Will Arch Manning be a top 5 draft pick in 2027?"
+    },
+    {
+      "ask_cents": 89,
+      "bid_cents": 66,
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-11-17",
+      "edge": -88.1,
+      "espn_id": "5219834",
+      "espn_team_id": "197",
+      "event_scale": 1.0,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 89,
+      "method": "rank-calibration-v2",
+      "model_basis": "model P(pick <= 5) for its class-rank-32 player: how often that rank went top 5 across six out-of-sample drafts (2015-2020), on today's board",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 288,
+        "lo": 1
+      },
+      "model_prob": 0.9,
+      "model_rank": 32,
+      "player": "Drew Mestemaker",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "drew-mestemaker-oklahoma-state-cowboys",
+      "team": "Oklahoma State Cowboys",
+      "ticker": "KXNFLDRAFTTOP-27-5-DMES",
+      "title": "Will Drew Mestemaker be a top 5 draft pick in 2027?"
+    },
+    {
+      "ask_cents": 65,
+      "bid_cents": 26,
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-11-17",
+      "edge": -60.5,
+      "espn_id": "5121169",
+      "espn_team_id": "2390",
+      "event_scale": 1.0,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 61,
+      "method": "rank-calibration-v2",
+      "model_basis": "model P(pick <= 5) for its class-rank-82 player: how often that rank went top 5 across six out-of-sample drafts (2015-2020), on today's board",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 1969,
+        "lo": 12
+      },
+      "model_prob": 0.5,
+      "model_rank": 82,
+      "player": "Darian Mensah",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "darian-mensah-miami-hurricanes",
+      "team": "Miami Hurricanes",
+      "ticker": "KXNFLDRAFTTOP-27-5-DMEN",
+      "title": "Will Darian Mensah be a top 5 draft pick in 2027?"
+    },
+    {
+      "ask_cents": 14,
+      "bid_cents": 6,
+      "close_time": "2027-05-22T14:00:00Z",
+      "date": "2026-11-17",
+      "edge": 56.2,
+      "espn_id": "4870906",
+      "espn_team_id": "251",
+      "event_scale": 1.0,
+      "event_ticker": "KXNFLDRAFTTOP-27-5",
+      "market_price_cents": 7,
+      "method": "rank-calibration-v2",
+      "model_basis": "model P(pick <= 5) for its class-rank-3 player: how often that rank went top 5 across six out-of-sample drafts (2015-2020), on today's board",
+      "model_interval": {
+        "coverage": 0.72,
+        "hi": 19,
+        "lo": 1
+      },
+      "model_prob": 63.2,
+      "model_rank": 3,
+      "player": "Arch Manning",
+      "price_source": "last",
+      "question": {
+        "kind": "top_n",
+        "label": "Top-5 pick",
+        "n": 5
+      },
+      "resolution": {
+        "brier_market": null,
+        "brier_model": null,
+        "closer": null,
+        "note": null,
+        "outcome": null,
+        "settled_at": null
+      },
+      "slug": "arch-manning-texas-longhorns",
+      "team": "Texas Longhorns",
+      "ticker": "KXNFLDRAFTTOP-27-5-AMAN",
+      "title": "Will Arch Manning be a top 5 draft pick in 2027?"
     }
   ],
   "last_synced_at": "2026-11-10T17:34:42.599336+00:00"
