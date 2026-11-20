@@ -132,6 +132,27 @@ export function deltaLetter(delta) {
   return 'F';
 }
 
+/* ── Pick grade: value and fit ───────────────────────────────────────────
+   A pick starts at 82. Value moves it by how far the player's board rank is
+   from the pick, measured against a tolerance that grows through the draft
+   (four spots matter at pick 5, not at pick 90). Fit adds up to 10 for how
+   much the team needed the position when it picked. 90+ A, 80+ B, 70+ C,
+   60+ D, else F. Returns { score, letter, value, fit } or null. */
+export function pickGrade(pk) {
+  if (!pk || !Number.isFinite(pk.delta)) return null;
+  const tolerance = Math.max(4, pk.pick * 0.15);
+  const value = Math.round(Math.max(-22, Math.min(12, (pk.delta / tolerance) * 8)));
+  const fit = Math.round((Number(pk.need) || 0) * 10);
+  const score = Math.max(40, Math.min(100, 82 + value + fit));
+  const letter = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
+  return { score, letter, value, fit };
+}
+
+export function gradeLetter(score) {
+  if (!Number.isFinite(score)) return null;
+  return score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
+}
+
 /* ── Trade value: approximated Jimmy Johnson chart ───────────────────────
    value(pick) = 3000 · 0.9^(pick−1), floored at 1 point. */
 
@@ -218,12 +239,25 @@ const CPU_WINDOW = 14; // best-available candidates considered per pick
    spots: enough to take the quarterback over a slightly better guard, not
    enough to reach a round early. */
 export const NEED_WEIGHT = 9;
+const JITTER = 8;
+
+/* The two dials on the setup screen, each 0..10. `need` 0 is pure best
+   available and 10 doubles the default pull of need; `chaos` 0 follows the
+   board exactly and 10 is about three times the default randomness. */
+export const DEFAULT_SETTINGS = { need: 5, chaos: 3 };
+
+function tuning(settings) {
+  const s = Object.assign({}, DEFAULT_SETTINGS, settings);
+  return { needWeight: NEED_WEIGHT * (s.need / 5), jitter: JITTER * (s.chaos / 3) };
+}
 
 /* Returns an index into `pool` (board-sorted, best first), or -1. Scores
    the top of the board on (a) success probability + grade, (b) positional
    need — repeat picks of a position group are dampened via posCounts —
    and (c) small deterministic jitter. */
-export function cpuSelect(pool, posCounts, pickNumber, seed, needOf) {
+export function cpuSelect(pool, posCounts, pickNumber, seed, needOf, tune) {
+  const needWeight = tune ? tune.needWeight : NEED_WEIGHT;
+  const jitterAmp = tune ? tune.jitter : JITTER;
   if (!pool || pool.length === 0) return -1;
   // The field of realistic candidates widens as the draft goes on: boards
   // agree at the top and scatter later.
@@ -235,14 +269,14 @@ export function cpuSelect(pool, posCounts, pickNumber, seed, needOf) {
     const p = pool[i];
     const group = posGroup(p.position);
     const taken = (posCounts && posCounts[group]) || 0;
-    const jitter = seed === null ? 0 : (pickJitter(seed, pickNumber * 131 + i) - 0.5) * 8;
+    const jitter = seed === null ? 0 : (pickJitter(seed, pickNumber * 131 + i) - 0.5) * jitterAmp;
     const score =
       (Number(p.success_probability) || 0) +
       (9 - gradeRank(p.grade)) * 1.5 -
       i * 0.6 + // slight respect for board order
       (POS_VALUE[group] || 0) -
       taken * 9 + // do not stack one position group
-      (needOf ? needOf(p) * NEED_WEIGHT : 0) +
+      (needOf ? needOf(p) * needWeight : 0) +
       jitter;
     if (score > bestScore) {
       bestScore = score;
@@ -270,7 +304,7 @@ export function tradedSlots(order, holders) {
   return { slots, via };
 }
 
-export function createDraft({ order, rounds, userTeam, pool, seed, slots, via, needs }) {
+export function createDraft({ order, rounds, userTeam, pool, seed, slots, via, needs, settings }) {
   const ord = order && order.length ? order : DRAFT_ORDER_2027;
   return {
     order: ord.slice(),
@@ -284,6 +318,7 @@ export function createDraft({ order, rounds, userTeam, pool, seed, slots, via, n
     via: Object.assign({}, via),     // pickNo → counterparty team ("via trade with X")
     tradeLog: [], // accepted trades, in order
     needs: needs || null, // /api/draft-needs payload (null → needs ignored)
+    settings: Object.assign({}, DEFAULT_SETTINGS, settings),
     totalPicks: Math.min(rounds * ord.length, pool.length),
   };
 }
@@ -357,7 +392,8 @@ export function advanceCpu(sim) {
     sim.posCounts[team],
     currentPickNumber(sim),
     sim.seed,
-    (p) => playerFit(sim, team, p, left).need
+    (p) => playerFit(sim, team, p, left).need,
+    tuning(sim.settings)
   );
   return commitPick(sim, idx);
 }
@@ -370,7 +406,7 @@ export function suggestPick(sim) {
   const team = currentTeam(sim);
   const left = teamNeeds(sim, team);
   const index = cpuSelect(sim.pool, sim.posCounts[team], currentPickNumber(sim), null,
-    (p) => playerFit(sim, team, p, left).need);
+    (p) => playerFit(sim, team, p, left).need, tuning(sim.settings));
   const player = sim.pool[index];
   return { index, player, fit: playerFit(sim, team, player, left) };
 }

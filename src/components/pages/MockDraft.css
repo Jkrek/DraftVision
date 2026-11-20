@@ -316,6 +316,45 @@
   background: color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
+/* chosen-team preview: picks and biggest needs before the draft starts */
+.sim-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-accent-700);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+.sim-preview img { width: 40px; height: 40px; object-fit: contain; filter: var(--halo-logo); }
+.sim-preview-body { flex: 1 1 200px; min-width: 0; }
+.sim-preview-name { font-family: var(--font-heading); font-size: 17px; color: var(--color-neutral-100); }
+.sim-preview-picks { margin-top: 2px; font-size: 12.5px; color: var(--color-neutral-400); font-variant-numeric: tabular-nums; }
+.sim-preview-needs { display: flex; flex-wrap: wrap; gap: 6px; }
+.sim-need.is-static { cursor: default; }
+
+/* CPU dials */
+.sim-dials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px 28px;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+}
+.sim-dial { display: flex; flex-direction: column; gap: 6px; }
+.sim-dial-name { font-size: 12.5px; color: var(--color-neutral-200); }
+.sim-dial input[type='range'] { width: 100%; accent-color: var(--color-accent); }
+.sim-dial-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--color-neutral-500);
+}
+
 /* draft-order editor */
 .sim-order {
   margin-bottom: 20px;
@@ -419,6 +458,8 @@
 /* ── Live controls bar ────────────────────────────────────────────────── */
 
 .sim-bar {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -445,7 +486,86 @@
   filter: var(--halo-logo);
 }
 
+/* draft progress: a hairline along the bottom of the status bar */
+.sim-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--color-accent);
+  transform-origin: left center;
+  transition: transform 0.35s ease-out;
+}
+
+/* latest picks */
+.sim-ticker {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: -10px 0 22px;
+}
+.sim-tick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  color: var(--color-neutral-200);
+}
+.sim-tick.is-user {
+  border-color: var(--color-accent-600);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+.sim-tick:first-child { color: var(--color-neutral-100); }
+.sim-tick:not(:first-child) { opacity: 0.72; }
+.sim-tick img { flex: none; width: 20px; height: 20px; object-fit: contain; filter: var(--halo-logo); }
+.sim-tick-no { flex: none; min-width: 18px; color: var(--color-neutral-500); font-variant-numeric: tabular-nums; }
+.sim-tick-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* your last pick, graded */
+.sim-reveal {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding: 14px 18px;
+  border: 1px solid var(--color-accent-700);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+.sim-reveal-letter {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: 26px;
+  color: var(--color-neutral-300);
+}
+.sim-reveal-letter.is-a,
+.sim-reveal-letter.is-b {
+  border-color: var(--color-accent-500);
+  color: var(--color-accent-200);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent) 26%, transparent);
+}
+.sim-reveal-body { min-width: 0; }
+.sim-reveal-title { font-size: 14.5px; color: var(--color-neutral-100); }
+.sim-reveal-title span { margin-left: 10px; font-size: 12px; color: var(--color-neutral-400); }
+.sim-reveal-why { margin-top: 3px; font-size: 12.5px; line-height: 1.5; color: var(--color-neutral-400); }
+
 .sim-bar-onclock {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
   font-size: 13.5px;
   color: var(--color-accent-300);
 }
@@ -976,7 +1096,8 @@
   color: var(--color-neutral-500);
 }
 
-.mock-status .mock-dot {
+.mock-status .mock-dot,
+.sim-bar-onclock .mock-dot {
   width: 6px;
   height: 6px;
   flex: none;
@@ -986,14 +1107,52 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .mock-status .mock-dot {
+  .mock-status .mock-dot,
+  .sim-bar-onclock .mock-dot {
     animation: mock-pulse 1.6s ease-in-out infinite;
   }
+  /* picks land: board rows and the ticker slide in as they are made */
+  .mock-row { animation: sim-rise 0.36s ease-out both; }
+  .sim-tick { animation: sim-slide 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  /* your turn: the panel rises and its edge glows once */
+  .sim-clock { animation: sim-rise 0.4s ease-out both, sim-glow 1.6s ease-out 0.1s 1; }
+  .sim-suggest { animation: sim-rise 0.4s ease-out 0.12s both; }
+  .sim-need-meter i { animation: sim-meter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; transform-origin: center bottom; }
+  .sim-need-meter i:nth-child(2) { animation-delay: 0.07s; }
+  .sim-need-meter i:nth-child(3) { animation-delay: 0.14s; }
+  .sim-reveal, .sim-preview { animation: sim-rise 0.4s ease-out both; }
+  .sim-reveal-letter { animation: mock-grade-pop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both; }
+  .sim-summary-row { animation: sim-rise 0.4s ease-out both; }
+  .sim-summary-row:nth-child(2) { animation-delay: 0.06s; }
+  .sim-summary-row:nth-child(3) { animation-delay: 0.12s; }
+  .sim-summary-row:nth-child(4) { animation-delay: 0.18s; }
+  .sim-summary-row:nth-child(5) { animation-delay: 0.24s; }
+  .sim-summary-row:nth-child(n+6) { animation-delay: 0.3s; }
+  .sim-av-row .sim-av-draft { transition: background 0.15s, border-color 0.15s, transform 0.15s; }
+  .sim-av-row:hover .sim-av-draft { transform: translateX(2px); }
+  .sim-team, .sim-need, .sim-chip, .sim-btn { transition-property: color, background, border-color, transform; transition-duration: 0.15s; }
+  .sim-team:active, .sim-need:active, .sim-chip:active, .sim-btn:active { transform: scale(0.97); }
   .sim-haul-overall-letter {
     animation: mock-grade-pop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both;
   }
 }
 
+@keyframes sim-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes sim-slide {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { transform: none; }
+}
+@keyframes sim-meter {
+  from { transform: scaleY(0.2); opacity: 0.3; }
+  to   { transform: none; opacity: 1; }
+}
+@keyframes sim-glow {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 45%, transparent); }
+  100% { box-shadow: 0 0 0 14px transparent; }
+}
 @keyframes mock-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.25; }
@@ -1363,6 +1522,10 @@ details[open] > summary .mock-import-chev {
     display: none;
   }
   .sim-ctx-meta { width: 100%; justify-content: space-between; }
+  .sim-ticker { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: -8px; }
+  .sim-tick:nth-child(n+3) { display: none; }
+  .sim-reveal { padding: 12px 14px; gap: 12px; }
+  .sim-reveal-title span { display: block; margin: 2px 0 0; }
   .sim-suggest { flex-wrap: wrap; gap: 8px 12px; }
   .sim-suggest .sim-ctx-label { flex-basis: 100%; }
   .sim-need { min-height: 36px; padding: 6px 11px; }

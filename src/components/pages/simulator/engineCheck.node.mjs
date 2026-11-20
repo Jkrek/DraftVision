@@ -132,6 +132,23 @@ async function main() {
   assert.equal(E.suggestPick(flatSim(qbNeed)).player.position, 'WR', 'a top need wins among near-equal players');
   assert.deepEqual(E.upcomingPicks(nsim, 'T1'), [1, TEAMS.length + 1]);
 
+  /* ── Pick grade: value + fit ── */
+  assert.deepEqual(E.pickGrade({ pick: 10, delta: 0, need: 0 }), { score: 82, letter: 'B', value: 0, fit: 0 });
+  assert.deepEqual(E.pickGrade({ pick: 10, delta: 0, need: 1 }), { score: 92, letter: 'A', value: 0, fit: 10 });
+  assert.equal(E.pickGrade({ pick: 10, delta: -4, need: 0 }).letter, 'C', 'four spots early at pick 10 costs a letter');
+  assert.equal(E.pickGrade({ pick: 90, delta: -4, need: 0 }).letter, 'B', 'the same four spots at pick 90 does not');
+  assert.equal(E.pickGrade({ pick: 5, delta: -40, need: 1 }).score, 70, 'value loss is capped, need cannot rescue a big reach');
+  assert.equal(E.pickGrade({ pick: 5, delta: null }), null);
+  assert.equal(E.gradeLetter(89.9), 'B');
+
+  /* ── Dials: need 0 ignores needs; chaos 0 follows the score exactly ── */
+  const dial = (settings) => E.createDraft({ order: TEAMS, rounds: 1, userTeam: 'T1', pool: flat, seed: 1, needs: qbNeed, settings });
+  assert.equal(E.suggestPick(dial({ need: 0 })).index, 0, 'need 0 is best available');
+  assert.equal(E.suggestPick(dial({ need: 10 })).player.position, 'WR');
+  const calm = (seed) => E.simulateToEnd(E.createDraft({ order: TEAMS, rounds: 2, userTeam: 'T9', pool, seed, settings: { chaos: 0 } }));
+  assert.deepEqual(calm(1).picks.map((p) => p.player.name), calm(99).picks.map((p) => p.player.name),
+    'with no randomness the seed does not matter');
+
   /* ── Trade down (user on the clock at pick 3) ── */
   let sim = mk('T3', 7);
   sim = E.advanceCpu(E.advanceCpu(sim));

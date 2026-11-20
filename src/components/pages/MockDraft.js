@@ -14,6 +14,9 @@ import {
   upcomingPicks,
   NEED_HIGH,
   NEED_SOME,
+  pickGrade,
+  gradeLetter,
+  DEFAULT_SETTINGS,
   CONTROL_ALL,
   POS_TABS,
   posGroup,
@@ -26,7 +29,6 @@ import {
   isUserOnClock,
   currentTeam,
   currentPickNumber,
-  deltaLetter,
   tradeDownOffers,
   tradeUpOffers,
   executeTrade,
@@ -168,6 +170,9 @@ export default function MockDraft() {
   const [userTeam, setUserTeam]     = useState(null);
   const [controlAll, setControlAll] = useState(false);
   const [order, setOrder]           = useState(() => DRAFT_ORDER_2027.slice());
+  // How CPU teams draft: 0..10 each (see DEFAULT_SETTINGS in the engine).
+  const [cpuNeed, setCpuNeed]   = useState(DEFAULT_SETTINGS.need);
+  const [cpuChaos, setCpuChaos] = useState(DEFAULT_SETTINGS.chaos);
   // Simulated round-one order + picks already traded (null until loaded, or
   // if the endpoint is unavailable: the built-in order is used instead).
   const [projected, setProjected]   = useState(null);
@@ -260,6 +265,7 @@ export default function MockDraft() {
       seed: newSeed(),
       ...tradedSlots(ord, holders),
       needs,
+      settings: cfg.settings || { need: cpuNeed, chaos: cpuChaos },
     });
     setSim(s);
     setView(null);
@@ -269,7 +275,7 @@ export default function MockDraft() {
     // CPU teams run until the user is on the clock; in control-every-pick
     // mode the user is on the clock immediately.
     setSimming(team === CONTROL_ALL ? null : 'user');
-  }, [poolRows, holders, needs]);
+  }, [poolRows, holders, needs, cpuNeed, cpuChaos]);
 
   /* ── Sim loop: one CPU pick per tick while "simming" ── */
   useEffect(() => {
@@ -438,12 +444,47 @@ export default function MockDraft() {
     [haul]
   );
 
-  /* ── Overall haul grade — the end-of-draft reveal (avg pick delta) ── */
+  /* ── Overall haul grade — the end-of-draft reveal (mean pick score) ── */
   const haulGrade = useMemo(() => {
-    const deltas = haul.map((pk) => pk.delta).filter(Number.isFinite);
-    if (deltas.length === 0) return null;
-    return deltaLetter(deltas.reduce((s, d) => s + d, 0) / deltas.length);
+    const scores = haul.map((pk) => pickGrade(pk)).filter(Boolean).map((g) => g.score);
+    if (scores.length === 0) return null;
+    return gradeLetter(scores.reduce((s, d) => s + d, 0) / scores.length);
   }, [haul]);
+
+  /* ── Live-draft furniture: latest picks, and the user's last pick graded ── */
+  const recentPicks = useMemo(
+    () => (sim && phase === 'live' ? sim.picks.slice(-4).reverse() : []),
+    [sim, phase]
+  );
+  const lastMine = useMemo(() => {
+    if (!sim || phase !== 'live' || sim.userTeam === CONTROL_ALL) return null;
+    for (let i = sim.picks.length - 1; i >= 0; i--) {
+      if (sim.picks[i].team === sim.userTeam) return sim.picks[i];
+    }
+    return null;
+  }, [sim, phase]);
+  const valueWords = (d) => (d > 0 ? `lasted ${d} past his board rank` : d < 0 ? `taken ${-d} ahead of his board rank` : 'right at his board rank');
+
+  /* ── Setup preview: what the chosen team brings to the draft ── */
+  const preview = useMemo(() => {
+    if (controlAll || !userTeam) return null;
+    const { slots } = tradedSlots(order, holders);
+    const first = order.map((t, i) => ((slots[i + 1] || t) === userTeam ? i + 1 : 0)).filter(Boolean);
+    const own = order.indexOf(userTeam) + 1;
+    const later = [];
+    for (let r = 2; r <= rounds; r++) later.push(own + order.length * (r - 1));
+    const base = needs && needs.teams[userTeam];
+    const chips = base
+      ? Object.keys(base.groups)
+        .map((g) => ({ group: g, need: base.groups[g].need }))
+        .filter((c) => c.need >= NEED_SOME)
+        .sort((a, b) => b.need - a.need)
+        .slice(0, 6)
+      : [];
+    return { first, later, chips };
+  }, [controlAll, userTeam, order, holders, rounds, needs]);
+  const needWord = cpuNeed <= 2 ? 'best available' : cpuNeed <= 7 ? 'balanced' : 'need first';
+  const chaosWord = cpuChaos === 0 ? 'no surprises' : cpuChaos <= 4 ? 'some surprises' : 'chaotic';
 
   /* ── Plaintext exports ── */
   const exportOrderLen = sim
@@ -635,6 +676,58 @@ export default function MockDraft() {
               </div>
             )}
 
+            {preview && (
+              <div key={userTeam} className="sim-preview">
+                <img src={nflLogoUrl(userTeam, 500)} alt="" />
+                <div className="sim-preview-body">
+                  <div className="sim-preview-name">{userTeam}</div>
+                  <div className="sim-preview-picks">
+                    {preview.first.length
+                      ? `Round 1: ${preview.first.map((n) => `#${n}`).join(' · ')}`
+                      : 'No first-round pick'}
+                    {preview.later.length > 0 && ` · then ${preview.later.map((n) => `#${n}`).join(' · ')}`}
+                  </div>
+                </div>
+                {preview.chips.length > 0 && (
+                  <div className="sim-preview-needs" aria-label="Biggest needs">
+                    {preview.chips.map((c) => (
+                      <span key={c.group} className={`sim-need is-static is-l${c.need >= NEED_HIGH ? 3 : 2}`}>
+                        {c.group}
+                        <span className="sim-need-meter" aria-hidden="true"><i /><i /><i /></span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <details className="sim-order">
+              <summary className="sim-order-summary">
+                <span className="mock-import-chev">›</span>
+                CPU teams — {needWord}, {chaosWord}
+              </summary>
+              <div className="sim-dials">
+                <label className="sim-dial">
+                  <span className="sim-dial-name">Draft for need</span>
+                  <input
+                    type="range" min="0" max="10" step="1" value={cpuNeed}
+                    onChange={(e) => setCpuNeed(Number(e.target.value))}
+                    aria-valuetext={needWord}
+                  />
+                  <span className="sim-dial-ends"><span>Best available</span><span>Need first</span></span>
+                </label>
+                <label className="sim-dial">
+                  <span className="sim-dial-name">Surprises</span>
+                  <input
+                    type="range" min="0" max="10" step="1" value={cpuChaos}
+                    onChange={(e) => setCpuChaos(Number(e.target.value))}
+                    aria-valuetext={chaosWord}
+                  />
+                  <span className="sim-dial-ends"><span>By the board</span><span>Chaos</span></span>
+                </label>
+              </div>
+            </details>
+
             <details className="sim-order">
               <summary className="sim-order-summary">
                 <span className="mock-import-chev">›</span>
@@ -720,7 +813,7 @@ export default function MockDraft() {
                 <img className="sim-bar-logo" src={nflLogoUrl(clockTeam, 500)} alt="" />
               )}
               {onClock ? (
-                <span className="sim-bar-onclock">You're on the clock — pick {pickNo}</span>
+                <span className="sim-bar-onclock"><span className="mock-dot" />You're on the clock — pick {pickNo}</span>
               ) : simming ? (
                 <span className="mock-status"><span className="mock-dot" />Simulating · {clockTeam} on the clock</span>
               ) : (
@@ -743,11 +836,53 @@ export default function MockDraft() {
               <button
                 className="sim-btn"
                 onClick={() =>
-                  startDraft({ order: sim.order, rounds: sim.rounds, userTeam: sim.userTeam })
+                  startDraft({ order: sim.order, rounds: sim.rounds, userTeam: sim.userTeam, settings: sim.settings })
                 }
               >
                 Restart
               </button>
+            </div>
+            <span
+              className="sim-progress"
+              style={{ transform: `scaleX(${sim.totalPicks ? sim.picks.length / sim.totalPicks : 0})` }}
+              aria-hidden="true"
+            />
+          </div>
+        )}
+
+        {/* ── Latest picks, newest first ── */}
+        {recentPicks.length > 0 && (
+          <div className="sim-ticker" aria-label="Latest picks">
+            {recentPicks.map((pk) => (
+              <div
+                key={pk.pick}
+                className={`sim-tick${sim.userTeam !== CONTROL_ALL && pk.team === sim.userTeam ? ' is-user' : ''}`}
+              >
+                <span className="sim-tick-no">{pk.pick}</span>
+                <img src={nflLogoUrl(pk.team, 500)} alt={nick(pk.team)} loading="lazy" />
+                <span className="sim-tick-name">{pk.player.name}</span>
+                <span className="sim-av-pos">{pk.player.position}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Your last pick, graded as it lands ── */}
+        {lastMine && pickGrade(lastMine) && (
+          <div key={lastMine.pick} className="sim-reveal">
+            <span className={`sim-reveal-letter is-${pickGrade(lastMine).letter.toLowerCase()}`}>
+              {pickGrade(lastMine).letter}
+            </span>
+            <div className="sim-reveal-body">
+              <div className="sim-reveal-title">
+                Your pick at {lastMine.pick}: {lastMine.player.name}
+                <span>{lastMine.player.position} · {lastMine.player.team}</span>
+              </div>
+              <div className="sim-reveal-why">
+                Value {pickGrade(lastMine).value >= 0 ? '+' : ''}{pickGrade(lastMine).value}, {valueWords(lastMine.delta)}
+                {' · '}
+                Fit +{pickGrade(lastMine).fit}, {lastMine.need >= NEED_SOME ? `${lastMine.need >= NEED_HIGH ? 'top need' : 'need'} at ${lastMine.needGroup}` : 'no open need there'}
+              </div>
             </div>
           </div>
         )}
@@ -908,7 +1043,7 @@ export default function MockDraft() {
                   {haulGrade && (
                     <div
                       className="sim-haul-overall"
-                      title="Average pick value vs the DraftVision board"
+                      title="Average pick score: value against the board plus fit with team needs"
                     >
                       <span className="sim-haul-overall-label">Draft grade</span>
                       <span className={`sim-haul-overall-letter is-${haulGrade.toLowerCase()}`}>
@@ -919,7 +1054,8 @@ export default function MockDraft() {
                 </div>
                 <div className="sim-summary-rows">
                   {haul.map((pk) => {
-                    const letter = deltaLetter(pk.delta);
+                    const g = pickGrade(pk);
+                    const letter = g && g.letter;
                     return (
                       <div key={pk.pick} className="sim-summary-row">
                         <span className="sim-summary-pick">{pk.pick}</span>
@@ -931,13 +1067,16 @@ export default function MockDraft() {
                             </span>
                           )}
                         </span>
-                        <span className="sim-summary-school">{pk.player.team}</span>
+                        <span className="sim-summary-school">
+                          {pk.player.team}
+                          {pk.need >= NEED_SOME && pk.needGroup ? ` · need at ${pk.needGroup}` : ''}
+                        </span>
                         <span className="sim-av-pos">{pk.player.position}</span>
                         <span className="sim-av-grade"><span>{pk.player.grade || '—'}</span></span>
                         <span
                           className={`sim-haul-letter${letter ? ` is-${letter.toLowerCase()}` : ''}`}
-                          title={Number.isFinite(pk.delta)
-                            ? `Value ${pk.delta >= 0 ? '+' : ''}${pk.delta} vs board rank`
+                          title={g
+                            ? `Score ${g.score}: value ${g.value >= 0 ? '+' : ''}${g.value}, fit +${g.fit}`
                             : undefined}
                         >
                           {letter || '—'}
