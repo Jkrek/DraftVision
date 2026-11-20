@@ -12,6 +12,7 @@ import bisect
 import functools
 import json
 import math
+import hmac
 import os
 import sqlite3
 import time
@@ -2609,8 +2610,16 @@ def _team_color(nfl_team: str) -> str:
     return "#334155"
 
 
+# Owner-only: this route spends the server's Anthropic key and replaces the
+# public mock draft, so it sits behind the same key as the big-board save.
+MOCK_UPLOAD_MEDIA_TYPES = {"image/png", "image/jpeg", "image/webp"}
+MOCK_UPLOAD_MAX_B64 = 7_000_000   # ~5 MB image
+
+
 @app.post("/api/mock-draft/upload")
 def upload_mock_draft():
+    if not _big_board_guard_ok():
+        return jsonify({"error": "not found"}), 404
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
         return jsonify({"error": "Invalid JSON"}), 400
@@ -2621,6 +2630,10 @@ def upload_mock_draft():
 
     if not image_b64:
         return jsonify({"error": "image_b64 is required"}), 400
+    if media_type not in MOCK_UPLOAD_MEDIA_TYPES:
+        return jsonify({"error": "image must be PNG, JPEG or WebP"}), 400
+    if len(image_b64) > MOCK_UPLOAD_MAX_B64:
+        return jsonify({"error": "image too large (5 MB limit)"}), 413
 
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
@@ -3033,7 +3046,7 @@ def _big_board_guard_ok() -> bool:
     if not configured:
         return False
     supplied = request.args.get("key") or request.headers.get("X-Analytics-Key") or ""
-    return supplied == configured
+    return hmac.compare_digest(supplied.encode(), configured.encode())
 
 
 def _prospect_key(p: dict) -> str:
@@ -3995,6 +4008,9 @@ def players():
 
 @app.post("/sync/college-prospects")
 def sync_college_prospects_endpoint():
+    # Owner-only: a full roster sync is ~250 outbound ESPN fetches.
+    if not _big_board_guard_ok():
+        return jsonify({"error": "not found"}), 404
     payload = request.get_json(silent=True) or {}
 
     try:

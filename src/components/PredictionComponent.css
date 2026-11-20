@@ -230,27 +230,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.predict-sync-btn {
-  margin-left: 10px;
-  padding: 0;
-  background: none;
-  border: none;
-  font-family: var(--font-body);
-  font-size: 12.5px;
-  color: var(--color-accent);
-  cursor: pointer;
-  text-underline-offset: 3px;
-}
-.predict-sync-btn:hover:not(:disabled) { text-decoration: underline; }
-.predict-sync-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-.predict-sync-msg {
-  margin: 8px 0 0;
-  font-size: 12.5px;
-  color: var(--color-accent-300);
-  font-variant-numeric: tabular-nums;
-}
-
 /* ── Loading state ──────────────────────────────────────────── */
 .predict-status {
   display: flex;

@@ -12,8 +12,14 @@ function getRound(pickNum) {
    <details> section. Drop a mock-draft image → POST /api/mock-draft/upload
    (Claude vision parses the picks server-side) → render the stored board.
    The stored draft is fetched lazily, the first time the section opens. */
+// Uploading is owner-only: the server checks the same key the Big Board
+// editor uses (kept in sessionStorage, never in the bundle).
+const KEY_STORE = 'dv_analytics_key';
+const storedKey = () => { try { return sessionStorage.getItem(KEY_STORE) || ''; } catch { return ''; } };
+
 export default function ImportMock() {
   const fileRef = useRef(null);
+  const [owner, setOwner] = useState(() => Boolean(storedKey()));
 
   const [loaded, setLoaded]       = useState(false);
   const [picks, setPicks]         = useState([]);
@@ -64,9 +70,15 @@ export default function ImportMock() {
       const mediaType = file.type || 'image/png';
       const res = await anonFetch('/api/mock-draft/upload', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Analytics-Key': storedKey() },
         body: JSON.stringify({ image_b64: b64, media_type: mediaType, title: "JKrek's Mock Draft" }),
       });
+      if (res.status === 404) {
+        // The server answers 404 for a missing or wrong key.
+        try { sessionStorage.removeItem(KEY_STORE); } catch { /* ignore */ }
+        setOwner(false);
+        throw new Error('That admin key was not accepted. Nothing was uploaded.');
+      }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed');
       await loadDraft();
@@ -111,7 +123,22 @@ export default function ImportMock() {
       </summary>
 
       <div className="mock-import-body">
-        <div
+        {!owner && (
+          <button
+            type="button"
+            className="sim-btn"
+            onClick={() => {
+              const k = (window.prompt('Admin key') || '').trim();
+              if (!k) return;
+              try { sessionStorage.setItem(KEY_STORE, k); } catch { /* ignore */ }
+              setError(null);
+              setOwner(true);
+            }}
+          >
+            Owner: unlock upload
+          </button>
+        )}
+        {owner && <div
           className={`mock-dropzone${dragOver ? ' is-dragover' : ''}`}
           role="button"
           tabIndex={0}
@@ -145,7 +172,7 @@ export default function ImportMock() {
               </p>
             </>
           )}
-        </div>
+        </div>}
 
         {error && <p className="mock-error">{error}</p>}
 

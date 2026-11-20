@@ -174,8 +174,6 @@ export default function PredictionComponent() {
   const marketSeq                   = useRef(0);
 
   // sync
-  const [syncing, setSyncing]       = useState(false);
-  const [syncMsg, setSyncMsg]       = useState('');
 
   // ── load all data in one call ────────────────────────────────
   const loadInit = useCallback(async () => {
@@ -298,22 +296,6 @@ export default function PredictionComponent() {
     if (match) runPrediction(match);
     else resolveAndPredict(name);
   }, [acQuery, acResults, predicting, runPrediction, resolveAndPredict]);
-
-  // ── sync ──────────────────────────────────────────────────────
-  const handleSync = useCallback(async () => {
-    setSyncing(true); setSyncMsg('');
-    try {
-      const res  = await anonFetch(apiUrl('/sync/college-prospects'), {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ max_teams: 250, max_players: 5000 }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Sync failed.');
-      setSyncMsg(`Synced ${data?.synced?.inserted || 0} prospects from ${data?.synced?.teams || 0} teams.`);
-      await loadInit();
-    } catch (err) { setSyncMsg(err.message || 'Sync failed.'); }
-    finally { setSyncing(false); }
-  }, [loadInit]);
 
   // ── auto-predict from ?name= query param (e.g. navigated from Leaderboard) ─
   const location       = useLocation();
@@ -447,16 +429,7 @@ export default function PredictionComponent() {
               {loadingPlayers
                 ? 'Loading prospect pool…'
                 : `${allPlayers.length.toLocaleString()} searchable prospects across ${teams.length} programs — college, 2025 draft class and 2026 freshmen.`}
-              <button
-                type="button"
-                className="predict-sync-btn"
-                onClick={handleSync}
-                disabled={syncing}
-              >
-                {syncing ? 'Syncing…' : 'Re-sync prospects'}
-              </button>
             </p>
-            {syncMsg && <p className="predict-sync-msg">{syncMsg}</p>}
           </div>
         )}
 
