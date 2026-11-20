@@ -325,6 +325,11 @@ def _row_as_dict(cursor, row) -> Optional[dict]:
 
 app = Flask(__name__, static_folder=None)  # catch-all serves build/
 
+# Per-IP limits on the routes that cost something (owner writes, /predict,
+# the tool layer). Registered first so a limited request does no other work.
+import dv_ratelimit  # noqa: E402
+dv_ratelimit.install(app)
+
 
 def _parse_allowed_origins(raw_value: str) -> list[str] | str:
     cleaned = [origin.strip() for origin in raw_value.split(",") if origin.strip()]
@@ -3669,6 +3674,43 @@ def api_team_needs_index():
         return jsonify({"error": "team needs not built yet"}), 503
     resp = jsonify(payload)
     resp.headers["Cache-Control"] = "public, max-age=600"
+    return resp
+
+
+# ── Read-only tool layer (dv_tools.py) ───────────────────────────────────────
+# The same eight functions the agent, the MCP server and the evals call.
+# GET /api/tools lists them with their JSON Schemas; POST /api/tools/<name>
+# runs one with a JSON object of arguments. Nothing here can write.
+import dv_tools  # noqa: E402
+
+
+def _tools_board():
+    _maybe_reload_prospect_cache()
+    return _PROSPECT_CACHE, (_PROSPECT_CACHE_META or {}).get("generated_at")
+
+
+dv_tools.configure(board=_tools_board)
+
+
+@app.get("/api/tools")
+def api_tools_list():
+    resp = jsonify({"model_version": dv_tools.MODEL_VERSION, "tools": dv_tools.tool_specs()})
+    resp.headers["Cache-Control"] = "public, max-age=3600"
+    return resp
+
+
+@app.post("/api/tools/<name>")
+def api_tools_call(name):
+    args = request.get_json(silent=True)
+    if args is None and request.get_data(as_text=True).strip():
+        return jsonify({"error": "body must be a JSON object"}), 400
+    try:
+        out = dv_tools.call(name, args or {})
+    except dv_tools.ToolError as exc:
+        code = 404 if name not in dv_tools.TOOLS else 400
+        return jsonify({"error": str(exc)}), code
+    resp = jsonify(out)
+    resp.headers["Cache-Control"] = "no-store"
     return resp
 
 

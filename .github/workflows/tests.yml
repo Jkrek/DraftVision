@@ -47,3 +47,6 @@ jobs:
 
       - name: Team needs
         run: python tests/test_team_needs.py
+
+      - name: Tool layer and rate limiter
+        run: python tests/test_tools.py
