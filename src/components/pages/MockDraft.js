@@ -8,6 +8,12 @@ import ImportMock from './simulator/ImportMock';
 import {
   DRAFT_ORDER_2027,
   tradedSlots,
+  teamNeeds,
+  playerFit,
+  suggestPick,
+  upcomingPicks,
+  NEED_HIGH,
+  NEED_SOME,
   CONTROL_ALL,
   POS_TABS,
   posGroup,
@@ -73,6 +79,8 @@ function slimPicks(picks) {
     delta: Number.isFinite(pk.delta) ? pk.delta : null,
     tag: pk.tag || null,
     via: pk.via || null,
+    needGroup: pk.needGroup || null,
+    need: Number.isFinite(pk.need) ? pk.need : 0,
     player: {
       name: pk.player.name,
       position: pk.player.position,
@@ -179,6 +187,19 @@ export default function MockDraft() {
       .catch(() => {});
     return () => { alive = false; };
   }, []);
+  // Team needs (contracts running out, by position group) for every team.
+  const [needsData, setNeedsData] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    anonFetch('/api/draft-needs')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (alive && d && d.teams) setNeedsData(d); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  // Needs describe this season's rosters: apply them only to the next draft.
+  const needs = needsData && needsData.draft_year === draftYear ? needsData : null;
+
   // Traded picks belong to one draft: apply them only to that class.
   const holders = projected && projected.year === draftYear ? projected.holders : null;
 
@@ -238,6 +259,7 @@ export default function MockDraft() {
       pool: poolRows,
       seed: newSeed(),
       ...tradedSlots(ord, holders),
+      needs,
     });
     setSim(s);
     setView(null);
@@ -247,7 +269,7 @@ export default function MockDraft() {
     // CPU teams run until the user is on the clock; in control-every-pick
     // mode the user is on the clock immediately.
     setSimming(team === CONTROL_ALL ? null : 'user');
-  }, [poolRows, holders]);
+  }, [poolRows, holders, needs]);
 
   /* ── Sim loop: one CPU pick per tick while "simming" ── */
   useEffect(() => {
@@ -293,11 +315,39 @@ export default function MockDraft() {
     if (sim.userTeam !== CONTROL_ALL) setSimming('user');
   }, [sim]);
 
+  /* ── Team context for whoever is on the clock ── */
+  const ctxTeam = sim && !isDone(sim) ? currentTeam(sim) : null;
+  const needsLeft = useMemo(
+    () => (sim && ctxTeam ? teamNeeds(sim, ctxTeam) : {}),
+    [sim, ctxTeam]
+  );
+  // Chips: every group the team started with a real need at, biggest first.
+  // A group it has since drafted shows as addressed instead of vanishing.
+  const needChips = useMemo(() => {
+    const base = sim && sim.needs && ctxTeam && sim.needs.teams[ctxTeam];
+    if (!base) return [];
+    return Object.keys(base.groups)
+      .map((g) => ({ group: g, base: base.groups[g], left: needsLeft[g] || 0 }))
+      .filter((c) => c.base.need >= NEED_SOME)
+      .sort((a, b) => b.left - a.left || b.base.need - a.base.need)
+      .slice(0, 6);
+  }, [sim, ctxTeam, needsLeft]);
+
   /* ── Available players for the on-the-clock panel ── */
   const available = useMemo(() => {
     if (!sim) return [];
-    let list = sim.pool.map((p, i) => ({ p, i }));
-    if (posFilter !== 'ALL') {
+    let list = sim.pool.map((p, i) => ({
+      p,
+      i,
+      fit: ctxTeam ? playerFit(sim, ctxTeam, p, needsLeft) : { group: null, need: 0 },
+    }));
+    if (posFilter === 'NEEDS') {
+      list = list.filter((x) => x.fit.need >= NEED_SOME);
+    } else if (posFilter.startsWith('need:')) {
+      const g = posFilter.slice(5);
+      const table = (sim.needs && sim.needs.positions) || {};
+      list = list.filter((x) => (table[(x.p.position || '').toUpperCase()] || []).includes(g));
+    } else if (posFilter !== 'ALL') {
       list = list.filter((x) => posGroup(x.p.position) === posFilter);
     }
     if (search) {
@@ -309,7 +359,7 @@ export default function MockDraft() {
       );
     }
     return list.slice(0, 40);
-  }, [sim, posFilter, search]);
+  }, [sim, posFilter, search, ctxTeam, needsLeft]);
 
   /* ── Board data (live sim or a stored result) ── */
   const boardPicks = useMemo(
@@ -332,9 +382,32 @@ export default function MockDraft() {
     return boardPicks.filter((pk) => pk.team === boardUserTeam);
   }, [boardPicks, boardUserTeam]);
 
+  const haulNeeds = useMemo(
+    () => [...new Set(haul.filter((pk) => pk.need >= NEED_SOME && pk.needGroup).map((pk) => pk.needGroup))],
+    [haul]
+  );
+
   const onClock = sim && phase === 'live' && !simming && isUserOnClock(sim);
   const clockTeam = sim && !isDone(sim) ? currentTeam(sim) : null;
   const pickNo = sim ? currentPickNumber(sim) : 0;
+
+  /* The model's own pick for the user's team: shown, never made for them. */
+  const suggestion = useMemo(
+    () => (onClock && sim.needs ? suggestPick(sim) : null),
+    [onClock, sim]
+  );
+  const laterPicks = useMemo(
+    () => (onClock ? upcomingPicks(sim, clockTeam).slice(1, 5) : []),
+    [onClock, sim, clockTeam]
+  );
+  const needLabel = (g) => (sim && sim.needs && sim.needs.labels[g]) || g;
+  const needWhy = (c) => {
+    const n = c.base.expiring || c.base.next;
+    const yr = c.base.expiring ? sim.needs.season : sim.needs.season + 1;
+    return `${needLabel(c.group)}: ${n} of ${c.base.starters} starter${c.base.starters > 1 ? 's' : ''} signed only through ${yr}`
+      + (c.left < c.base.need ? ' — addressed by a pick you made' : '');
+  };
+  const needLevel = (v) => (v >= NEED_HIGH ? 3 : v >= NEED_SOME ? 2 : v > 0 ? 1 : 0);
 
   /* ── Trades ── */
   const downOffers = useMemo(
@@ -447,8 +520,8 @@ export default function MockDraft() {
           <div className="eyebrow">Mock draft</div>
           <h1 className="mock-title">Mock Draft Simulator</h1>
           <p className="mock-sub">
-            Run a {draftYear} NFL mock against the DraftVision board — CPU
-            picks weigh success probability, grade, and positional need.
+            Run a {draftYear} NFL mock against the DraftVision board. Every team picks
+            from the simulated draft order, weighing the board against its own needs.
             {draftYear >= 2028 &&
               ' Pools are by first eligible draft — players who stay in school move to a later class.'}
           </p>
@@ -702,6 +775,58 @@ export default function MockDraft() {
                 <div className="sim-trade-list">{downOffers.map(renderOffer)}</div>
               </details>
             )}
+            {needChips.length > 0 && (
+              <div className="sim-ctx">
+                <div className="sim-ctx-needs">
+                  <span className="sim-ctx-label">{nick(clockTeam)} needs</span>
+                  {needChips.map((c) => {
+                    const key = `need:${c.group}`;
+                    const lvl = needLevel(c.left);
+                    return (
+                      <button
+                        key={c.group}
+                        type="button"
+                        className={`sim-need is-l${lvl}${posFilter === key ? ' active' : ''}`}
+                        aria-pressed={posFilter === key}
+                        title={needWhy(c)}
+                        aria-label={`${needWhy(c)}. Show ${needLabel(c.group).toLowerCase()} prospects.`}
+                        onClick={() => setPosFilter((f) => (f === key ? 'ALL' : key))}
+                      >
+                        {c.group}
+                        <span className="sim-need-meter" aria-hidden="true"><i /><i /><i /></span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="sim-ctx-meta">
+                  {laterPicks.length > 0 && <span>Next picks {laterPicks.map((n) => `#${n}`).join(' · ')}</span>}
+                  {sim.needs.teams[clockTeam] && (
+                    <a
+                      href={`/team-needs/${sim.needs.teams[clockTeam].abbr}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Depth chart ↗
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+            {suggestion && (
+              <div className="sim-suggest">
+                <span className="sim-ctx-label">Model’s pick</span>
+                <span className="sim-suggest-name">
+                  {suggestion.player.name}
+                  <span className="sim-suggest-meta">
+                    {suggestion.player.position} · {suggestion.player.team} · board No. {suggestion.player.boardRank}
+                    {suggestion.fit.need >= NEED_SOME && ` · ${suggestion.fit.need >= NEED_HIGH ? 'top need' : 'need'} at ${suggestion.fit.group}`}
+                  </span>
+                </span>
+                <button type="button" className="sim-btn" onClick={() => draftPlayer(suggestion.index)}>
+                  Draft
+                </button>
+              </div>
+            )}
             <div className="sim-clock-controls">
               <input
                 className="sim-search"
@@ -710,21 +835,22 @@ export default function MockDraft() {
                 onChange={(e) => setSearch(e.target.value)}
               />
               <div className="sim-chips">
-                {POS_TABS.map((t) => (
+                {(needChips.length ? ['ALL', 'NEEDS'].concat(POS_TABS.slice(1)) : POS_TABS).map((t) => (
                   <button
                     key={t}
                     className={`sim-chip${posFilter === t ? ' active' : ''}`}
                     onClick={() => setPosFilter(t)}
                   >
-                    {t}
+                    {t === 'NEEDS' ? 'Needs' : t}
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="sim-av">
-              {available.map(({ p, i }) => (
+              {available.map(({ p, i, fit }) => (
                 <button key={`${p.name}-${i}`} className="sim-av-row" onClick={() => draftPlayer(i)}>
+                  <span className="sim-av-rank" title="Rank on the board this draft runs on">{p.boardRank}</span>
                   {p.espn_team_id ? (
                     <img
                       className="sim-av-logo"
@@ -741,6 +867,13 @@ export default function MockDraft() {
                     <span className="sim-av-school">{p.team}</span>
                   </span>
                   <span className="sim-av-pos">{p.position}</span>
+                  <span className="sim-av-fit">
+                    {fit.need >= NEED_SOME && (
+                      <span className={fit.need >= NEED_HIGH ? 'sim-fit is-high' : 'sim-fit'}>
+                        {fit.need >= NEED_HIGH ? 'Top need' : 'Need'}
+                      </span>
+                    )}
+                  </span>
                   <span className="sim-av-grade"><span>{p.grade || '—'}</span></span>
                   <span className="sim-av-prob">{fmtProb(p.success_probability)}</span>
                   <span className="sim-av-draft">Draft</span>
@@ -768,6 +901,9 @@ export default function MockDraft() {
                       {haul.length} pick{haul.length === 1 ? '' : 's'} over {view.rounds} round{view.rounds === 1 ? '' : 's'}
                       {' · '}net value {haulValue >= 0 ? '+' : ''}{haulValue}
                     </div>
+                    {haulNeeds.length > 0 && (
+                      <div className="sim-summary-sub">Needs addressed: {haulNeeds.join(' · ')}</div>
+                    )}
                   </div>
                   {haulGrade && (
                     <div
@@ -882,6 +1018,7 @@ export default function MockDraft() {
                   grade={pk.player.grade}
                   tag={pk.tag}
                   via={pk.via}
+                  needGroup={pk.need >= NEED_SOME ? pk.needGroup : null}
                   highlight={
                     boardUserTeam !== CONTROL_ALL && pk.team === boardUserTeam
                   }

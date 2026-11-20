@@ -250,18 +250,28 @@ def index_payload():
     return {k: d.get(k) for k in _META} | {"teams": teams}
 
 
+def need_score(g):
+    """0..1: the share of a group's starters whose contracts are running out.
+    A deal ending this season counts in full, one ending next season counts
+    half. One quarterback out of contract (1.0) outranks three linebackers
+    with a year left (0.5): a count would say the opposite."""
+    if not g.get("starters"):
+        return 0.0
+    return round(min(1.0, (g["expiring"] + 0.5 * g["next"]) / g["starters"]), 3)
+
+
 def prospect_fits(team, prospects, draft_year, per_pick=4, max_picks=3):
     """For each first-round pick the team holds: prospects the board projects
     inside that pick's likely range who play a position where a starter's
     contract is running out.
 
-    Need weight per position group = 2 x starters whose deal ends after this
-    season + 1 x starters whose deal ends a year later. Within a pick the list
-    is ordered by that weight, then by projected pick. Nothing here predicts a
+    Need per position group is need_score(): the share of its starters whose
+    contracts are running out. Within a pick the list is ordered by that
+    score, then by projected pick. Nothing here predicts a
     selection: it is the overlap of two lists.
     """
     need = {g["group"]: g for g in team.get("groups", []) if g["expiring"] or g["next"]}
-    weight = {k: 2 * g["expiring"] + g["next"] for k, g in need.items()}
+    weight = {k: need_score(g) for k, g in need.items()}
     pool = sorted((p for p in prospects or []
                    if p.get("draft_class") == draft_year and p.get("projected_pick")
                    and any(g in weight for g in PROSPECT_GROUPS.get((p.get("position") or "").upper(), ()))),
@@ -299,6 +309,32 @@ def team_payload(abbr, prospects=None):
     if prospects is not None:
         out["fits"] = prospect_fits(t, prospects, d["draft_year"])
     return out
+
+
+def needs_payload():
+    """Every team's need by position group, for the mock draft: one small
+    payload instead of 32 depth charts.
+
+    need = need_score(): 0..1, the share of the group's starters whose
+    contracts are running out (the same score prospect_fits uses).
+    `positions` maps the board's college position labels onto these groups,
+    so the client does not keep its own copy of that table.
+    """
+    d = _load()
+    if not d:
+        return None
+    teams = {}
+    for t in d["teams"].values():
+        groups = {}
+        for g in t["groups"]:
+            w = need_score(g)
+            if w:
+                groups[g["group"]] = {"need": w, "expiring": g["expiring"], "next": g["next"],
+                                      "starters": g["starters"], "names": g["names"]}
+        teams[t["name"]] = {"abbr": t["team"], "front": t["front"], "groups": groups}
+    return {"season": d["season"], "draft_year": d["draft_year"], "generated_at": d["generated_at"],
+            "labels": GROUP_LABEL, "positions": {k: list(v) for k, v in PROSPECT_GROUPS.items()},
+            "teams": teams}
 
 
 _ORDER_CACHE = {"mtime": None, "data": None}

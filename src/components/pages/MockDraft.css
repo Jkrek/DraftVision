@@ -492,6 +492,118 @@
   outline: none;
 }
 
+/* team context: needs as filter chips, upcoming picks, the model's pick */
+.sim-ctx {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 18px;
+  margin-bottom: 12px;
+}
+.sim-ctx-needs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.sim-ctx-label {
+  margin-right: 6px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+  white-space: nowrap;
+}
+.sim-ctx-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--color-neutral-400);
+  font-variant-numeric: tabular-nums;
+}
+.sim-ctx-meta a {
+  color: var(--color-accent-300);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sim-ctx-meta a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.sim-need {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--color-neutral-200);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.sim-need:hover { border-color: var(--color-neutral-500); }
+.sim-need.active {
+  border-color: var(--color-accent-600);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+.sim-need:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+/* three-step meter: how much of the need is left */
+.sim-need-meter { display: inline-flex; gap: 2px; }
+.sim-need-meter i {
+  width: 5px;
+  height: 10px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--color-text) 16%, transparent);
+}
+.sim-need.is-l1 .sim-need-meter i:nth-child(-n+1),
+.sim-need.is-l2 .sim-need-meter i:nth-child(-n+2),
+.sim-need.is-l3 .sim-need-meter i:nth-child(-n+3) { background: var(--color-accent); }
+.sim-need.is-l0 { color: var(--color-neutral-500); text-decoration: line-through; }
+
+.sim-suggest {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-text) 3%, transparent);
+}
+.sim-suggest-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  font-size: 13.5px;
+  color: var(--color-neutral-100);
+}
+.sim-suggest-meta { font-size: 12px; color: var(--color-neutral-400); }
+
+.sim-av-rank {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-500);
+  text-align: right;
+}
+.sim-fit {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--color-neutral-300);
+}
+.sim-fit.is-high { color: var(--color-accent-300); }
+.mock-row-need { color: var(--color-neutral-400); }
+
 /* best-available rows */
 .sim-av {
   max-height: 420px;
@@ -505,7 +617,7 @@
   margin: 0;
   width: 100%;
   display: grid;
-  grid-template-columns: 26px minmax(160px, 2fr) 48px 52px 52px auto;
+  grid-template-columns: 30px 26px minmax(160px, 2fr) 48px 66px 52px 52px auto;
   gap: 0 14px;
   align-items: center;
   text-align: left;
@@ -1241,13 +1353,19 @@ details[open] > summary .mock-import-chev {
     display: none;
   }
   .sim-av-row {
-    grid-template-columns: 26px minmax(0, 1fr) 44px auto;
+    grid-template-columns: 24px minmax(0, 1fr) 40px 58px auto;
+    gap: 0 10px;
     padding: 9px 12px;
   }
   .sim-av-grade,
-  .sim-av-prob {
+  .sim-av-prob,
+  .sim-av-logo {
     display: none;
   }
+  .sim-ctx-meta { width: 100%; justify-content: space-between; }
+  .sim-suggest { flex-wrap: wrap; gap: 8px 12px; }
+  .sim-suggest .sim-ctx-label { flex-basis: 100%; }
+  .sim-need { min-height: 36px; padding: 6px 11px; }
   .sim-summary-row {
     grid-template-columns: 30px minmax(0, 1.4fr) 34px 40px 26px;
     gap: 0 10px;

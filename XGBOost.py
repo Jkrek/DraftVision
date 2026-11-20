@@ -3714,6 +3714,16 @@ def api_tools_call(name):
     return resp
 
 
+@app.get("/api/draft-needs")
+def api_draft_needs():
+    payload = dv_team_needs.needs_payload()
+    if payload is None:
+        return jsonify({"error": "team needs not built yet"}), 503
+    resp = jsonify(payload)
+    resp.headers["Cache-Control"] = "public, max-age=600"
+    return resp
+
+
 @app.get("/api/draft-order")
 def api_draft_order():
     payload = dv_team_needs.draft_order_payload()

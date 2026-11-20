@@ -166,6 +166,46 @@ export function pickJitter(seed, key) {
   return mulberry32(((seed >>> 0) ^ Math.imul(key, 0x9e3779b9)) >>> 0)();
 }
 
+/* ── Team needs ──────────────────────────────────────────────────────────
+   `needs` is the /api/draft-needs payload: per team, a need of 0..1 for each
+   position group (the share of that group's starters whose contracts are
+   running out), plus the table that maps a college position label onto
+   those groups. A drafted player replaces one starter: he takes 1/starters
+   off his group's need, so one quarterback settles the quarterback need and
+   one linebacker settles a third of a three-linebacker need. */
+
+export const NEED_HIGH = 0.75; // "top need" threshold (e.g. the only QB is out of contract)
+export const NEED_SOME = 0.4;  // "need" threshold (e.g. one of two starters)
+
+/* Remaining need per group for a team, after the picks it has already made. */
+export function teamNeeds(sim, team) {
+  const base = sim && sim.needs && sim.needs.teams && sim.needs.teams[team];
+  if (!base) return {};
+  const out = {};
+  for (const g of Object.keys(base.groups)) out[g] = base.groups[g].need;
+  for (const pk of sim.picks) {
+    if (pk.team === team && pk.needGroup && out[pk.needGroup] !== undefined) {
+      const starters = base.groups[pk.needGroup].starters || 1;
+      out[pk.needGroup] = Math.max(0, Math.round((out[pk.needGroup] - 1 / starters) * 1000) / 1000);
+    }
+  }
+  return out;
+}
+
+/* Which of a team's need groups a player fills, and how much it needs him:
+   { group, need }. A generic label (OL, DL, DB) counts toward whichever of
+   its groups the team needs more. need = 0 when it fills nothing. */
+export function playerFit(sim, team, player, remaining) {
+  const table = (sim && sim.needs && sim.needs.positions) || {};
+  const groups = table[(player.position || '').toUpperCase()] || [];
+  const left = remaining || teamNeeds(sim, team);
+  let best = { group: groups[0] || null, need: 0 };
+  for (const g of groups) {
+    if ((left[g] || 0) > best.need) best = { group: g, need: left[g] };
+  }
+  return best;
+}
+
 /* ── CPU pick model ──────────────────────────────────────────────────── */
 
 /* Mild positional value: QBs go early, RBs slide. */
@@ -173,26 +213,36 @@ const POS_VALUE = { QB: 5, DL: 2.5, OL: 2.5, WR: 1.5, DB: 1.5, RB: -2 };
 
 const CPU_WINDOW = 14; // best-available candidates considered per pick
 
+/* How far need can move a pick. The window's players sit about 0.6 to 3
+   score points apart, so a top need (1.0) is worth roughly four to six board
+   spots: enough to take the quarterback over a slightly better guard, not
+   enough to reach a round early. */
+export const NEED_WEIGHT = 9;
+
 /* Returns an index into `pool` (board-sorted, best first), or -1. Scores
    the top of the board on (a) success probability + grade, (b) positional
    need — repeat picks of a position group are dampened via posCounts —
    and (c) small deterministic jitter. */
-export function cpuSelect(pool, posCounts, pickNumber, seed) {
+export function cpuSelect(pool, posCounts, pickNumber, seed, needOf) {
   if (!pool || pool.length === 0) return -1;
-  const n = Math.min(CPU_WINDOW, pool.length);
+  // The field of realistic candidates widens as the draft goes on: boards
+  // agree at the top and scatter later.
+  const round = Math.max(1, Math.ceil(pickNumber / ROUND_PICKS));
+  const n = Math.min(CPU_WINDOW + 6 * (round - 1), pool.length);
   let best = 0;
   let bestScore = -Infinity;
   for (let i = 0; i < n; i++) {
     const p = pool[i];
     const group = posGroup(p.position);
     const taken = (posCounts && posCounts[group]) || 0;
-    const jitter = (pickJitter(seed, pickNumber * 131 + i) - 0.5) * 8;
+    const jitter = seed === null ? 0 : (pickJitter(seed, pickNumber * 131 + i) - 0.5) * 8;
     const score =
       (Number(p.success_probability) || 0) +
       (9 - gradeRank(p.grade)) * 1.5 -
       i * 0.6 + // slight respect for board order
       (POS_VALUE[group] || 0) -
-      taken * 9 + // positional-need dampening
+      taken * 9 + // do not stack one position group
+      (needOf ? needOf(p) * NEED_WEIGHT : 0) +
       jitter;
     if (score > bestScore) {
       bestScore = score;
@@ -220,7 +270,7 @@ export function tradedSlots(order, holders) {
   return { slots, via };
 }
 
-export function createDraft({ order, rounds, userTeam, pool, seed, slots, via }) {
+export function createDraft({ order, rounds, userTeam, pool, seed, slots, via, needs }) {
   const ord = order && order.length ? order : DRAFT_ORDER_2027;
   return {
     order: ord.slice(),
@@ -233,6 +283,7 @@ export function createDraft({ order, rounds, userTeam, pool, seed, slots, via })
     slots: Object.assign({}, slots), // pickNo → team (trade overrides of the base order)
     via: Object.assign({}, via),     // pickNo → counterparty team ("via trade with X")
     tradeLog: [], // accepted trades, in order
+    needs: needs || null, // /api/draft-needs payload (null → needs ignored)
     totalPicks: Math.min(rounds * ord.length, pool.length),
   };
 }
@@ -279,6 +330,7 @@ export function commitPick(sim, poolIndex) {
   const delta = Number.isFinite(player.boardRank)
     ? player.boardRank - pickNo
     : null;
+  const fit = playerFit(sim, team, player);
   return Object.assign({}, sim, {
     pool: sim.pool.filter((_, i) => i !== poolIndex),
     picks: sim.picks.concat({
@@ -289,6 +341,8 @@ export function commitPick(sim, poolIndex) {
       delta,
       tag: valueTag(delta),
       via: (sim.via && sim.via[pickNo]) || null,
+      needGroup: fit.group, // the need group this pick counts toward
+      need: fit.need,       // how much the team needed it when it picked (0..1)
     }),
     posCounts: Object.assign({}, sim.posCounts, { [team]: teamCounts }),
   });
@@ -297,13 +351,37 @@ export function commitPick(sim, poolIndex) {
 export function advanceCpu(sim) {
   if (isDone(sim)) return sim;
   const team = currentTeam(sim);
+  const left = teamNeeds(sim, team);
   const idx = cpuSelect(
     sim.pool,
     sim.posCounts[team],
     currentPickNumber(sim),
-    sim.seed
+    sim.seed,
+    (p) => playerFit(sim, team, p, left).need
   );
   return commitPick(sim, idx);
+}
+
+/* The pick the model would make for the team on the clock: the same score
+   the CPU uses, without the randomness. Returns { index, player, fit } or
+   null. Shown to the user as a suggestion, never made for them. */
+export function suggestPick(sim) {
+  if (isDone(sim) || !sim.pool.length) return null;
+  const team = currentTeam(sim);
+  const left = teamNeeds(sim, team);
+  const index = cpuSelect(sim.pool, sim.posCounts[team], currentPickNumber(sim), null,
+    (p) => playerFit(sim, team, p, left).need);
+  const player = sim.pool[index];
+  return { index, player, fit: playerFit(sim, team, player, left) };
+}
+
+/* The picks a team still has to make, in order. */
+export function upcomingPicks(sim, team) {
+  const out = [];
+  for (let p = currentPickNumber(sim); p <= sim.totalPicks; p++) {
+    if (pickTeam(sim, p) === team) out.push(p);
+  }
+  return out;
 }
 
 /* CPU-picks everything that remains (user team included) — "sim to end"

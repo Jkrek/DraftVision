@@ -18,6 +18,7 @@ export default function MockRow({
   highlight, // true → user's own pick (accent edge)
   tag,       // 'STEAL' | 'REACH' | null — value-delta chip
   via,       // team the slot was acquired from ("via trade with X")
+  needGroup, // position group the pick filled a need at, or null
 }) {
   const navigate = useNavigate();
   const logo = nflLogoUrl(nflTeam);
@@ -40,9 +41,10 @@ export default function MockRow({
             </span>
           )}
         </div>
-        {(school || via) && (
+        {(school || via || needGroup) && (
           <div className="mock-row-school">
             {school}
+            {needGroup && <span className="mock-row-need">{school ? ' · ' : ''}need at {needGroup}</span>}
             {via && (
               <span className="mock-row-via">
                 {school ? ' · ' : ''}via trade with {nick(via)}

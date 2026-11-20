@@ -99,6 +99,39 @@ async function main() {
     assert.equal(pk.tag, E.valueTag(pk.delta));
   }
 
+  /* ── Team needs: fit, decay, and their pull on the CPU ── */
+  const needs = {
+    season: 2026,
+    labels: { QB: 'Quarterback', OT: 'Offensive tackle', IOL: 'Interior line' },
+    positions: { QB: ['QB'], OL: ['OT', 'IOL'], WR: ['WR'] },
+    teams: { T1: { abbr: 'T1', groups: { QB: { need: 1, expiring: 1, next: 0, starters: 1, names: [] },
+                                         IOL: { need: 0.5, expiring: 1, next: 0, starters: 2, names: [] } } } },
+  };
+  const nsim = E.createDraft({ order: TEAMS, rounds: 2, userTeam: 'T1', pool, seed: 3, needs });
+  assert.deepEqual(E.teamNeeds(nsim, 'T1'), { QB: 1, IOL: 0.5 });
+  assert.deepEqual(E.teamNeeds(nsim, 'T2'), {}, 'a team with no data has no needs');
+  const qbIdx = nsim.pool.findIndex((p) => p.position === 'QB');
+  const olIdx = nsim.pool.findIndex((p) => p.position === 'OL');
+  assert.deepEqual(E.playerFit(nsim, 'T1', nsim.pool[qbIdx]), { group: 'QB', need: 1 });
+  assert.deepEqual(E.playerFit(nsim, 'T1', nsim.pool[olIdx]), { group: 'IOL', need: 0.5 },
+    'a generic OL counts toward the line group the team needs');
+  assert.equal(E.playerFit(nsim, 'T2', nsim.pool[qbIdx]).need, 0);
+  const afterQb = E.commitPick(nsim, qbIdx);
+  assert.equal(afterQb.picks[0].needGroup, 'QB');
+  assert.equal(afterQb.picks[0].need, 1);
+  assert.equal(E.teamNeeds(afterQb, 'T1').QB, 0, 'one quarterback settles a one-starter need');
+  assert.equal(E.teamNeeds(E.commitPick(nsim, olIdx), 'T1').IOL, 0, 'one of two starters: one pick settles it');
+  // the suggestion is deterministic and is the CPU's choice without jitter
+  const sug = E.suggestPick(nsim);
+  assert.deepEqual(sug, E.suggestPick(nsim));
+  assert.equal(sug.player, nsim.pool[sug.index]);
+  // need moves the choice: with a QB need the suggestion is a QB; without needs it need not be
+  const flat = pool.map((p, i) => Object.assign({}, p, { success_probability: 60 - i * 0.2, grade: 'A' }));
+  const flatSim = (n) => E.createDraft({ order: TEAMS, rounds: 1, userTeam: 'T1', pool: flat, seed: 1, needs: n });
+  const qbNeed = { ...needs, teams: { T1: { abbr: 'T1', groups: { WR: { need: 1, expiring: 1, next: 0, starters: 1, names: [] } } } } };
+  assert.equal(E.suggestPick(flatSim(qbNeed)).player.position, 'WR', 'a top need wins among near-equal players');
+  assert.deepEqual(E.upcomingPicks(nsim, 'T1'), [1, TEAMS.length + 1]);
+
   /* ── Trade down (user on the clock at pick 3) ── */
   let sim = mk('T3', 7);
   sim = E.advanceCpu(E.advanceCpu(sim));
